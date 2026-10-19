@@ -53,3 +53,7 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
+samvaad/public/frontend
+samvaad/www/samvaad.html
+frontend/node_modules
+samvaad/public/node_modules

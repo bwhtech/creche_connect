@@ -295,6 +295,12 @@ export_python_type_annotations = True
 # Require all whitelisted methods to have type annotations
 require_type_annotated_api_methods = True
 
+add_to_apps_screen = [
+	{"name": "samvaad", "logo": "/assets/samvaad/logo.svg", "title": "Samvaad", "route": "/samvaad"}
+]
+
+website_route_rules = [{"from_route": "/samvaad/<path:app_path>", "to_route": "samvaad"}]
+
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
@@ -303,4 +309,3 @@ require_type_annotated_api_methods = True
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-

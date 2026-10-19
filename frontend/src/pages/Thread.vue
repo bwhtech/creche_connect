@@ -1,0 +1,225 @@
+<script setup lang="ts">
+import { computed, ref, watch, nextTick } from 'vue'
+import { Avatar, Badge, Breadcrumbs, Button, FormControl, LoadingIndicator, PageHeader, Progress, Tooltip, toast } from 'frappe-ui'
+import AudienceChips from '../components/AudienceChips.vue'
+import MessageItem from '../components/MessageItem.vue'
+import TagChips from '../components/TagChips.vue'
+import Reactions from '../components/Reactions.vue'
+import {
+  useMe,
+  fetchThread,
+  acknowledge,
+  addReply,
+  markRead,
+  userById,
+  reachOf,
+  policyOf,
+  matchesGeo,
+  placeById,
+  placePath,
+  when,
+  errorText,
+  colorOf,
+} from '../lib/store'
+
+const props = defineProps<{ id: string }>()
+const me = useMe()
+const thread = ref<any>(null)
+const loading = ref(true)
+const visible = computed(() => !!thread.value)
+const author = computed(() => thread.value && userById(thread.value.authorId))
+const reach = computed(() => (thread.value ? reachOf(thread.value) : 0))
+const geoPlaces = computed(() => (thread.value?.geo?.places ?? []).map(placeById).filter(Boolean))
+const viaGeo = computed(() => thread.value?.geo && matchesGeo(me.value, thread.value.geo))
+const seenPct = computed(() => (reach.value ? Math.min(100, Math.round((thread.value.seenBy.length / reach.value) * 100)) : 0))
+
+async function load() {
+  try {
+    thread.value = await fetchThread(props.id)
+    markRead(thread.value)
+  } catch {
+    thread.value = null
+  } finally {
+    loading.value = false
+  }
+}
+watch(() => props.id, () => ((loading.value = true), load()), { immediate: true })
+
+const reply = ref('')
+const sending = ref(false)
+const scroller = ref<HTMLElement>()
+async function send() {
+  if (!reply.value.trim() || sending.value) return
+  const html = reply.value
+    .trim()
+    .split(/\n{2,}/)
+    .map((p) => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`)
+    .join('')
+  sending.value = true
+  try {
+    await addReply(thread.value, html)
+    reply.value = ''
+    nextTick(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight, behavior: 'smooth' }))
+  } catch (e) {
+    toast.error(errorText(e, 'Could not send your reply'))
+  } finally {
+    sending.value = false
+  }
+}
+function onKey(e: KeyboardEvent) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send()
+}
+async function ack() {
+  try {
+    await acknowledge(thread.value)
+    toast.success('Acknowledged')
+  } catch (e) {
+    toast.error(errorText(e, 'Could not acknowledge'))
+  }
+}
+
+const replyBlock = computed(() =>
+  thread.value.policy === 'none'
+    ? { icon: 'lucide-megaphone', text: 'This is an announcement. Replies are off.' }
+    : { icon: 'lucide-shield', text: 'Only people who can start threads can reply here.' },
+)
+const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId === thread.value.replies[i].authorId
+</script>
+
+<template>
+  <div class="flex h-full flex-col">
+    <PageHeader>
+      <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: thread?.title ?? 'Thread' }]" />
+    </PageHeader>
+
+    <div v-if="loading" class="flex flex-1 items-center justify-center">
+      <LoadingIndicator class="size-5 text-ink-gray-5" />
+    </div>
+
+    <div v-else-if="!visible" class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+      <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-5">
+        <span class="lucide-lock size-6" aria-hidden="true" />
+      </div>
+      <p class="text-base text-ink-gray-7">You can't see this thread</p>
+      <p class="max-w-sm text-p-sm text-ink-gray-5">It was sent to a place or designation that doesn't include you.</p>
+      <Button label="Back to feed" route="/" class="mt-2" />
+    </div>
+
+    <div v-else class="flex min-h-0 flex-1">
+      <div class="flex min-w-0 flex-1 flex-col">
+        <div ref="scroller" class="min-h-0 flex-1 overflow-y-auto">
+          <div class="mx-auto max-w-[770px] px-3 pt-10 pb-12 sm:px-6">
+            <AudienceChips :geo="thread.geo" />
+            <h1 class="mt-4 text-3xl font-semibold text-ink-gray-9">{{ thread.title }}</h1>
+            <div class="mt-4 flex items-center gap-2.5">
+              <Avatar :label="author.name" size="md" />
+              <span class="text-sm text-ink-gray-8">{{ author.name }}</span>
+              <span class="text-sm text-ink-gray-5">{{ author.title }} · {{ when(thread.createdAt).fromNow() }}</span>
+            </div>
+
+            <div v-if="thread.needsAck" class="mt-8 flex items-center gap-3 rounded-5 bg-surface-amber-2 px-4 py-3.5">
+              <span class="lucide-badge-check size-5 shrink-0 text-ink-amber-6" aria-hidden="true" />
+              <p class="flex-1 text-p-sm text-ink-gray-8">
+                {{ author.name.split(' ')[0] }} asked everyone in the audience to acknowledge this thread.
+              </p>
+              <Button variant="solid" theme="gray" label="Acknowledge" @click="ack" />
+            </div>
+
+            <div class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
+            <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
+              <TagChips v-if="thread.tags.length" :tags="thread.tags" />
+              <div><Reactions :target="thread" doctype="Samvaad Thread" /></div>
+            </div>
+
+            <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">
+              <span class="text-lg-semibold text-ink-gray-8">
+                {{ thread.replies.length }} {{ thread.replies.length === 1 ? 'reply' : 'replies' }}
+              </span>
+              <Badge :label="policyOf(thread.policy).short" :theme="policyOf(thread.policy).theme" variant="subtle" size="sm" class="ml-auto">
+                <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
+              </Badge>
+            </div>
+            <div class="-mx-2 space-y-1 pt-3">
+              <MessageItem v-for="(m, i) in thread.replies" :key="m.id" :message="m" :compact="sameAuthor(i)" />
+              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-outline-gray-1 bg-surface-base">
+          <div class="mx-auto max-w-[770px] px-3 py-4 sm:px-6">
+            <template v-if="thread.canReply">
+              <div class="flex items-end gap-2" @keydown="onKey">
+                <div class="flex-1">
+                  <FormControl v-model="reply" type="textarea" :rows="2" placeholder="Write a reply…  (Ctrl + Enter to send)" />
+                </div>
+                <Button variant="solid" theme="gray" icon="lucide-send-horizontal" size="md" :disabled="!reply.trim()" :loading="sending" @click="send" />
+              </div>
+              <p class="mt-2 text-xs text-ink-gray-5">Visible to {{ reach }} people in this thread's audience</p>
+            </template>
+            <div v-else class="flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-3 text-sm text-ink-gray-6">
+              <span :class="replyBlock.icon" class="size-4 shrink-0" aria-hidden="true" />
+              {{ replyBlock.text }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="hidden w-[20rem] shrink-0 overflow-y-auto border-l border-outline-gray-1 lg:block">
+        <div class="space-y-8 p-6">
+          <section>
+            <h2 class="text-sm text-ink-gray-5">Audience</h2>
+            <div class="mt-3 space-y-2">
+              <div v-for="p in geoPlaces" :key="p.id" class="flex items-center gap-2.5 py-1">
+                <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(p.color).soft, colorOf(p.color).ink]">
+                  <span class="lucide-map-pin size-3.5" aria-hidden="true" />
+                </span>
+                <div class="min-w-0">
+                  <div class="truncate text-sm text-ink-gray-8">{{ p.name }}</div>
+                  <div class="truncate text-xs text-ink-gray-5">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</div>
+                </div>
+              </div>
+              <div v-if="thread.geo" class="pt-1 text-xs text-ink-gray-5">
+                {{ thread.geo.designations.length ? thread.geo.designations.join(', ') : 'Every designation' }}
+              </div>
+            </div>
+            <div class="mt-3 flex justify-between border-t border-outline-gray-1 pt-3 text-sm">
+              <span class="text-ink-gray-6">Unique people</span>
+              <span class="text-ink-gray-9 tabular-nums">{{ reach }}</span>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="text-sm text-ink-gray-5">Seen</h2>
+            <div class="mt-2 flex items-baseline justify-between">
+              <span class="text-xl text-ink-gray-9 tabular-nums">{{ seenPct }}%</span>
+              <span class="text-xs text-ink-gray-5 tabular-nums">{{ thread.seenBy.length }} of {{ reach }}</span>
+            </div>
+            <Progress class="mt-2" :value="seenPct" />
+          </section>
+
+          <section v-if="thread.ackRequired">
+            <h2 class="text-sm text-ink-gray-5">Acknowledged</h2>
+            <div class="mt-2.5 flex items-center gap-2">
+              <div class="flex -space-x-1.5">
+                <Tooltip v-for="uid in thread.acks.slice(0, 6)" :key="uid" :text="userById(uid).name">
+                  <Avatar :label="userById(uid).name" size="sm" class="ring-2 ring-surface-base" />
+                </Tooltip>
+              </div>
+              <span class="text-sm text-ink-gray-7 tabular-nums">{{ thread.acks.length }} of {{ reach }}</span>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="text-sm text-ink-gray-5">Your access</h2>
+            <div class="mt-2.5 flex flex-wrap gap-1">
+              <Badge v-if="thread.authorId === me.id" label="You started this" theme="blue" variant="subtle" />
+              <Badge v-if="viaGeo" :label="`Via ${placePath(me.place)}`" :theme="geoPlaces[0]?.color ?? 'blue'" variant="subtle" />
+            </div>
+            <p class="mt-2 text-p-xs text-ink-gray-5">{{ thread.canReply ? 'You can reply.' : 'You can read but not reply.' }}</p>
+          </section>
+        </div>
+      </aside>
+    </div>
+  </div>
+</template>
