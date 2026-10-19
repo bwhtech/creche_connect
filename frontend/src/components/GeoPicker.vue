@@ -7,7 +7,6 @@ const draft = defineModel<{ places: string[]; designations: string[] }>({ requir
 
 const me = useMe()
 const query = ref('')
-// The widest place this person can address: All India for national staff, else their own place.
 const root = computed(() => (me.value.place ? placeById(me.value.place) : rootPlace.value))
 const isCountry = computed(() => root.value.kind === 'Country')
 const allPlaces = computed(() => draft.value.places.length === 1 && draft.value.places[0] === root.value.id)
@@ -16,7 +15,6 @@ const toggleAllPlaces = () => (draft.value.places = allPlaces.value ? [] : [root
 const scope = computed(() => allowedPlaces(me.value).filter((p) => p.id !== root.value.id))
 const results = computed(() => {
   const q = query.value.trim().toLowerCase()
-  // With no query, browse states and districts, plus blocks of expanded districts. Searching finds anything.
   const list = q
     ? scope.value.filter((p) => p.name.toLowerCase().includes(q))
     : scope.value.filter((p) => p.kind !== 'Block' || expanded.value.includes(p.parentId))
@@ -75,7 +73,6 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
             <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
           </TextInput>
         </div>
-        <!-- All: the whole area this person can reach -->
         <label v-if="!query" class="flex cursor-pointer items-center gap-3 border-b border-outline-gray-1 bg-surface-gray-1 py-3 pr-4 pl-4 hover:bg-surface-gray-2">
           <Checkbox :model-value="allPlaces" @update:model-value="toggleAllPlaces" />
           <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(root.color).soft, colorOf(root.color).ink]">

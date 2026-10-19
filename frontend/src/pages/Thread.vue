@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
-import { Avatar, Badge, Breadcrumbs, Button, FormControl, LoadingIndicator, PageHeader, Progress, Tooltip, toast } from 'frappe-ui'
+import { Avatar, Badge, Breadcrumbs, Button, LoadingIndicator, PageHeader, Progress, Tooltip, toast } from 'frappe-ui'
+import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
 import TagChips from '../components/TagChips.vue'
@@ -17,6 +18,8 @@ import {
   matchesGeo,
   placeById,
   placePath,
+  state,
+  excerpt,
   when,
   errorText,
   colorOf,
@@ -44,20 +47,20 @@ async function load() {
   }
 }
 watch(() => props.id, () => ((loading.value = true), load()), { immediate: true })
+watch(
+  () => state.activity,
+  (a) => a?.thread === props.id && load(),
+)
 
 const reply = ref('')
+const replyEmpty = computed(() => !excerpt(reply.value))
 const sending = ref(false)
 const scroller = ref<HTMLElement>()
 async function send() {
-  if (!reply.value.trim() || sending.value) return
-  const html = reply.value
-    .trim()
-    .split(/\n{2,}/)
-    .map((p) => `<p>${p.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</p>`)
-    .join('')
+  if (replyEmpty.value || sending.value) return
   sending.value = true
   try {
-    await addReply(thread.value, html)
+    await addReply(thread.value, reply.value)
     reply.value = ''
     nextTick(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight, behavior: 'smooth' }))
   } catch (e) {
@@ -151,9 +154,13 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <template v-if="thread.canReply">
               <div class="flex items-end gap-2" @keydown="onKey">
                 <div class="flex-1">
-                  <FormControl v-model="reply" type="textarea" :rows="2" placeholder="Write a reply…  (Ctrl + Enter to send)" />
+                  <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
+                    <Editor v-model="reply" :extensions="[RichTextKit]" placeholder="Write a reply…  (Ctrl + Enter to send)">
+                      <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
+                    </Editor>
+                  </div>
                 </div>
-                <Button variant="solid" theme="gray" icon="lucide-send-horizontal" size="md" :disabled="!reply.trim()" :loading="sending" @click="send" />
+                <Button variant="solid" theme="gray" icon="lucide-send-horizontal" size="md" :disabled="replyEmpty" :loading="sending" @click="send" />
               </div>
               <p class="mt-2 text-xs text-ink-gray-5">Visible to {{ reach }} people in this thread's audience</p>
             </template>

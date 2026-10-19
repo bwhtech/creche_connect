@@ -637,5 +637,6 @@ def make_thread(t: dict):
 				"user": email(uid),
 				"last_visit": last,
 				"owner": email(uid),
+				"creation": last,
 			}
 		)

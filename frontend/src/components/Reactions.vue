@@ -20,7 +20,6 @@ function pick(emoji: string) {
 </script>
 
 <template>
-  <!-- Stop clicks here from following a surrounding thread link. -->
   <div class="flex flex-wrap items-center gap-1.5" @click.stop.prevent>
     <Tooltip v-for="[emoji, uids] in entries" :key="emoji" :text="names(uids)">
       <button

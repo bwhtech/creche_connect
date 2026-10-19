@@ -17,7 +17,6 @@ const title = computed(
   () => ({ unread: 'Unread', ack: 'To acknowledge', mine: 'Started by me' })[filter.value ?? ''] ?? 'Feed',
 )
 
-// Threads after the sidebar filter. The tag filter applies on top, so it can show counts.
 const base = computed(() => {
   const list = state.threads
   if (filter.value === 'unread') return list.filter((t) => t.unread)

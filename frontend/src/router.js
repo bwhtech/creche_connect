@@ -8,5 +8,6 @@ export default createRouter({
 		{ path: '/threads/:id', component: () => import('./pages/Thread.vue'), props: true },
 		{ path: '/users', component: () => import('./pages/Users.vue') },
 		{ path: '/resources', component: () => import('./pages/Resources.vue') },
+		{ path: '/insights', component: () => import('./pages/Insights.vue') },
 	],
 })

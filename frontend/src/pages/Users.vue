@@ -26,8 +26,6 @@ const rows = computed(() => {
   })
 })
 
-
-// ── Add / edit ───────────────────────────────────────────────
 const open = ref(false)
 const saving = ref(false)
 const form = ref(blank())
@@ -52,7 +50,6 @@ function add() {
   form.value = blank()
   open.value = true
 }
-// Changing a level clears the levels below it.
 watch(() => form.value.state, (v) => placeById(form.value.district)?.parentId !== v && (form.value.district = '', form.value.block = ''))
 watch(() => form.value.district, (v) => placeById(form.value.block)?.parentId !== v && (form.value.block = ''))
 

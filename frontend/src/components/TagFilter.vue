@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { state, colorOf } from '../lib/store'
 
-// Topic pills above the feed. `threads` is the list before the tag filter, for counts.
 const props = defineProps<{ threads: any[] }>()
 const route = useRoute()
 const router = useRouter()

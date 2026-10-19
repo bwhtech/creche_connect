@@ -4,6 +4,8 @@
 import frappe
 from frappe.model.document import Document
 
+from samvaad.api import notify_audience
+
 
 class SamvaadReply(Document):
 	# begin: auto-generated types
@@ -23,6 +25,7 @@ class SamvaadReply(Document):
 
 	def after_insert(self):
 		self.update_thread_stats()
+		notify_audience(frappe.get_doc("Samvaad Thread", self.thread))
 
 	def on_trash(self):
 		self.update_thread_stats(exclude=self.name)

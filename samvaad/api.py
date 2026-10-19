@@ -205,6 +205,24 @@ def touch_visit(thread: str, user: str):
 		).insert(ignore_permissions=True, ignore_if_duplicate=True)
 
 
+def audience_users(places: list, designations: list) -> list[str]:
+	filters = {"designation": ["in", designations]} if designations else {}
+	if set(places) & root_places():
+		return frappe.get_all("Samvaad Member", filters=filters, pluck="user")
+	or_filters = [f for p in places for f in (["place", "=", p], ["place", "like", f"{p}-%"])]
+	return frappe.get_all("Samvaad Member", filters=filters, or_filters=or_filters, pluck="user")
+
+
+def notify_audience(thread):
+	users = set(
+		audience_users([p.place for p in thread.places], [d.designation for d in thread.designations])
+	)
+	for user in (users | {thread.owner}) - {frappe.session.user}:
+		frappe.publish_realtime(
+			"samvaad_activity", {"thread": str(thread.name)}, user=user, after_commit=True
+		)
+
+
 def get_member(user: str) -> dict:
 	member = frappe.db.get_value("Samvaad Member", user, MEMBER_FIELDS, as_dict=True)
 	member.is_admin = is_admin(user)

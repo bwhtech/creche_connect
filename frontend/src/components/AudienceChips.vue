@@ -9,7 +9,6 @@ const chip = computed(() => {
   if (!g?.places?.length) return null
   const places = g.places.map((id) => placeById(id)?.name).join(', ')
   const plural = (d: string) => (d === 'Head of operations' ? 'Heads of operations' : `${d}s`)
-  // Every field designation ticked reads the same as none: everyone there.
   const all = DESIGNATIONS.value.filter((d) => !NATIONAL_DESIGNATIONS.value.includes(d)).every((d) => g.designations.includes(d))
   const who = g.designations.length && !all ? g.designations.map(plural).join(', ') : 'Everyone'
   return { label: `${places} · ${who}`, color: placeById(g.places[0])?.color ?? 'blue' }

@@ -2,13 +2,16 @@
 import { computed, onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { DesktopShell, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, LoadingIndicator } from 'frappe-ui'
-import { state, loadBoot, loadThreads, useMe, canStart, RESOURCE_KINDS } from './lib/store'
+import { state, loadBoot, loadThreads, listenForActivity, useMe, canStart, RESOURCE_KINDS } from './lib/store'
 
 const me = useMe()
-onMounted(() => Promise.all([loadBoot(), loadThreads().catch(() => {})]))
+onMounted(() => {
+  loadBoot()
+  loadThreads().catch(() => {})
+  listenForActivity()
+})
 const route = useRoute()
 
-// Feed filters share the / path; the tag filter sits on top, so match on `filter` only.
 const isActive = (to: string) => {
   const [path, qs] = to.split('?')
   if (path !== route.path) return false
@@ -72,6 +75,7 @@ const openResource = (url: string) => window.open(url, '_blank', 'noopener')
 
             <div class="px-2 pt-6 pb-1.5 text-sm text-ink-gray-5">Directory</div>
             <div class="space-y-0.5">
+              <SidebarItem v-if="me.admin" label="Insights" icon="lucide-chart-column" route="/insights" />
               <SidebarItem label="Users" icon="lucide-users" route="/users" />
               <SidebarItem label="Resources" icon="lucide-library" route="/resources" />
             </div>

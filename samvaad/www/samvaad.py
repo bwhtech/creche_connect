@@ -12,5 +12,6 @@ def get_context(context):
 		csrf_token=frappe.sessions.get_csrf_token(),
 		site_name=frappe.local.site,
 		system_timezone=get_system_timezone(),
+		socketio_port=frappe.conf.socketio_port if frappe._dev_server else None,
 	)
 	return context

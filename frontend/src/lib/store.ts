@@ -1,5 +1,6 @@
 import { reactive, computed } from 'vue'
 import { call, frappeRequest, dayjsLocal } from 'frappe-ui'
+import { io } from 'socket.io-client'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -12,7 +13,7 @@ export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback
 
-const get = (method: string, params = {}) => frappeRequest({ url: method, method: 'GET', params })
+export const get = (method: string, params = {}) => frappeRequest({ url: method, method: 'GET', params })
 
 export const state = reactive({
   ready: false,
@@ -26,10 +27,8 @@ export const state = reactive({
   emojis: [] as string[],
   threads: [] as any[],
   threadsLoaded: false,
+  activity: null as { thread: string } | null,
 })
-
-// ── Geography ────────────────────────────────────────────────────
-// Place ids are code paths: 'CG', 'CG-JSP', 'CG-JSP-KNK'. The Country is the root.
 
 const placeMap = computed(() => Object.fromEntries(state.places.map((p) => [p.id, p])))
 export const placeById = (id: string) => placeMap.value[id]
@@ -39,7 +38,6 @@ export const inPlace = (userPlace: string, place: string) =>
   place === rootPlace.value?.id || userPlace === place || (userPlace ?? '').startsWith(place + '-')
 export const districtsOf = (s: string) => state.places.filter((p) => p.kind === 'District' && p.parentId === s)
 export const blocksOf = (d: string) => state.places.filter((p) => p.kind === 'Block' && p.parentId === d)
-// The place and the ones above it, nearest first, without the Country.
 export function chain(id: string) {
   const out = []
   for (let p = placeById(id); p && p.kind !== 'Country'; p = placeById(p.parentId)) out.push(p)
@@ -47,7 +45,6 @@ export function chain(id: string) {
 }
 export const placePath = (id: string) => (id ? chain(id).map((p) => p.name).join(', ') : 'National')
 
-// People at each place, counting everyone below it too.
 export const peopleByPlace = computed(() => {
   const counts = {}
   for (const u of state.users) for (const p of chain(u.place)) counts[p.id] = (counts[p.id] ?? 0) + 1
@@ -57,8 +54,6 @@ export const peopleByPlace = computed(() => {
 
 export const DESIGNATIONS = computed(() => state.designations.map((d) => d.name))
 export const NATIONAL_DESIGNATIONS = computed(() => state.designations.filter((d) => d.is_national).map((d) => d.name))
-
-// ── People ───────────────────────────────────────────────────────
 
 const shapeUser = (m) => ({
   id: m.user,
@@ -83,8 +78,6 @@ export const threadReach = (t) => reachById.value[t.id] ?? reachOf(t)
 export const allowedPlaces = (u) =>
   u.place ? state.places.filter((p) => p.kind !== 'Country' && inPlace(p.id, u.place)) : state.places
 
-// ── Tags ─────────────────────────────────────────────────────────
-
 const tagMap = computed(() => Object.fromEntries(state.tags.map((t) => [t.id, t])))
 export const tagById = (id: string) => tagMap.value[id]
 const shapeTag = (t) => ({ id: t.name, name: t.name, color: t.color })
@@ -92,8 +85,6 @@ const shapeTag = (t) => ({ id: t.name, name: t.name, color: t.color })
 export function toggleIn(list: string[], v: string) {
   return list.includes(v) ? list.filter((x) => x !== v) : [...list, v]
 }
-
-// ── Threads ──────────────────────────────────────────────────────
 
 export const canStart = (u) => !!u?.canPost
 
@@ -133,6 +124,21 @@ export async function loadThreads() {
   }
 }
 
+// The socket namespace must be the site name.
+export function listenForActivity() {
+  const { hostname, protocol, origin } = window.location
+  const host = window.socketio_port ? `${protocol}//${hostname}:${window.socketio_port}` : origin
+  const site = window.site_name && !window.site_name.includes('{{') ? window.site_name : hostname
+  let timer: ReturnType<typeof setTimeout>
+  io(`${host}/${site}`, { withCredentials: true }).on('samvaad_activity', (payload) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      state.activity = payload
+      loadThreads()
+    }, 300)
+  })
+}
+
 export const fetchThread = (id: string) => get('samvaad.api.get_thread', { name: id })
 
 export async function markRead(t) {
@@ -169,7 +175,6 @@ export async function acknowledge(t) {
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
 
-// `target` is a thread or a reply: both carry `reactions: { emoji: [uid] }`. Optimistic, rolled back on error.
 export async function toggleReaction(target, emoji: string, doctype: 'Samvaad Thread' | 'Samvaad Reply') {
   const flip = () => {
     const next = toggleIn(target.reactions[emoji] ?? [], state.me.id)
@@ -184,8 +189,6 @@ export async function toggleReaction(target, emoji: string, doctype: 'Samvaad Th
     throw e
   }
 }
-
-// ── Members ──────────────────────────────────────────────────────
 
 export const placeFrom = (s: string, district: string, block: string) => block || district || s || ''
 
@@ -205,8 +208,6 @@ export async function saveUser(form) {
   else state.users[i] = user
   if (user.id === state.me.id) state.me = user
 }
-
-// ── Program resources ──────────────────────────────────────────────
 
 export const RESOURCE_KINDS = {
   Video: { label: 'Video', icon: 'lucide-circle-play', color: 'red' },

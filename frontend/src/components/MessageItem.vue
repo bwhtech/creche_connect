@@ -25,7 +25,6 @@ const author = computed(() => userById(props.message.authorId))
         </Tooltip>
       </div>
       <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="message.body" />
-      <!-- With no reactions yet, the add button only shows on hover. -->
       <div
         class="mt-1.5"
         :class="Object.keys(message.reactions).length ? '' : 'h-0 overflow-hidden group-hover:h-auto group-hover:overflow-visible focus-within:h-auto'"

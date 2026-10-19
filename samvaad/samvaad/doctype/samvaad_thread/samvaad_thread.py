@@ -1,8 +1,9 @@
 # Copyright (c) 2026, BWH and contributors
 # For license information, please see license.txt
 
-# import frappe
 from frappe.model.document import Document
+
+from samvaad.api import notify_audience
 
 
 class SamvaadThread(Document):
@@ -33,3 +34,6 @@ class SamvaadThread(Document):
 	# end: auto-generated types
 
 	_DOCTYPE_NAME = "Samvaad Thread"
+
+	def after_insert(self):
+		notify_audience(self)
