@@ -3,14 +3,13 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { state, colorOf } from '../lib/store'
 
-const props = defineProps<{ threads: any[] }>()
 const route = useRoute()
 const router = useRouter()
 
 const active = computed(() => route.query.tag as string | undefined)
 const options = computed(() =>
   state.tags
-    .map((t) => ({ ...t, count: props.threads.filter((th) => th.tags.includes(t.id)).length }))
+    .map((t) => ({ ...t, count: state.counts.tags[t.id] ?? 0 }))
     .filter((t) => t.count),
 )
 const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query, tag: id === active.value ? undefined : id } })
@@ -25,7 +24,7 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
       @click="setTag(undefined)"
     >
       All topics
-      <span class="text-ink-gray-5 tabular-nums">{{ threads.length }}</span>
+      <span class="text-ink-gray-5 tabular-nums">{{ state.counts.total }}</span>
     </button>
     <button
       v-for="t in options"

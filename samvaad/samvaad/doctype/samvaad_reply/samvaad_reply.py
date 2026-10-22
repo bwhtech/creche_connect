@@ -25,7 +25,7 @@ class SamvaadReply(Document):
 
 	def after_insert(self):
 		self.update_thread_stats()
-		notify_audience(frappe.get_doc("Samvaad Thread", self.thread))
+		notify_audience(self.thread)
 
 	def on_trash(self):
 		self.update_thread_stats(exclude=self.name)

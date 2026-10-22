@@ -9,6 +9,7 @@ import Reactions from '../components/Reactions.vue'
 import {
   useMe,
   fetchThread,
+  fetchOlderReplies,
   acknowledge,
   addReply,
   markRead,
@@ -86,6 +87,19 @@ const replyBlock = computed(() =>
     ? { icon: 'lucide-megaphone', text: 'This is an announcement. Replies are off.' }
     : { icon: 'lucide-shield', text: 'Only people who can start threads can reply here.' },
 )
+const loadingOlder = ref(false)
+async function loadOlder() {
+  loadingOlder.value = true
+  try {
+    const page: any = await fetchOlderReplies(thread.value.id, thread.value.replies[0].id)
+    thread.value.replies.unshift(...page.replies)
+    thread.value.hasOlder = page.hasOlder
+  } catch (e) {
+    toast.error(errorText(e, 'Could not load older replies'))
+  } finally {
+    loadingOlder.value = false
+  }
+}
 const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId === thread.value.replies[i].authorId
 </script>
 
@@ -136,13 +150,14 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
             <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">
               <span class="text-lg-semibold text-ink-gray-8">
-                {{ thread.replies.length }} {{ thread.replies.length === 1 ? 'reply' : 'replies' }}
+                {{ thread.replyCount }} {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
               </span>
               <Badge :label="policyOf(thread.policy).short" :theme="policyOf(thread.policy).theme" variant="subtle" size="sm" class="ml-auto">
                 <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
               </Badge>
             </div>
             <div class="-mx-2 space-y-1 pt-3">
+              <Button v-if="thread.hasOlder" class="mx-2 mb-2" variant="ghost" label="Load older replies" :loading="loadingOlder" @click="loadOlder" />
               <MessageItem v-for="(m, i) in thread.replies" :key="m.id" :message="m" :compact="sameAuthor(i)" />
               <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
             </div>

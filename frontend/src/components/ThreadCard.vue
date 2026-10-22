@@ -49,7 +49,7 @@ defineProps<{ thread: any }>()
           {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
         </span>
         <span class="flex items-center gap-1">
-          <span class="lucide-eye size-3.5" aria-hidden="true" />{{ thread.seenBy.length }} of {{ threadReach(thread) }} seen
+          <span class="lucide-eye size-3.5" aria-hidden="true" />{{ thread.seenCount }} of {{ threadReach(thread) }} seen
         </span>
       </div>
     </div>

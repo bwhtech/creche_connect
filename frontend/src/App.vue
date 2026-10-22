@@ -2,12 +2,12 @@
 import { computed, onMounted } from 'vue'
 import { RouterView, useRoute } from 'vue-router'
 import { DesktopShell, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, LoadingIndicator } from 'frappe-ui'
-import { state, loadBoot, loadThreads, listenForActivity, useMe, canStart, RESOURCE_KINDS } from './lib/store'
+import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS } from './lib/store'
 
 const me = useMe()
 onMounted(() => {
   loadBoot()
-  loadThreads().catch(() => {})
+  loadCounts().catch(() => {})
   listenForActivity()
 })
 const route = useRoute()
@@ -18,8 +18,8 @@ const isActive = (to: string) => {
   return path !== '/' || (new URLSearchParams(qs).get('filter') ?? '') === ((route.query.filter as string) ?? '')
 }
 
-const unreadCount = computed(() => state.threads.filter((t) => t.unread).length)
-const ackCount = computed(() => state.threads.filter((t) => t.needsAck).length)
+const unreadCount = computed(() => state.counts.unread)
+const ackCount = computed(() => state.counts.ack)
 const pinned = computed(() => state.resources.filter((r) => r.pinned))
 
 const mainNav = computed(() => [

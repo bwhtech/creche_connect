@@ -84,12 +84,13 @@
    "label": "Activity"
   },
   {
+   "default": "Now",
    "fieldname": "last_activity",
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "label": "Last Activity",
    "read_only": 1,
-   "default": "Now"
+   "search_index": 1
   },
   {
    "fieldname": "reply_count",
@@ -102,7 +103,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-19 15:34:01.126469",
+ "modified": "2026-10-22 15:12:33.698423",
  "modified_by": "Administrator",
  "module": "Samvaad",
  "name": "Samvaad Thread",

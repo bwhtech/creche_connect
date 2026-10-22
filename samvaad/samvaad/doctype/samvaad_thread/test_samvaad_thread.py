@@ -68,7 +68,17 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 
 	def visible_to(self, user: str) -> set:
 		frappe.set_user(user)
-		return {t["id"] for t in api.get_threads()}
+		return set(self.feed())
+
+	def feed(self, **filters) -> list:
+		ids, cursor = [], None
+		while True:
+			page = api.get_threads(cursor=cursor, **filters)
+			self.assertLessEqual(len(page["threads"]), api.PAGE_SIZE)
+			ids += [t["id"] for t in page["threads"]]
+			cursor = page["cursor"]
+			if not cursor:
+				return ids
 
 	def test_thread_reaches_everyone_at_or_below_its_places(self):
 		name = self.post(self.lead, [self.district])
@@ -130,3 +140,53 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		frappe.set_user("Administrator")
 		frappe.delete_doc("Samvaad Reply", reply["id"])
 		self.assertEqual(frappe.db.get_value("Samvaad Thread", name, "reply_count"), 0)
+
+	def test_feed_pages_through_every_thread_once(self):
+		names = {self.post(self.lead, [self.state]) for _ in range(api.PAGE_SIZE + 5)}
+		frappe.set_user(self.volunteer)
+		seen = self.feed()
+		self.assertEqual(len(seen), len(set(seen)))
+		self.assertTrue(names <= set(seen))
+
+	def test_filters_and_counts_match_the_feed(self):
+		read = self.post(self.lead, [self.state])
+		unread = self.post(self.lead, [self.state], ack_required=True, tags=["Test tag"])
+		frappe.set_user(self.volunteer)
+		api.mark_read(read)
+		unread_ids = set(self.feed(filter="unread"))
+		ack_ids = set(self.feed(filter="ack"))
+		tagged_ids = set(self.feed(tag="Test tag"))
+		self.assertIn(unread, unread_ids)
+		self.assertNotIn(read, unread_ids)
+		self.assertIn(unread, ack_ids)
+		self.assertEqual(tagged_ids & {read, unread}, {unread})
+		counts = api.get_counts()
+		self.assertEqual(counts["unread"], len(unread_ids))
+		self.assertEqual(counts["ack"], len(ack_ids))
+		self.assertEqual(counts["tags"]["Test tag"], len(tagged_ids))
+		self.assertEqual(counts["total"], len(self.feed()))
+		frappe.set_user(self.lead)
+		self.assertIn(read, self.feed(filter="mine"))
+		self.assertNotIn(unread, self.feed(filter="unread"))
+
+	def test_feed_counts_who_has_seen_a_thread(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		api.mark_read(name)
+		frappe.set_user(self.coordinator)
+		api.mark_read(name)
+		row = next(t for t in api.get_threads()["threads"] if t["id"] == name)
+		self.assertEqual(row["seenCount"], 2)
+
+	def test_replies_load_newest_first_page_then_older(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		ids = [api.add_reply(name, f"<p>{i}</p>")["id"] for i in range(api.REPLY_PAGE_SIZE + 3)]
+		thread = api.get_thread(name)
+		self.assertEqual([r["id"] for r in thread["replies"]], ids[3:])
+		self.assertTrue(thread["hasOlder"])
+		older = api.get_replies(name, int(ids[3]))
+		self.assertEqual([r["id"] for r in older["replies"]], ids[:3])
+		self.assertFalse(older["hasOlder"])
+		frappe.set_user(self.outsider)
+		self.assertRaises(frappe.PermissionError, api.get_replies, name, int(ids[3]))

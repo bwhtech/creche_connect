@@ -2,9 +2,20 @@ from typing import Literal
 
 import frappe
 from frappe import _
+from frappe.query_builder import DocType, Order
+from frappe.query_builder.functions import Count
 from frappe.utils import cint, get_fullname, now_datetime
 from frappe.utils.caching import request_cache
 
+Thread = DocType("Samvaad Thread")
+ThreadPlace = DocType("Samvaad Thread Place")
+ThreadDesignation = DocType("Samvaad Thread Designation")
+ThreadTag = DocType("Samvaad Thread Tag")
+Visit = DocType("Samvaad Thread Visit")
+Acknowledgement = DocType("Samvaad Acknowledgement")
+
+PAGE_SIZE = 30
+REPLY_PAGE_SIZE = 50
 ADMIN_ROLES = {"System Manager", "Samvaad Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
 TAG_COLORS = ["blue", "green", "amber", "violet", "red"]
@@ -95,7 +106,7 @@ def reactions_for(doctype: str, names: list) -> dict:
 
 def load_threads(filters) -> list:
 	threads = frappe.get_all(
-		"Samvaad Thread", filters=filters, fields=THREAD_FIELDS, order_by="last_activity desc"
+		"Samvaad Thread", filters=filters, fields=THREAD_FIELDS, order_by="last_activity desc, name desc"
 	)
 	if not threads:
 		return []
@@ -133,11 +144,23 @@ def serialize(threads, me) -> list:
 		"thread",
 		"user",
 	)
-	visits = frappe.get_all(
-		"Samvaad Thread Visit", filters={"thread": ["in", names]}, fields=["thread", "user", "last_visit"]
+	my_visits = dict(
+		frappe.get_all(
+			"Samvaad Thread Visit",
+			filters={"thread": ["in", names], "user": me.user},
+			fields=["thread", "last_visit"],
+			as_list=True,
+		)
 	)
-	seen = group_by(visits, "thread", "user")
-	my_visits = {v.thread: v.last_visit for v in visits if v.user == me.user}
+	seen = dict(
+		frappe.qb.from_(Visit)
+		.join(Thread)
+		.on(Thread.name == Visit.thread)
+		.select(Visit.thread, Count("*"))
+		.where(Visit.thread.isin(names) & (Visit.user != Thread.owner))
+		.groupby(Visit.thread)
+		.run()
+	)
 	reactions = reactions_for("Samvaad Thread", names)
 
 	def unread(t):
@@ -165,7 +188,7 @@ def serialize(threads, me) -> list:
 			"policy": t.reply_policy,
 			"ackRequired": bool(t.ack_required),
 			"acks": acks.get(t.name, []),
-			"seenBy": [u for u in seen.get(t.name, []) if u != t.owner],
+			"seenCount": seen.get(t.name, 0),
 			"reactions": reactions.get(t.name, {}),
 			"createdAt": t.creation,
 			"lastActivity": t.last_activity,
@@ -196,13 +219,15 @@ def get_visible_thread(name: str, me):
 
 
 def touch_visit(thread: str, user: str):
-	name = f"{thread}-{user}"
-	if frappe.db.exists("Samvaad Thread Visit", name):
-		frappe.db.set_value("Samvaad Thread Visit", name, "last_visit", now_datetime())
-	else:
-		frappe.get_doc(
-			{"doctype": "Samvaad Thread Visit", "thread": thread, "user": user, "last_visit": now_datetime()}
-		).insert(ignore_permissions=True, ignore_if_duplicate=True)
+	now = now_datetime()
+	(
+		frappe.qb.into(Visit)
+		.columns("name", "thread", "user", "last_visit", "owner", "modified_by", "creation", "modified")
+		.insert(f"{thread}-{user}", thread, user, now, user, user, now, now)
+		.on_duplicate_key_update(Visit.last_visit, now)
+		.on_duplicate_key_update(Visit.modified, now)
+		.run()
+	)
 
 
 def audience_users(places: list, designations: list) -> list[str]:
@@ -213,14 +238,21 @@ def audience_users(places: list, designations: list) -> list[str]:
 	return frappe.get_all("Samvaad Member", filters=filters, or_filters=or_filters, pluck="user")
 
 
-def notify_audience(thread):
-	users = set(
-		audience_users([p.place for p in thread.places], [d.designation for d in thread.designations])
+def notify_audience(thread: str):
+	frappe.enqueue(
+		"samvaad.api.send_activity",
+		queue="short",
+		enqueue_after_commit=True,
+		thread=str(thread),
+		sender=frappe.session.user,
 	)
-	for user in (users | {thread.owner}) - {frappe.session.user}:
-		frappe.publish_realtime(
-			"samvaad_activity", {"thread": str(thread.name)}, user=user, after_commit=True
-		)
+
+
+def send_activity(thread: str, sender: str):
+	doc = frappe.get_doc("Samvaad Thread", thread)
+	users = set(audience_users([p.place for p in doc.places], [d.designation for d in doc.designations]))
+	for user in (users | {doc.owner}) - {sender}:
+		frappe.publish_realtime("samvaad_activity", {"thread": thread}, user=user)
 
 
 def get_member(user: str) -> dict:
@@ -267,35 +299,125 @@ def get_boot() -> dict:
 	}
 
 
-@frappe.whitelist(methods=["GET"])
-def get_threads() -> list:
-	me = get_me()
-	names = set(
-		frappe.get_all(
-			"Samvaad Thread Place",
-			filters={"parenttype": "Samvaad Thread", "place": ["in", ancestors(me.place)]},
-			pluck="parent",
-		)
+def in_audience(me):
+	designated = frappe.qb.from_(ThreadDesignation).select(ThreadDesignation.parent)
+	designation_ok = Thread.name.notin(designated)
+	if me.designation:
+		designation_ok |= Thread.name.isin(designated.where(ThreadDesignation.designation == me.designation))
+	places = frappe.qb.from_(ThreadPlace).select(ThreadPlace.parent)
+	return (
+		Thread.name.isin(places.where(ThreadPlace.place.isin(ancestors(me.place) or [""]))) & designation_ok
 	)
-	names |= {str(n) for n in frappe.get_all("Samvaad Thread", filters={"owner": me.user}, pluck="name")}
-	if not names:
-		return []
-	return serialize([t for t in load_threads({"name": ["in", list(names)]}) if can_see(me, t)], me)
+
+
+def feed_query(me, filter: str | None = None, tag: str | None = None):
+	query = frappe.qb.from_(Thread)
+	if filter == "mine":
+		query = query.where(Thread.owner == me.user)
+	else:
+		query = query.where((Thread.owner == me.user) | in_audience(me))
+	if filter == "unread":
+		query = (
+			query.left_join(Visit)
+			.on((Visit.thread == Thread.name) & (Visit.user == me.user))
+			.where(Visit.last_visit.isnull() | (Thread.last_activity > Visit.last_visit))
+			.where((Thread.owner != me.user) | (Thread.reply_count > 0))
+		)
+	elif filter == "ack":
+		acked = (
+			frappe.qb.from_(Acknowledgement)
+			.select(Acknowledgement.thread)
+			.where(Acknowledgement.user == me.user)
+		)
+		query = query.where((Thread.ack_required == 1) & (Thread.owner != me.user) & Thread.name.notin(acked))
+	if tag:
+		tagged = frappe.qb.from_(ThreadTag).select(ThreadTag.parent).where(ThreadTag.tag == tag)
+		query = query.where(Thread.name.isin(tagged))
+	return query
+
+
+def count(query) -> int:
+	return query.select(Count("*")).run()[0][0]
+
+
+@frappe.whitelist(methods=["GET"])
+def get_threads(
+	filter: Literal["unread", "ack", "mine"] | None = None,
+	tag: str | None = None,
+	cursor: str | None = None,
+) -> dict:
+	me = get_me()
+	query = (
+		feed_query(me, filter, tag)
+		.select(Thread.name, Thread.last_activity)
+		.orderby(Thread.last_activity, order=Order.desc)
+		.orderby(Thread.name, order=Order.desc)
+		.limit(PAGE_SIZE + 1)
+	)
+	if cursor:
+		at, name = cursor.rsplit("|", 1)
+		query = query.where(
+			(Thread.last_activity < at) | ((Thread.last_activity == at) & (Thread.name < cint(name)))
+		)
+	rows = query.run()
+	page = rows[:PAGE_SIZE]
+	threads = load_threads({"name": ["in", [r[0] for r in page]]}) if page else []
+	return {
+		"threads": serialize(threads, me),
+		"cursor": f"{page[-1][1]}|{page[-1][0]}" if len(rows) > PAGE_SIZE else None,
+	}
+
+
+@frappe.whitelist(methods=["GET"])
+def get_counts(filter: Literal["unread", "ack", "mine"] | None = None) -> dict:
+	me = get_me()
+	tags = (
+		feed_query(me, filter)
+		.join(ThreadTag)
+		.on(ThreadTag.parent == Thread.name)
+		.select(ThreadTag.tag, Count("*"))
+		.groupby(ThreadTag.tag)
+		.run()
+	)
+	counts = {"unread": count(feed_query(me, "unread")), "ack": count(feed_query(me, "ack"))}
+	return {**counts, "total": counts.get(filter) or count(feed_query(me, filter)), "tags": dict(tags)}
+
+
+def load_replies(thread: str, before: int | None = None) -> dict:
+	filters = {"thread": thread}
+	if before:
+		filters["name"] = ["<", before]
+	replies = frappe.get_all(
+		"Samvaad Reply",
+		filters=filters,
+		fields=["name", "owner", "content", "creation"],
+		order_by="name desc",
+		limit=REPLY_PAGE_SIZE + 1,
+	)
+	page = replies[:REPLY_PAGE_SIZE][::-1]
+	reactions = reactions_for("Samvaad Reply", [str(r.name) for r in page]) if page else {}
+	return {
+		"replies": [serialize_reply(r, reactions.get(str(r.name))) for r in page],
+		"hasOlder": len(replies) > REPLY_PAGE_SIZE,
+	}
 
 
 @frappe.whitelist(methods=["GET"])
 def get_thread(name: str) -> dict:
 	me = get_me()
-	thread = serialize([get_visible_thread(name, me)], me)[0]
-	replies = frappe.get_all(
-		"Samvaad Reply",
-		filters={"thread": name},
-		fields=["name", "owner", "content", "creation"],
-		order_by="creation asc",
+	doc = get_visible_thread(name, me)
+	thread = serialize([doc], me)[0]
+	thread["seenBy"] = frappe.get_all(
+		"Samvaad Thread Visit", filters={"thread": name, "user": ["!=", doc.owner]}, pluck="user"
 	)
-	reactions = reactions_for("Samvaad Reply", [str(r.name) for r in replies]) if replies else {}
-	thread["replies"] = [serialize_reply(r, reactions.get(str(r.name))) for r in replies]
+	thread.update(load_replies(name))
 	return thread
+
+
+@frappe.whitelist(methods=["GET"])
+def get_replies(thread: str, before: int) -> dict:
+	get_visible_thread(thread, get_me())
+	return load_replies(thread, before)
 
 
 @frappe.whitelist(methods=["POST"])

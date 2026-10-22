@@ -13,7 +13,8 @@ export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback
 
-export const get = (method: string, params = {}) => frappeRequest({ url: method, method: 'GET', params })
+export const get = (method: string, params = {}) =>
+  frappeRequest({ url: method, method: 'GET', params: Object.fromEntries(Object.entries(params).filter(([, v]) => v != null)) })
 
 export const state = reactive({
   ready: false,
@@ -27,6 +28,9 @@ export const state = reactive({
   emojis: [] as string[],
   threads: [] as any[],
   threadsLoaded: false,
+  cursor: null as string | null,
+  feed: { filter: undefined as string | undefined, tag: undefined as string | undefined },
+  counts: { total: 0, tags: {} as Record<string, number>, unread: 0, ack: 0 },
   activity: null as { thread: string } | null,
 })
 
@@ -116,12 +120,18 @@ export async function loadBoot() {
   }
 }
 
-export async function loadThreads() {
+export async function loadThreads(more = false) {
   try {
-    state.threads = (await get('samvaad.api.get_threads')) as any[]
+    const page: any = await get('samvaad.api.get_threads', { ...state.feed, cursor: more ? state.cursor : null })
+    state.threads = more ? [...state.threads, ...page.threads] : page.threads
+    state.cursor = page.cursor
   } finally {
     state.threadsLoaded = true
   }
+}
+
+export async function loadCounts() {
+  state.counts = (await get('samvaad.api.get_counts', { filter: state.feed.filter })) as any
 }
 
 // The socket namespace must be the site name.
@@ -135,17 +145,23 @@ export function listenForActivity() {
     timer = setTimeout(() => {
       state.activity = payload
       loadThreads()
+      loadCounts()
     }, 300)
   })
 }
 
 export const fetchThread = (id: string) => get('samvaad.api.get_thread', { name: id })
+export const fetchOlderReplies = (id: string, before: string) => get('samvaad.api.get_replies', { thread: id, before })
 
 export async function markRead(t) {
   await call('samvaad.api.mark_read', { name: t.id })
+  if (t.unread) loadCounts()
   const row = feedRow(t.id)
-  if (row) row.unread = false
-  if (t.authorId !== state.me.id && !t.seenBy.includes(state.me.id)) t.seenBy.push(state.me.id)
+  for (const x of [t, row]) if (x) x.unread = false
+  if (t.authorId !== state.me.id && !t.seenBy.includes(state.me.id)) {
+    t.seenBy.push(state.me.id)
+    if (row) row.seenCount += 1
+  }
 }
 
 export async function createThread({ title, body, geo, tags, policy, ackRequired }) {
@@ -160,18 +176,19 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
   })
   for (const t of res.tags) if (!tagById(t.name)) state.tags.push(shapeTag(t))
   loadThreads()
+  loadCounts()
   return res.name
 }
 
 export async function addReply(t, body: string) {
   const reply: any = await call('samvaad.api.add_reply', { thread: t.id, content: body })
   t.replies.push(reply)
-  const row = feedRow(t.id)
-  if (row) Object.assign(row, { replyCount: row.replyCount + 1, lastActivity: reply.at, unread: false })
+  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
 
 export async function acknowledge(t) {
   await call('samvaad.api.acknowledge', { thread: t.id })
+  loadCounts()
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
 
