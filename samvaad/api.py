@@ -431,6 +431,5 @@ def save_member(
 		else frappe.get_doc({"doctype": "Samvaad Member", "user": email})
 	)
 	member.update({"designation": designation, "place": place or None, "can_post": cint(can_post)})
-	member.full_name = user.full_name
 	member.save(ignore_permissions=True)
 	return get_member(email)

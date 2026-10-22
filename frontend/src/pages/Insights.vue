@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Button, LoadingIndicator, PageHeader, TabButtons, Tooltip, toast } from 'frappe-ui'
+import { Button, LoadingIndicator, PageHeader, TabButtons, Tooltip, toast, useCall } from 'frappe-ui'
 import { AreaChart, BarChart } from 'frappe-ui/charts'
-import { get, useMe, tagById, colorOf, errorText, placeById } from '../lib/store'
+import { useMe, tagById, colorOf, errorText, placeById } from '../lib/store'
 
 const me = useMe()
 const RANGES = [
@@ -12,19 +12,14 @@ const RANGES = [
   { label: '90 days', value: '90d' },
 ]
 const range = ref('30d')
-const data = ref<any>(null)
-watch(
-  range,
-  async (period) => {
-    if (!me.value.admin) return
-    try {
-      data.value = await get('samvaad.insights.get_insights', { period })
-    } catch (e) {
-      toast.error(errorText(e, 'Could not load insights'))
-    }
-  },
-  { immediate: true },
-)
+const insights = useCall<any>({
+  url: '/api/v2/method/samvaad.insights.get_insights',
+  params: () => ({ period: range.value }),
+  immediate: me.value.admin,
+  refetch: true,
+  onError: (e) => toast.error(errorText(e, 'Could not load insights')),
+})
+const data = computed(() => insights.data)
 
 const TILES = [
   ['JK', 'Jammu & Kashmir', 3, 0],
