@@ -223,6 +223,11 @@ def check_content_length(content: str | None):
 		)
 
 
+def check_only_author_edits(doc, *fields):
+	if not doc.is_new() and doc.owner != frappe.session.user and any(doc.has_value_changed(f) for f in fields):
+		frappe.throw(_("Only the author can edit this message"), frappe.PermissionError)
+
+
 def get_visible_thread(name: str, me):
 	threads = load_threads({"name": name})
 	if not threads:
@@ -540,19 +545,12 @@ def toggle_reaction(doctype: Literal["Samvaad Thread", "Samvaad Reply"], name: s
 		frappe.get_doc({"doctype": "Samvaad Reaction", **key}).insert(ignore_permissions=True)
 
 
-def get_own_message(doctype: str, name: str):
-	me = get_me()
-	doc = frappe.get_doc(doctype, name)
-	if doc.owner != me.user and not me.is_admin:
-		frappe.throw(_("Only the author or an admin can change this"), frappe.PermissionError)
-	return doc
-
-
 @frappe.whitelist(methods=["POST"])
 def update_message(
 	doctype: Literal["Samvaad Thread", "Samvaad Reply"], name: str, content: str, title: str | None = None
 ) -> dict:
-	doc = get_own_message(doctype, name)
+	get_me()
+	doc = frappe.get_doc(doctype, name)
 	doc.content = content
 	if doctype == "Samvaad Thread" and title is not None:
 		doc.title = title.strip()
@@ -562,7 +560,8 @@ def update_message(
 
 @frappe.whitelist(methods=["POST"])
 def delete_message(doctype: Literal["Samvaad Thread", "Samvaad Reply"], name: str):
-	get_own_message(doctype, name)
+	if frappe.db.get_value(doctype, name, "owner") != frappe.session.user and not get_me().is_admin:
+		frappe.throw(_("Only the author or an admin can delete this message"), frappe.PermissionError)
 	frappe.delete_doc(doctype, name, ignore_permissions=True)
 
 

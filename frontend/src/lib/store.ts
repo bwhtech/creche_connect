@@ -219,7 +219,8 @@ export async function addReply(t, body: string) {
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
 
-export const canManage = (authorId: string) => authorId === state.me.id || state.me.admin
+export const isAuthor = (authorId: string) => authorId === state.me.id
+export const canDelete = (authorId: string) => isAuthor(authorId) || state.me.admin
 
 export async function updateMessage(target, doctype: 'Samvaad Thread' | 'Samvaad Reply', body: string, title?: string) {
   const res: any = await post('samvaad.api.update_message', { doctype, name: target.id, content: body, title })

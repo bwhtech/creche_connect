@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from samvaad.api import check_content_length, notify_audience
+from samvaad.api import check_content_length, check_only_author_edits, notify_audience
 
 
 class SamvaadReply(Document):
@@ -27,6 +27,7 @@ class SamvaadReply(Document):
 
 	def validate(self):
 		check_content_length(self.content)
+		check_only_author_edits(self, "content")
 		if not self.is_new() and self.has_value_changed("content"):
 			self.edited_at = now_datetime()
 

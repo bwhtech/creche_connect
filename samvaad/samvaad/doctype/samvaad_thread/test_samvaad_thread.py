@@ -229,7 +229,7 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		self.assertRaises(frappe.DoesNotExistError, api.get_thread, name)
 		self.assertRaises(frappe.DoesNotExistError, api.add_reply, name, "<p>Hi</p>")
 
-	def test_author_and_admin_can_edit_others_cannot(self):
+	def test_only_the_author_can_edit(self):
 		name = self.post(self.lead, [self.state])
 		frappe.set_user(self.volunteer)
 		reply = api.add_reply(name, "<p>hi</p>")["id"]
@@ -238,10 +238,14 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		frappe.set_user(self.lead)
 		self.assertRaises(frappe.PermissionError, api.update_message, "Samvaad Reply", reply, "<p>x</p>")
 		self.assertEqual(api.update_message("Samvaad Thread", name, "<p>new</p>", " New title ")["title"], "New title")
-		frappe.set_user("Administrator")
-		api.update_message("Samvaad Reply", reply, "<p>by admin</p>")
-		self.assertEqual(frappe.db.get_value("Samvaad Reply", reply, "content"), "<p>by admin</p>")
+		frappe.set_user(self.lead)
 		self.assertRaises(frappe.ValidationError, api.update_message, "Samvaad Thread", name, "<p>x</p>", " ")
+		frappe.set_user("Administrator")
+		self.assertRaises(frappe.PermissionError, api.update_message, "Samvaad Reply", reply, "<p>by admin</p>")
+		desk = frappe.get_doc("Samvaad Thread", name)
+		self.assertRaises(frappe.PermissionError, desk.update({"content": "<p>by admin</p>"}).save)
+		frappe.get_doc("Samvaad Thread", name).update({"reply_policy": "posters"}).save()
+		self.assertEqual(frappe.db.get_value("Samvaad Reply", reply, "content"), "<p>edited</p>")
 
 	def test_edits_are_capped_like_new_messages(self):
 		name = self.post(self.lead, [self.state])

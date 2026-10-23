@@ -3,17 +3,17 @@ import { computed, ref } from 'vue'
 import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
-import { canManage, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
+import { canDelete, isAuthor, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
 
 const props = defineProps<{ message: any; compact?: boolean }>()
 const emit = defineEmits<{ delete: [] }>()
 const author = computed(() => userById(props.message.authorId))
 const draft = ref<string | null>(null)
 const saving = ref(false)
-const menu = [
-  { label: 'Edit', icon: 'lucide-pencil', onClick: () => (draft.value = props.message.body) },
+const menu = computed(() => [
+  isAuthor(props.message.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (draft.value = props.message.body) },
   { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('delete') },
-]
+].filter(Boolean))
 async function save() {
   saving.value = true
   try {
@@ -68,7 +68,7 @@ async function save() {
       </div>
     </div>
     <Dropdown
-      v-if="canManage(message.authorId) && draft === null"
+      v-if="canDelete(message.authorId) && draft === null"
       :options="menu"
       align="end"
       :button="{ icon: 'lucide-ellipsis', variant: 'ghost', size: 'sm', 'aria-label': 'Reply actions' }"

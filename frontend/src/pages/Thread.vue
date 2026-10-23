@@ -26,7 +26,8 @@ import {
   when,
   errorText,
   colorOf,
-  canManage,
+  canDelete,
+  isAuthor,
   updateMessage,
   deleteThread,
   deleteReply,
@@ -125,10 +126,10 @@ async function loadOlder() {
 const router = useRouter()
 const editing = ref<{ title: string; body: string } | null>(null)
 const saving = ref(false)
-const threadMenu = [
-  { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
+const threadMenu = computed(() => [
+  isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
   { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete() },
-]
+].filter(Boolean))
 async function saveEdit() {
   saving.value = true
   try {
@@ -197,7 +198,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 <span class="text-sm text-ink-gray-5">(edited)</span>
               </Tooltip>
               <Dropdown
-                v-if="canManage(thread.authorId) && !editing"
+                v-if="canDelete(thread.authorId) && !editing"
                 class="ml-auto"
                 align="end"
                 :options="threadMenu"

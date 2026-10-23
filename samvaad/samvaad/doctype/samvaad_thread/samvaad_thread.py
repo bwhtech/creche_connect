@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime
 from frappe.query_builder import DocType
 
-from samvaad.api import check_content_length, notify_audience
+from samvaad.api import check_content_length, check_only_author_edits, notify_audience
 
 
 class SamvaadThread(Document):
@@ -41,6 +41,7 @@ class SamvaadThread(Document):
 
 	def validate(self):
 		check_content_length(self.content)
+		check_only_author_edits(self, "content", "title")
 		if not self.is_new() and (self.has_value_changed("content") or self.has_value_changed("title")):
 			self.edited_at = now_datetime()
 
