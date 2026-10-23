@@ -31,17 +31,15 @@ class SamvaadReply(Document):
 		self.update_thread_stats(exclude=self.name)
 
 	def update_thread_stats(self, exclude=None):
-		filters = {"thread": self.thread, "name": ["!=", exclude or 0]}
-		last = frappe.get_all(
-			"Samvaad Reply", filters=filters, pluck="creation", order_by="creation desc", limit=1
-		)
-		frappe.db.set_value(
-			"Samvaad Thread",
-			self.thread,
-			{
-				"last_activity": last[0]
-				if last
-				else frappe.db.get_value("Samvaad Thread", self.thread, "creation"),
-				"reply_count": frappe.db.count("Samvaad Reply", filters),
-			},
+		frappe.db.sql(
+			"""
+			update `tabSamvaad Thread` t
+			join (
+				select count(*) as total, max(creation) as latest from `tabSamvaad Reply`
+				where thread = %(thread)s and name != %(exclude)s
+			) r
+			set t.reply_count = r.total, t.last_activity = coalesce(r.latest, t.creation)
+			where t.name = %(thread)s
+			""",
+			{"thread": self.thread, "exclude": exclude or 0},
 		)

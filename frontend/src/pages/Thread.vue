@@ -78,12 +78,16 @@ async function send() {
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send()
 }
+const acking = ref(false)
 async function ack() {
+  acking.value = true
   try {
     await acknowledge(thread.value)
     toast.success('Acknowledged')
   } catch (e) {
     toast.error(errorText(e, 'Could not acknowledge'))
+  } finally {
+    acking.value = false
   }
 }
 
@@ -144,7 +148,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <p class="flex-1 text-p-sm text-ink-gray-8">
                 {{ author.name.split(' ')[0] }} asked everyone in the audience to acknowledge this thread.
               </p>
-              <Button variant="solid" theme="gray" label="Acknowledge" @click="ack" />
+              <Button variant="solid" theme="gray" label="Acknowledge" :loading="acking" @click="ack" />
             </div>
 
             <div class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />

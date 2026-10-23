@@ -13,6 +13,17 @@ export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback
 
+const BUSY = ['QueryDeadlockError', 'QueryTimeoutError']
+async function post(method: string, params = {}, tries = 3) {
+  try {
+    return await call(method, params)
+  } catch (e) {
+    if (tries <= 1 || !BUSY.includes(e?.exc_type)) throw e
+    await new Promise((r) => setTimeout(r, 150 + Math.random() * 350))
+    return post(method, params, tries - 1)
+  }
+}
+
 export const get = (method: string, params = {}) =>
   frappeRequest({ url: method, method: 'GET', params: Object.fromEntries(Object.entries(params).filter(([, v]) => v != null)) })
 
@@ -176,7 +187,7 @@ export const fetchThread = latest((id: string) => get('samvaad.api.get_thread', 
 export const fetchOlderReplies = (id: string, before: string) => get('samvaad.api.get_replies', { thread: id, before })
 
 export async function markRead(t) {
-  await call('samvaad.api.mark_read', { name: t.id })
+  await post('samvaad.api.mark_read', { name: t.id })
   if (t.unread) loadCounts()
   const row = feedRow(t.id)
   for (const x of [t, row]) if (x) x.unread = false
@@ -187,7 +198,7 @@ export async function markRead(t) {
 }
 
 export async function createThread({ title, body, geo, tags, policy, ackRequired }) {
-  const res: any = await call('samvaad.api.create_thread', {
+  const res: any = await post('samvaad.api.create_thread', {
     title,
     content: body,
     places: geo.places,
@@ -203,13 +214,13 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
 }
 
 export async function addReply(t, body: string) {
-  const reply: any = await call('samvaad.api.add_reply', { thread: t.id, content: body })
+  const reply: any = await post('samvaad.api.add_reply', { thread: t.id, content: body })
   t.replies.push(reply)
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
 
 export async function acknowledge(t) {
-  await call('samvaad.api.acknowledge', { thread: t.id })
+  await post('samvaad.api.acknowledge', { thread: t.id })
   loadCounts()
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
@@ -222,7 +233,7 @@ export async function toggleReaction(target, emoji: string, doctype: 'Samvaad Th
   }
   flip()
   try {
-    await call('samvaad.api.toggle_reaction', { doctype, name: target.id, emoji })
+    await post('samvaad.api.toggle_reaction', { doctype, name: target.id, emoji })
   } catch (e) {
     flip()
     throw e
@@ -233,7 +244,7 @@ export const placeFrom = (s: string, district: string, block: string) => block |
 
 export async function saveUser(form) {
   const user = shapeUser(
-    await call('samvaad.api.save_member', {
+    await post('samvaad.api.save_member', {
       email: form.email.trim(),
       full_name: form.name.trim(),
       designation: form.designation,
@@ -256,7 +267,7 @@ export const RESOURCE_KINDS = {
 }
 
 export async function addResource({ title, kind, url, description }) {
-  const doc: any = await call('frappe.client.insert', {
+  const doc: any = await post('frappe.client.insert', {
     doc: { doctype: 'Samvaad Resource', title, kind, url, description, pinned: 1 },
   })
   state.resources.push({ ...doc, id: doc.name, pinned: true })
@@ -264,5 +275,5 @@ export async function addResource({ title, kind, url, description }) {
 
 export async function setPinned(r, pinned: boolean) {
   r.pinned = pinned
-  await call('frappe.client.set_value', { doctype: 'Samvaad Resource', name: r.id, fieldname: 'pinned', value: pinned ? 1 : 0 })
+  await post('frappe.client.set_value', { doctype: 'Samvaad Resource', name: r.id, fieldname: 'pinned', value: pinned ? 1 : 0 })
 }

@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.query_builder import DocType
 
 from samvaad.api import notify_audience
 
@@ -38,6 +39,21 @@ class SamvaadThread(Document):
 
 	def after_insert(self):
 		notify_audience(self.name)
+
+	def on_trash(self):
+		Reaction, Reply = DocType("Samvaad Reaction"), DocType("Samvaad Reply")
+		replies = frappe.qb.from_(Reply).select(Reply.name).where(Reply.thread == self.name)
+		(
+			frappe.qb.from_(Reaction)
+			.delete()
+			.where(
+				((Reaction.reference_doctype == "Samvaad Thread") & (Reaction.reference_name == str(self.name)))
+				| ((Reaction.reference_doctype == "Samvaad Reply") & Reaction.reference_name.isin(replies))
+			)
+			.run()
+		)
+		for doctype in ("Samvaad Reply", "Samvaad Thread Visit", "Samvaad Acknowledgement"):
+			frappe.db.delete(doctype, {"thread": self.name})
 
 
 def on_doctype_update():

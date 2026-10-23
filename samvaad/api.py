@@ -85,6 +85,10 @@ def can_reply(me, thread) -> bool:
 	return thread.reply_policy == "posters" and bool(me.can_post)
 
 
+def can_acknowledge(me, thread) -> bool:
+	return bool(thread.ack_required) and thread.owner != me.user and matches(me, thread)
+
+
 def group_by(rows, key, value):
 	out = {}
 	for row in rows:
@@ -171,12 +175,7 @@ def serialize(threads, me) -> list:
 		return not last or t.last_activity > last
 
 	def needs_ack(t):
-		return (
-			bool(t.ack_required)
-			and t.owner != me.user
-			and me.user not in acks.get(t.name, [])
-			and matches(me, t)
-		)
+		return can_acknowledge(me, t) and me.user not in acks.get(t.name, [])
 
 	return [
 		{
@@ -358,7 +357,9 @@ def get_threads(
 		.limit(size + 1)
 	)
 	if cursor:
-		at, name = cursor.rsplit("|", 1)
+		at, _sep, name = cursor.rpartition("|")
+		if not at:
+			frappe.throw(_("Invalid cursor"))
 		query = query.where(
 			(Thread.last_activity < at) | ((Thread.last_activity == at) & (Thread.name < cint(name)))
 		)
@@ -499,7 +500,7 @@ def add_reply(thread: str, content: str) -> dict:
 def acknowledge(thread: str):
 	me = get_me()
 	doc = get_visible_thread(thread, me)
-	if not doc.ack_required or not matches(me, doc):
+	if not can_acknowledge(me, doc):
 		frappe.throw(_("This thread doesn't ask you to acknowledge it"))
 	frappe.get_doc({"doctype": "Samvaad Acknowledgement", "thread": thread, "user": me.user}).insert(
 		ignore_permissions=True, ignore_if_duplicate=True

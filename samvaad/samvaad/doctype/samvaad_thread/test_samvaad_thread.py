@@ -191,3 +191,24 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		self.assertFalse(older["hasOlder"])
 		frappe.set_user(self.outsider)
 		self.assertRaises(frappe.PermissionError, api.get_replies, name, int(ids[3]))
+
+	def test_deleting_a_thread_removes_its_activity(self):
+		name = self.post(self.lead, [self.state], ack_required=True)
+		frappe.set_user(self.volunteer)
+		reply = api.add_reply(name, "<p>Hi</p>")
+		api.acknowledge(name)
+		api.toggle_reaction("Samvaad Thread", name, api.EMOJIS[0])
+		api.toggle_reaction("Samvaad Reply", reply["id"], api.EMOJIS[0])
+		frappe.set_user("Administrator")
+		frappe.delete_doc("Samvaad Thread", name)
+		for doctype in ("Samvaad Reply", "Samvaad Thread Visit", "Samvaad Acknowledgement"):
+			self.assertFalse(frappe.db.exists(doctype, {"thread": name}))
+		self.assertFalse(frappe.db.exists("Samvaad Reaction", {"reference_name": ["in", [name, reply["id"]]]}))
+
+	def test_author_cannot_acknowledge_own_thread(self):
+		name = self.post(self.lead, [self.state], ack_required=True)
+		self.assertRaises(frappe.ValidationError, api.acknowledge, name)
+
+	def test_malformed_cursor_is_rejected(self):
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.ValidationError, api.get_threads, cursor="garbage")
