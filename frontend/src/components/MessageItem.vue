@@ -1,11 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { Avatar, Tooltip } from 'frappe-ui'
+import { computed, ref } from 'vue'
+import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
+import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
-import { userById, when } from '../lib/store'
+import { canManage, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
 
 const props = defineProps<{ message: any; compact?: boolean }>()
+const emit = defineEmits<{ delete: [] }>()
 const author = computed(() => userById(props.message.authorId))
+const draft = ref<string | null>(null)
+const saving = ref(false)
+const menu = [
+  { label: 'Edit', icon: 'lucide-pencil', onClick: () => (draft.value = props.message.body) },
+  { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('delete') },
+]
+async function save() {
+  saving.value = true
+  try {
+    await updateMessage(props.message, 'Samvaad Reply', draft.value!)
+    draft.value = null
+  } catch (e) {
+    toast.error(errorText(e, 'Could not save your changes'))
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
@@ -24,7 +43,18 @@ const author = computed(() => userById(props.message.authorId))
           <span class="ml-auto shrink-0 text-xs text-ink-gray-5">{{ when(message.at).fromNow() }}</span>
         </Tooltip>
       </div>
-      <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="message.body" />
+      <div v-if="draft !== null" class="mt-1.5">
+        <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
+          <Editor v-model="draft" :extensions="[RichTextKit]">
+            <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
+          </Editor>
+        </div>
+        <div class="mt-2 flex justify-end gap-2">
+          <Button label="Cancel" @click="draft = null" />
+          <Button variant="solid" theme="gray" label="Save" :disabled="!excerpt(draft)" :loading="saving" @click="save" />
+        </div>
+      </div>
+      <div v-else class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="message.body" />
       <div
         class="mt-1.5"
         :class="Object.keys(message.reactions).length ? '' : 'h-0 overflow-hidden group-hover:h-auto group-hover:overflow-visible focus-within:h-auto'"
@@ -32,5 +62,12 @@ const author = computed(() => userById(props.message.authorId))
         <Reactions :target="message" doctype="Samvaad Reply" />
       </div>
     </div>
+    <Dropdown
+      v-if="canManage(message.authorId) && draft === null"
+      :options="menu"
+      align="end"
+      :button="{ icon: 'lucide-ellipsis', variant: 'ghost', size: 'sm', 'aria-label': 'Reply actions' }"
+      class="shrink-0 self-start"
+    />
   </div>
 </template>

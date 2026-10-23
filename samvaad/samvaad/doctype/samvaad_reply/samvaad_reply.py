@@ -28,10 +28,14 @@ class SamvaadReply(Document):
 
 	def after_insert(self):
 		self.update_thread_stats()
+
+	def on_update(self):
 		notify_audience(self.thread)
 
 	def on_trash(self):
 		self.update_thread_stats(exclude=self.name)
+		frappe.db.delete("Samvaad Reaction", {"reference_doctype": self.doctype, "reference_name": str(self.name)})
+		notify_audience(self.thread)
 
 	def update_thread_stats(self, exclude=None):
 		frappe.db.sql(

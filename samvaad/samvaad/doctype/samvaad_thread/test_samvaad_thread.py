@@ -228,3 +228,38 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		frappe.set_user(self.volunteer)
 		self.assertRaises(frappe.DoesNotExistError, api.get_thread, name)
 		self.assertRaises(frappe.DoesNotExistError, api.add_reply, name, "<p>Hi</p>")
+
+	def test_author_and_admin_can_edit_others_cannot(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		reply = api.add_reply(name, "<p>hi</p>")["id"]
+		self.assertRaises(frappe.PermissionError, api.update_message, "Samvaad Thread", name, "<p>x</p>")
+		api.update_message("Samvaad Reply", reply, "<p>edited</p>")
+		frappe.set_user(self.lead)
+		self.assertRaises(frappe.PermissionError, api.update_message, "Samvaad Reply", reply, "<p>x</p>")
+		self.assertEqual(api.update_message("Samvaad Thread", name, "<p>new</p>", " New title ")["title"], "New title")
+		frappe.set_user("Administrator")
+		api.update_message("Samvaad Reply", reply, "<p>by admin</p>")
+		self.assertEqual(frappe.db.get_value("Samvaad Reply", reply, "content"), "<p>by admin</p>")
+		self.assertRaises(frappe.ValidationError, api.update_message, "Samvaad Thread", name, "<p>x</p>", " ")
+
+	def test_edits_are_capped_like_new_messages(self):
+		name = self.post(self.lead, [self.state])
+		too_long = "<p>" + "a" * api.MAX_CONTENT_LENGTH + "</p>"
+		self.assertRaises(frappe.ValidationError, api.update_message, "Samvaad Thread", name, too_long)
+
+	def test_author_and_admin_can_delete_others_cannot(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		reply = api.add_reply(name, "<p>hi</p>")["id"]
+		api.toggle_reaction("Samvaad Reply", reply, api.EMOJIS[0])
+		self.assertRaises(frappe.PermissionError, api.delete_message, "Samvaad Thread", name)
+		frappe.set_user(self.coordinator)
+		self.assertRaises(frappe.PermissionError, api.delete_message, "Samvaad Reply", reply)
+		frappe.set_user(self.volunteer)
+		api.delete_message("Samvaad Reply", reply)
+		self.assertFalse(frappe.db.exists("Samvaad Reaction", {"reference_name": reply}))
+		self.assertEqual(frappe.db.get_value("Samvaad Thread", name, "reply_count"), 0)
+		frappe.set_user("Administrator")
+		api.delete_message("Samvaad Thread", name)
+		self.assertFalse(frappe.db.exists("Samvaad Thread", name))

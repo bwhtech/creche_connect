@@ -219,6 +219,25 @@ export async function addReply(t, body: string) {
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
 
+export const canManage = (authorId: string) => authorId === state.me.id || state.me.admin
+
+export async function updateMessage(target, doctype: 'Samvaad Thread' | 'Samvaad Reply', body: string, title?: string) {
+  const res: any = await post('samvaad.api.update_message', { doctype, name: target.id, content: body, title })
+  target.body = res.body
+  if (doctype === 'Samvaad Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
+}
+
+export async function deleteReply(t, reply) {
+  await post('samvaad.api.delete_message', { doctype: 'Samvaad Reply', name: reply.id })
+  t.replies = t.replies.filter((r) => r.id !== reply.id)
+  for (const x of [t, feedRow(t.id)]) if (x) x.replyCount -= 1
+}
+
+export async function deleteThread(t) {
+  await post('samvaad.api.delete_message', { doctype: 'Samvaad Thread', name: t.id })
+  state.threads = state.threads.filter((x) => x.id !== t.id)
+}
+
 export async function acknowledge(t) {
   await post('samvaad.api.acknowledge', { thread: t.id })
   loadCounts()

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
-import { Avatar, Badge, Breadcrumbs, Button, LoadingIndicator, PageHeader, Progress, Tooltip, toast } from 'frappe-ui'
+import { Avatar, Badge, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, Progress, TextInput, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
@@ -25,6 +26,10 @@ import {
   when,
   errorText,
   colorOf,
+  canManage,
+  updateMessage,
+  deleteThread,
+  deleteReply,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -116,6 +121,45 @@ async function loadOlder() {
     loadingOlder.value = false
   }
 }
+
+const router = useRouter()
+const editing = ref<{ title: string; body: string } | null>(null)
+const saving = ref(false)
+const threadMenu = [
+  { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
+  { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete() },
+]
+async function saveEdit() {
+  saving.value = true
+  try {
+    await updateMessage(thread.value, 'Samvaad Thread', editing.value!.body, editing.value!.title)
+    editing.value = null
+  } catch (e) {
+    toast.error(errorText(e, 'Could not save your changes'))
+  } finally {
+    saving.value = false
+  }
+}
+
+const deleting = ref({ open: false, reply: null as any })
+const confirmDelete = (reply = null) => (deleting.value = { open: true, reply })
+const deleteActions = [
+  { label: 'Cancel', onClick: ({ close }) => close() },
+  { label: 'Delete', variant: 'solid', theme: 'red', onClick: remove },
+]
+async function remove({ close }) {
+  const { reply } = deleting.value
+  try {
+    if (reply) await deleteReply(thread.value, reply)
+    else await deleteThread(thread.value)
+    close()
+    toast.success(reply ? 'Reply deleted' : 'Thread deleted')
+    if (!reply) router.push('/')
+  } catch (e) {
+    toast.error(errorText(e, 'Could not delete'))
+  }
+}
+
 const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId === thread.value.replies[i].authorId
 </script>
 
@@ -143,11 +187,19 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
         <div ref="scroller" class="min-h-0 flex-1 overflow-y-auto">
           <div class="mx-auto max-w-[770px] px-3 pt-10 pb-12 sm:px-6">
             <AudienceChips :geo="thread.geo" />
-            <h1 class="mt-4 text-3xl font-semibold text-ink-gray-9">{{ thread.title }}</h1>
+            <TextInput v-if="editing" v-model="editing.title" class="mt-4" size="lg" aria-label="Topic" />
+            <h1 v-else class="mt-4 text-3xl font-semibold text-ink-gray-9">{{ thread.title }}</h1>
             <div class="mt-4 flex items-center gap-2.5">
               <Avatar :label="author.name" size="md" />
               <span class="text-sm text-ink-gray-8">{{ author.name }}</span>
               <span class="text-sm text-ink-gray-5">{{ author.title }} · {{ when(thread.createdAt).fromNow() }}</span>
+              <Dropdown
+                v-if="canManage(thread.authorId) && !editing"
+                class="ml-auto"
+                align="end"
+                :options="threadMenu"
+                :button="{ icon: 'lucide-ellipsis', variant: 'ghost', 'aria-label': 'Thread actions' }"
+              />
             </div>
 
             <div v-if="thread.needsAck" class="mt-8 flex items-center gap-3 rounded-5 bg-surface-amber-2 px-4 py-3.5">
@@ -158,7 +210,18 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <Button variant="solid" theme="gray" label="Acknowledge" :loading="acking" @click="ack" />
             </div>
 
-            <div class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
+            <div v-if="editing" class="mt-8">
+              <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
+                <Editor v-model="editing.body" :extensions="[RichTextKit]">
+                  <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-md text-ink-gray-8" />
+                </Editor>
+              </div>
+              <div class="mt-2 flex justify-end gap-2">
+                <Button label="Cancel" @click="editing = null" />
+                <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || !excerpt(editing.body)" :loading="saving" @click="saveEdit" />
+              </div>
+            </div>
+            <div v-else class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
             <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
               <div><Reactions :target="thread" doctype="Samvaad Thread" /></div>
@@ -174,7 +237,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             </div>
             <div class="-mx-2 space-y-1 pt-3">
               <Button v-if="thread.hasOlder" class="mx-2 mb-2" variant="ghost" label="Load older replies" :loading="loadingOlder" @click="loadOlder" />
-              <MessageItem v-for="(m, i) in thread.replies" :key="m.id" :message="m" :compact="sameAuthor(i)" />
+              <MessageItem v-for="(m, i) in thread.replies" :key="m.id" :message="m" :compact="sameAuthor(i)" @delete="confirmDelete(m)" />
               <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
             </div>
           </div>
@@ -259,5 +322,14 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
         </div>
       </aside>
     </div>
+
+    <Dialog
+      v-model:open="deleting.open"
+      :title="deleting.reply ? 'Delete this reply?' : 'Delete this thread?'"
+      :message="deleting.reply ? 'The reply and its reactions will be removed.' : 'All replies, reactions and acknowledgements in it will be removed too.'"
+      icon="lucide-trash-2"
+      theme="red"
+      :actions="deleteActions"
+    />
   </div>
 </template>

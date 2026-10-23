@@ -533,6 +533,32 @@ def toggle_reaction(doctype: Literal["Samvaad Thread", "Samvaad Reply"], name: s
 		frappe.get_doc({"doctype": "Samvaad Reaction", **key}).insert(ignore_permissions=True)
 
 
+def get_own_message(doctype: str, name: str):
+	me = get_me()
+	doc = frappe.get_doc(doctype, name)
+	if doc.owner != me.user and not me.is_admin:
+		frappe.throw(_("Only the author or an admin can change this"), frappe.PermissionError)
+	return doc
+
+
+@frappe.whitelist(methods=["POST"])
+def update_message(
+	doctype: Literal["Samvaad Thread", "Samvaad Reply"], name: str, content: str, title: str | None = None
+) -> dict:
+	doc = get_own_message(doctype, name)
+	doc.content = content
+	if doctype == "Samvaad Thread" and title is not None:
+		doc.title = title.strip()
+	doc.save(ignore_permissions=True)
+	return {"title": doc.get("title"), "body": doc.content}
+
+
+@frappe.whitelist(methods=["POST"])
+def delete_message(doctype: Literal["Samvaad Thread", "Samvaad Reply"], name: str):
+	get_own_message(doctype, name)
+	frappe.delete_doc(doctype, name, ignore_permissions=True)
+
+
 @frappe.whitelist(methods=["POST"])
 def save_member(
 	email: str,

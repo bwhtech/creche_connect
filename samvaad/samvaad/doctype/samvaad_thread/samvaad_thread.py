@@ -40,7 +40,7 @@ class SamvaadThread(Document):
 	def validate(self):
 		check_content_length(self.content)
 
-	def after_insert(self):
+	def on_update(self):
 		notify_audience(self.name)
 
 	def on_trash(self):
