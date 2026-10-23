@@ -223,7 +223,7 @@ export const canManage = (authorId: string) => authorId === state.me.id || state
 
 export async function updateMessage(target, doctype: 'Samvaad Thread' | 'Samvaad Reply', body: string, title?: string) {
   const res: any = await post('samvaad.api.update_message', { doctype, name: target.id, content: body, title })
-  target.body = res.body
+  Object.assign(target, { body: res.body, editedAt: res.editedAt })
   if (doctype === 'Samvaad Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
 }
 

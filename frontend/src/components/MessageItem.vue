@@ -54,7 +54,12 @@ async function save() {
           <Button variant="solid" theme="gray" label="Save" :disabled="!excerpt(draft)" :loading="saving" @click="save" />
         </div>
       </div>
-      <div v-else class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="message.body" />
+      <template v-else>
+        <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="message.body" />
+        <Tooltip v-if="message.editedAt" :text="`Edited ${when(message.editedAt).format('DD MMM YYYY, h:mm A')}`">
+          <span class="text-xs text-ink-gray-5">(edited)</span>
+        </Tooltip>
+      </template>
       <div
         class="mt-1.5"
         :class="Object.keys(message.reactions).length ? '' : 'h-0 overflow-hidden group-hover:h-auto group-hover:overflow-visible focus-within:h-auto'"

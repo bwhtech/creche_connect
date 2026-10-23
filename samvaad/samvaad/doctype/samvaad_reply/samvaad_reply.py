@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import now_datetime
 
 from samvaad.api import check_content_length, notify_audience
 
@@ -17,6 +18,7 @@ class SamvaadReply(Document):
 		from frappe.types import DF
 
 		content: DF.TextEditor
+		edited_at: DF.Datetime | None
 		name: DF.Int | None
 		thread: DF.Link
 	# end: auto-generated types
@@ -25,6 +27,8 @@ class SamvaadReply(Document):
 
 	def validate(self):
 		check_content_length(self.content)
+		if not self.is_new() and self.has_value_changed("content"):
+			self.edited_at = now_datetime()
 
 	def after_insert(self):
 		self.update_thread_stats()

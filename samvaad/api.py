@@ -32,6 +32,7 @@ THREAD_FIELDS = [
 	"last_activity",
 	"reply_count",
 	"creation",
+	"edited_at",
 ]
 
 
@@ -192,6 +193,7 @@ def serialize(threads, me) -> list:
 			"seenCount": seen.get(t.name, 0),
 			"reactions": reactions.get(t.name, {}),
 			"createdAt": t.creation,
+			"editedAt": t.edited_at,
 			"lastActivity": t.last_activity,
 			"replyCount": cint(t.reply_count),
 			"unread": unread(t),
@@ -207,6 +209,7 @@ def serialize_reply(r, reactions=None) -> dict:
 		"id": str(r.name),
 		"authorId": r.owner,
 		"at": r.creation,
+		"editedAt": r.edited_at,
 		"body": r.content,
 		"reactions": reactions or {},
 	}
@@ -409,7 +412,7 @@ def load_replies(thread: str, before: int | None = None) -> dict:
 	replies = frappe.get_all(
 		"Samvaad Reply",
 		filters=filters,
-		fields=["name", "owner", "content", "creation"],
+		fields=["name", "owner", "content", "creation", "edited_at"],
 		order_by="name desc",
 		limit=REPLY_PAGE_SIZE + 1,
 	)
@@ -554,7 +557,7 @@ def update_message(
 	if doctype == "Samvaad Thread" and title is not None:
 		doc.title = title.strip()
 	doc.save(ignore_permissions=True)
-	return {"title": doc.get("title"), "body": doc.content}
+	return {"title": doc.get("title"), "body": doc.content, "editedAt": doc.edited_at}
 
 
 @frappe.whitelist(methods=["POST"])

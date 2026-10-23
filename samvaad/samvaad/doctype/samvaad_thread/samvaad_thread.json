@@ -19,7 +19,8 @@
   "tags",
   "activity_section",
   "last_activity",
-  "reply_count"
+  "reply_count",
+  "edited_at"
  ],
  "fields": [
   {
@@ -98,6 +99,13 @@
    "in_list_view": 1,
    "label": "Reply Count",
    "read_only": 1
+  },
+  {
+   "fieldname": "edited_at",
+   "fieldtype": "Datetime",
+   "label": "Edited At",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -137,6 +145,7 @@
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
  "show_title_field_in_link": 1,
+ "track_changes": 1,
  "sort_field": "last_activity",
  "sort_order": "DESC",
  "states": [],

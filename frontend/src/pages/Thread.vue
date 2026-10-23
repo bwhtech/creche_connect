@@ -193,6 +193,9 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <Avatar :label="author.name" size="md" />
               <span class="text-sm text-ink-gray-8">{{ author.name }}</span>
               <span class="text-sm text-ink-gray-5">{{ author.title }} · {{ when(thread.createdAt).fromNow() }}</span>
+              <Tooltip v-if="thread.editedAt" :text="`Edited ${when(thread.editedAt).format('DD MMM YYYY, h:mm A')}`">
+                <span class="text-sm text-ink-gray-5">(edited)</span>
+              </Tooltip>
               <Dropdown
                 v-if="canManage(thread.authorId) && !editing"
                 class="ml-auto"

@@ -9,7 +9,8 @@
  "engine": "InnoDB",
  "field_order": [
   "thread",
-  "content"
+  "content",
+  "edited_at"
  ],
  "fields": [
   {
@@ -27,6 +28,13 @@
    "fieldtype": "Text Editor",
    "label": "Content",
    "reqd": 1
+  },
+  {
+   "fieldname": "edited_at",
+   "fieldtype": "Datetime",
+   "label": "Edited At",
+   "no_copy": 1,
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
@@ -65,6 +73,7 @@
  ],
  "row_format": "Dynamic",
  "rows_threshold_for_grid_search": 20,
+ "track_changes": 1,
  "sort_field": "creation",
  "sort_order": "ASC",
  "states": []
