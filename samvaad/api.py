@@ -3,7 +3,7 @@ from typing import Literal
 import frappe
 from frappe import _
 from frappe.query_builder import DocType, Order
-from frappe.query_builder.functions import Count
+from frappe.query_builder.functions import Cast_, Count
 from frappe.utils import cint, get_fullname, now_datetime
 from frappe.utils.caching import request_cache
 
@@ -310,12 +310,20 @@ def get_boot() -> dict:
 	}
 
 
+def thread_ids(table, column="parent"):
+	return frappe.qb.from_(table).select(Cast_(table[column], "unsigned"))
+
+
+def thread_key():
+	return Cast_(Thread.name, "varchar")
+
+
 def in_audience(me):
-	designated = frappe.qb.from_(ThreadDesignation).select(ThreadDesignation.parent)
+	designated = thread_ids(ThreadDesignation)
 	designation_ok = Thread.name.notin(designated)
 	if me.designation:
 		designation_ok |= Thread.name.isin(designated.where(ThreadDesignation.designation == me.designation))
-	places = frappe.qb.from_(ThreadPlace).select(ThreadPlace.parent)
+	places = thread_ids(ThreadPlace)
 	return (
 		Thread.name.isin(places.where(ThreadPlace.place.isin(ancestors(me.place) or [""]))) & designation_ok
 	)
@@ -330,19 +338,15 @@ def feed_query(me, filter: str | None = None, tag: str | None = None):
 	if filter == "unread":
 		query = (
 			query.left_join(Visit)
-			.on((Visit.thread == Thread.name) & (Visit.user == me.user))
+			.on((Visit.thread == thread_key()) & (Visit.user == me.user))
 			.where(Visit.last_visit.isnull() | (Thread.last_activity > Visit.last_visit))
 			.where((Thread.owner != me.user) | (Thread.reply_count > 0))
 		)
 	elif filter == "ack":
-		acked = (
-			frappe.qb.from_(Acknowledgement)
-			.select(Acknowledgement.thread)
-			.where(Acknowledgement.user == me.user)
-		)
+		acked = thread_ids(Acknowledgement, "thread").where(Acknowledgement.user == me.user)
 		query = query.where((Thread.ack_required == 1) & (Thread.owner != me.user) & Thread.name.notin(acked))
 	if tag:
-		tagged = frappe.qb.from_(ThreadTag).select(ThreadTag.parent).where(ThreadTag.tag == tag)
+		tagged = thread_ids(ThreadTag).where(ThreadTag.tag == tag)
 		query = query.where(Thread.name.isin(tagged))
 	return query
 
@@ -389,7 +393,7 @@ def get_counts(filter: Literal["unread", "ack", "mine"] | None = None) -> dict:
 	tags = (
 		feed_query(me, filter)
 		.join(ThreadTag)
-		.on(ThreadTag.parent == Thread.name)
+		.on(ThreadTag.parent == thread_key())
 		.select(ThreadTag.tag, Count("*"))
 		.groupby(ThreadTag.tag)
 		.run()
