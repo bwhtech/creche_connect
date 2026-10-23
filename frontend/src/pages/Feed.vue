@@ -27,7 +27,7 @@ const loadingMore = ref(false)
 async function more() {
   loadingMore.value = true
   try {
-    await loadThreads(true)
+    await loadThreads('more')
   } finally {
     loadingMore.value = false
   }

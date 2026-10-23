@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStorage } from '@vueuse/core'
 import { Breadcrumbs, Button, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
 import { Editor, EditorContent, EditorFixedMenu, RichTextKit, minimalToolbar } from 'frappe-ui/editor'
 import GeoPicker from '../components/GeoPicker.vue'
@@ -11,8 +12,7 @@ const me = useMe()
 const router = useRouter()
 const draft = reactive({ places: [] as string[], designations: [] as string[] })
 
-const title = ref('')
-const body = ref('')
+const text = useStorage(`samvaad:compose-draft:${me.value.id}`, { title: '', body: '' })
 const policy = ref('everyone')
 const ackRequired = ref(false)
 const picked = ref<string[]>([])
@@ -36,18 +36,19 @@ function addTag() {
 
 async function post() {
   if (!geo.value) return toast.error('Pick at least one place')
-  if (!title.value.trim()) return toast.error('Give the thread a topic')
+  if (!text.value.title.trim()) return toast.error('Give the thread a topic')
   const sentTo = reach.value
   posting.value = true
   try {
     const id = await createThread({
-      title: title.value.trim(),
-      body: body.value || '<p></p>',
+      title: text.value.title.trim(),
+      body: text.value.body || '<p></p>',
       geo: geo.value,
       tags: picked.value,
       policy: policy.value,
       ackRequired: ackRequired.value,
     })
+    text.value = { title: '', body: '' }
     toast.success(`Thread sent to ${sentTo} people`)
     router.push(`/threads/${id}`)
   } catch (e) {
@@ -92,11 +93,11 @@ async function post() {
 
           <section class="space-y-5">
             <h2 class="text-xl text-ink-gray-9">What's it about?</h2>
-            <FormControl v-model="title" label="Topic" required />
+            <FormControl v-model="text.title" label="Topic" required />
             <div>
               <div class="mb-1.5 text-xs text-ink-gray-6">Message</div>
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                <Editor v-model="body" :extensions="[RichTextKit]">
+                <Editor v-model="text.body" :extensions="[RichTextKit]">
                   <div class="border-b border-outline-gray-1 px-1 py-1">
                     <EditorFixedMenu :items="minimalToolbar" />
                   </div>

@@ -147,6 +147,7 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		seen = self.feed()
 		self.assertEqual(len(seen), len(set(seen)))
 		self.assertTrue(names <= set(seen))
+		self.assertEqual(len(api.get_threads(limit=len(seen))["threads"]), len(seen))
 
 	def test_filters_and_counts_match_the_feed(self):
 		read = self.post(self.lead, [self.state])

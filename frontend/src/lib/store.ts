@@ -120,18 +120,40 @@ export async function loadBoot() {
   }
 }
 
-export async function loadThreads(more = false) {
+const latest = <A extends any[], R>(fn: (...args: A) => Promise<R>) => {
+  let last = 0
+  return (...args: A): Promise<R | undefined> => {
+    const call = ++last
+    return fn(...args).then(
+      (r) => (call === last ? r : undefined),
+      (e) => {
+        if (call === last) throw e
+      },
+    )
+  }
+}
+
+const fetchFeed = latest((params) => get('samvaad.api.get_threads', params))
+export async function loadThreads(mode: 'reset' | 'more' | 'refresh' = 'reset') {
+  if (mode === 'reset') state.cursor = null
   try {
-    const page: any = await get('samvaad.api.get_threads', { ...state.feed, cursor: more ? state.cursor : null })
-    state.threads = more ? [...state.threads, ...page.threads] : page.threads
+    const page: any = await fetchFeed({
+      ...state.feed,
+      cursor: mode === 'more' ? state.cursor : null,
+      limit: mode === 'refresh' ? state.threads.length : null,
+    })
+    if (!page) return
+    state.threads = mode === 'more' ? [...state.threads, ...page.threads] : page.threads
     state.cursor = page.cursor
   } finally {
     state.threadsLoaded = true
   }
 }
 
+const fetchCounts = latest((filter?: string) => get('samvaad.api.get_counts', { filter }))
 export async function loadCounts() {
-  state.counts = (await get('samvaad.api.get_counts', { filter: state.feed.filter })) as any
+  const counts: any = await fetchCounts(state.feed.filter)
+  if (counts) state.counts = counts
 }
 
 // The socket namespace must be the site name.
@@ -144,13 +166,13 @@ export function listenForActivity() {
     clearTimeout(timer)
     timer = setTimeout(() => {
       state.activity = payload
-      loadThreads()
+      loadThreads('refresh')
       loadCounts()
     }, 300)
   })
 }
 
-export const fetchThread = (id: string) => get('samvaad.api.get_thread', { name: id })
+export const fetchThread = latest((id: string) => get('samvaad.api.get_thread', { name: id }))
 export const fetchOlderReplies = (id: string, before: string) => get('samvaad.api.get_replies', { thread: id, before })
 
 export async function markRead(t) {
@@ -175,7 +197,7 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
     ack_required: ackRequired,
   })
   for (const t of res.tags) if (!tagById(t.name)) state.tags.push(shapeTag(t))
-  loadThreads()
+  loadThreads('refresh')
   loadCounts()
   return res.name
 }

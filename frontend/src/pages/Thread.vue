@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
+import { useStorage } from '@vueuse/core'
 import { Avatar, Badge, Breadcrumbs, Button, LoadingIndicator, PageHeader, Progress, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
@@ -39,8 +40,10 @@ const seenPct = computed(() => (reach.value ? Math.min(100, Math.round((thread.v
 
 async function load() {
   try {
-    thread.value = await fetchThread(props.id)
-    markRead(thread.value)
+    const t = await fetchThread(props.id)
+    if (!t) return
+    thread.value = t
+    markRead(t)
   } catch {
     thread.value = null
   } finally {
@@ -53,16 +56,18 @@ watch(
   (a) => a?.thread === props.id && load(),
 )
 
-const reply = ref('')
+const drafts = useStorage<Record<string, string>>(`samvaad:reply-drafts:${me.value.id}`, {})
+const reply = computed({ get: () => drafts.value[props.id] ?? '', set: (v) => (drafts.value[props.id] = v) })
 const replyEmpty = computed(() => !excerpt(reply.value))
 const sending = ref(false)
 const scroller = ref<HTMLElement>()
 async function send() {
   if (replyEmpty.value || sending.value) return
   sending.value = true
+  const id = props.id
   try {
     await addReply(thread.value, reply.value)
-    reply.value = ''
+    delete drafts.value[id]
     nextTick(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight, behavior: 'smooth' }))
   } catch (e) {
     toast.error(errorText(e, 'Could not send your reply'))

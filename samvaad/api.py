@@ -15,6 +15,7 @@ Visit = DocType("Samvaad Thread Visit")
 Acknowledgement = DocType("Samvaad Acknowledgement")
 
 PAGE_SIZE = 30
+MAX_PAGE_SIZE = 300
 REPLY_PAGE_SIZE = 50
 ADMIN_ROLES = {"System Manager", "Samvaad Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
@@ -345,14 +346,16 @@ def get_threads(
 	filter: Literal["unread", "ack", "mine"] | None = None,
 	tag: str | None = None,
 	cursor: str | None = None,
+	limit: int = PAGE_SIZE,
 ) -> dict:
 	me = get_me()
+	size = min(max(cint(limit), PAGE_SIZE), MAX_PAGE_SIZE)
 	query = (
 		feed_query(me, filter, tag)
 		.select(Thread.name, Thread.last_activity)
 		.orderby(Thread.last_activity, order=Order.desc)
 		.orderby(Thread.name, order=Order.desc)
-		.limit(PAGE_SIZE + 1)
+		.limit(size + 1)
 	)
 	if cursor:
 		at, name = cursor.rsplit("|", 1)
@@ -360,11 +363,11 @@ def get_threads(
 			(Thread.last_activity < at) | ((Thread.last_activity == at) & (Thread.name < cint(name)))
 		)
 	rows = query.run()
-	page = rows[:PAGE_SIZE]
+	page = rows[:size]
 	threads = load_threads({"name": ["in", [r[0] for r in page]]}) if page else []
 	return {
 		"threads": serialize(threads, me),
-		"cursor": f"{page[-1][1]}|{page[-1][0]}" if len(rows) > PAGE_SIZE else None,
+		"cursor": f"{page[-1][1]}|{page[-1][0]}" if len(rows) > size else None,
 	}
 
 
