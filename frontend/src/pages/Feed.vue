@@ -15,13 +15,13 @@ const tag = computed(() => tagById(route.query.tag as string))
 
 watch(
   () => [filter.value, route.query.tag as string | undefined],
-  ([f, t]) => {
+  ([f, t], old) => {
     state.feed = { filter: f, tag: t }
     loadThreads().catch(() => {})
+    if (f !== old?.[0]) loadCounts().catch(() => {})
   },
   { immediate: true },
 )
-watch(filter, () => loadCounts().catch(() => {}), { immediate: true })
 
 const loadingMore = ref(false)
 async function more() {
