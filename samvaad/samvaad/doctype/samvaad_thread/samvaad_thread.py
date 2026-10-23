@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.query_builder import DocType
 
-from samvaad.api import notify_audience
+from samvaad.api import check_content_length, notify_audience
 
 
 class SamvaadThread(Document):
@@ -36,6 +36,9 @@ class SamvaadThread(Document):
 	# end: auto-generated types
 
 	_DOCTYPE_NAME = "Samvaad Thread"
+
+	def validate(self):
+		check_content_length(self.content)
 
 	def after_insert(self):
 		notify_audience(self.name)

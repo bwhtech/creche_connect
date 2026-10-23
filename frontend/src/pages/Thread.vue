@@ -38,14 +38,21 @@ const geoPlaces = computed(() => (thread.value?.geo?.places ?? []).map(placeById
 const viaGeo = computed(() => thread.value?.geo && matchesGeo(me.value, thread.value.geo))
 const seenPct = computed(() => (reach.value ? Math.min(100, Math.round((thread.value.seenBy.length / reach.value) * 100)) : 0))
 
+const removed = ref(false)
+const unavailable = computed(() =>
+  removed.value
+    ? { icon: 'lucide-trash-2', title: 'This thread was removed', text: "It was deleted, so it can't be opened." }
+    : { icon: 'lucide-lock', title: "You can't see this thread", text: "It was sent to a place or designation that doesn't include you." },
+)
 async function load() {
   try {
     const t = await fetchThread(props.id)
     if (!t) return
     thread.value = t
     markRead(t)
-  } catch {
+  } catch (e) {
     thread.value = null
+    removed.value = e?.exc_type === 'DoesNotExistError'
   } finally {
     loading.value = false
   }
@@ -124,10 +131,10 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
     <div v-else-if="!visible" class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
       <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-5">
-        <span class="lucide-lock size-6" aria-hidden="true" />
+        <span :class="unavailable.icon" class="size-6" aria-hidden="true" />
       </div>
-      <p class="text-base text-ink-gray-7">You can't see this thread</p>
-      <p class="max-w-sm text-p-sm text-ink-gray-5">It was sent to a place or designation that doesn't include you.</p>
+      <p class="text-base text-ink-gray-7">{{ unavailable.title }}</p>
+      <p class="max-w-sm text-p-sm text-ink-gray-5">{{ unavailable.text }}</p>
       <Button label="Back to feed" route="/" class="mt-2" />
     </div>
 

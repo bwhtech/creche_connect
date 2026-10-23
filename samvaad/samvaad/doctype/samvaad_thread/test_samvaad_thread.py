@@ -212,3 +212,19 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 	def test_malformed_cursor_is_rejected(self):
 		frappe.set_user(self.volunteer)
 		self.assertRaises(frappe.ValidationError, api.get_threads, cursor="garbage")
+
+	def test_overlong_messages_are_rejected(self):
+		name = self.post(self.lead, [self.state])
+		too_long = "<p>" + "a" * api.MAX_CONTENT_LENGTH + "</p>"
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.ValidationError, api.add_reply, name, too_long)
+		frappe.set_user(self.lead)
+		self.assertRaises(frappe.ValidationError, api.create_thread, "Long", too_long, [self.state])
+
+	def test_removed_thread_says_so(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user("Administrator")
+		frappe.delete_doc("Samvaad Thread", name)
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.DoesNotExistError, api.get_thread, name)
+		self.assertRaises(frappe.DoesNotExistError, api.add_reply, name, "<p>Hi</p>")

@@ -17,6 +17,7 @@ Acknowledgement = DocType("Samvaad Acknowledgement")
 PAGE_SIZE = 30
 MAX_PAGE_SIZE = 300
 REPLY_PAGE_SIZE = 50
+MAX_CONTENT_LENGTH = 50_000
 ADMIN_ROLES = {"System Manager", "Samvaad Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
 TAG_COLORS = ["blue", "green", "amber", "violet", "red"]
@@ -211,9 +212,19 @@ def serialize_reply(r, reactions=None) -> dict:
 	}
 
 
+def check_content_length(content: str | None):
+	if len(content or "") > MAX_CONTENT_LENGTH:
+		frappe.throw(
+			_("This message is too long. Shorten it, or add long documents under Resources and link to them."),
+			title=_("Message too long"),
+		)
+
+
 def get_visible_thread(name: str, me):
 	threads = load_threads({"name": name})
-	if not threads or not can_see(me, threads[0]):
+	if not threads:
+		frappe.throw(_("This thread was removed"), frappe.DoesNotExistError)
+	if not can_see(me, threads[0]):
 		frappe.throw(_("You can't see this thread"), frappe.PermissionError)
 	return threads[0]
 
