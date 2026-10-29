@@ -27,6 +27,6 @@ defineProps<{ rows: any[]; loading: boolean }>()
     </div>
     <p class="text-base text-ink-gray-7">Nothing here</p>
     <p class="text-sm text-ink-gray-5">No threads match this view yet.</p>
-    <Button label="Back to feed" route="/" class="mt-2" />
+    <Button v-if="Object.keys($route.query).length" label="Back to feed" route="/" class="mt-2" />
   </div>
 </template>
