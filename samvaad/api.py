@@ -4,6 +4,7 @@ import frappe
 from frappe import _
 from frappe.query_builder import DocType, Order
 from frappe.query_builder.functions import Cast_, Count
+from frappe.rate_limiter import rate_limit
 from frappe.utils import cint, get_fullname, now_datetime
 from frappe.utils.caching import request_cache
 
@@ -21,6 +22,7 @@ MAX_CONTENT_LENGTH = 50_000
 ADMIN_ROLES = {"System Manager", "Samvaad Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
 TAG_COLORS = ["blue", "green", "amber", "violet", "red"]
+limit_posts = rate_limit(limit=30, seconds=60, ip_based=False, user_based=True)
 MEMBER_FIELDS = ["user", "full_name", "designation", "place", "can_post"]
 THREAD_FIELDS = [
 	"name",
@@ -455,6 +457,7 @@ def mark_read(name: str):
 
 
 @frappe.whitelist(methods=["POST"])
+@limit_posts
 def create_thread(
 	title: str,
 	content: str,
@@ -508,6 +511,7 @@ def ensure_tag(name: str) -> str:
 
 
 @frappe.whitelist(methods=["POST"])
+@limit_posts
 def add_reply(thread: str, content: str) -> dict:
 	me = get_me()
 	if not can_reply(me, get_visible_thread(thread, me)):
