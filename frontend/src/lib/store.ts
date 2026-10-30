@@ -14,7 +14,7 @@ export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback
 
 const BUSY = ['QueryDeadlockError', 'QueryTimeoutError']
-async function post(method: string, params = {}, tries = 3) {
+async function post(method: string, params = {}, tries = 5) {
   try {
     return await call(method, params)
   } catch (e) {
