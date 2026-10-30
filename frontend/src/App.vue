@@ -2,8 +2,8 @@
 import { computed, onMounted } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { onKeyStroke } from '@vueuse/core'
-import { DesktopShell, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, LoadingIndicator } from 'frappe-ui'
-import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS } from './lib/store'
+import { DesktopShell, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
+import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout } from './lib/store'
 
 const me = useMe()
 onMounted(() => {
@@ -36,6 +36,13 @@ const mainNav = computed(() => [
   ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const openResource = (url: string) => window.open(url, '_blank', 'noopener')
+const { resolvedColorScheme, toggleColorScheme } = useColorScheme()
+const userMenu = computed(() => [
+  resolvedColorScheme.value === 'dark'
+    ? { label: 'Light mode', icon: 'lucide-sun', onClick: toggleColorScheme }
+    : { label: 'Dark mode', icon: 'lucide-moon', onClick: toggleColorScheme },
+  { label: 'Log out', icon: 'lucide-log-out', onClick: logout },
+])
 </script>
 
 <template>
@@ -92,13 +99,16 @@ const openResource = (url: string) => window.open(url, '_blank', 'noopener')
               <SidebarItem label="Resources" icon="lucide-library" route="/resources" />
             </div>
           </ScrollArea>
-          <div class="flex items-center gap-2 border-t border-outline-gray-1 p-3">
-            <Avatar :label="me.name" size="md" />
-            <div class="min-w-0">
-              <div class="truncate text-sm text-ink-gray-8">{{ me.name }}</div>
-              <div class="truncate text-xs text-ink-gray-5">{{ me.admin ? 'Admin · ' : '' }}{{ me.title }}</div>
-            </div>
-          </div>
+          <Dropdown :options="userMenu" side="top" align="start">
+            <button type="button" class="flex w-full items-center gap-2 border-t border-outline-gray-1 p-3 text-left hover:bg-surface-gray-2">
+              <Avatar :label="me.name" size="md" />
+              <div class="min-w-0 flex-1">
+                <div class="truncate text-sm text-ink-gray-8">{{ me.name }}</div>
+                <div class="truncate text-xs text-ink-gray-5">{{ [me.admin && 'Admin', me.title].filter(Boolean).join(' · ') }}</div>
+              </div>
+              <span class="lucide-chevrons-up-down size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+            </button>
+          </Dropdown>
         </Sidebar>
       </template>
       <RouterView />

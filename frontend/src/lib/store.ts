@@ -184,6 +184,11 @@ export function listenForActivity() {
 }
 
 export const fetchThread = latest((id: string) => get('samvaad.api.get_thread', { name: id }))
+export async function logout() {
+  await call('logout')
+  window.location.href = '/login?redirect-to=/samvaad'
+}
+
 export const searchThreads = latest((params) => post('samvaad.search.search', params))
 export const fetchOlderReplies = (id: string, before: string) => get('samvaad.api.get_replies', { thread: id, before })
 
