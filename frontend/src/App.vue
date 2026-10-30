@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import { onKeyStroke } from '@vueuse/core'
 import { DesktopShell, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, LoadingIndicator } from 'frappe-ui'
 import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS } from './lib/store'
 
@@ -11,6 +12,12 @@ onMounted(() => {
   listenForActivity()
 })
 const route = useRoute()
+const router = useRouter()
+onKeyStroke('k', (e) => {
+  if (!(e.metaKey || e.ctrlKey)) return
+  e.preventDefault()
+  router.push('/search')
+})
 
 const isActive = (to: string) => {
   const [path, qs] = to.split('?')
@@ -46,6 +53,11 @@ const openResource = (url: string) => window.open(url, '_blank', 'noopener')
           <SidebarHeader title="Samvaad" />
           <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-10">
             <div class="space-y-0.5">
+              <SidebarItem label="Search" icon="lucide-search" route="/search" :active="route.path === '/search'">
+                <template #suffix>
+                  <span class="text-xs text-ink-gray-4">⌘K</span>
+                </template>
+              </SidebarItem>
               <SidebarItem v-for="n in mainNav" :key="n.to" :label="n.label" :icon="n.icon" :route="n.to" :active="isActive(n.to)">
                 <template v-if="n.count" #suffix>
                   <span class="text-xs text-ink-gray-5 tabular-nums">{{ n.count }}</span>

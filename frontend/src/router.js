@@ -4,6 +4,7 @@ export default createRouter({
 	history: createWebHistory('/samvaad'),
 	routes: [
 		{ path: '/', component: () => import('./pages/Feed.vue') },
+		{ path: '/search', component: () => import('./pages/Search.vue') },
 		{ path: '/new', component: () => import('./pages/Compose.vue') },
 		{ path: '/threads/:id', component: () => import('./pages/Thread.vue'), props: true },
 		{ path: '/users', component: () => import('./pages/Users.vue') },

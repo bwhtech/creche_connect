@@ -184,6 +184,7 @@ export function listenForActivity() {
 }
 
 export const fetchThread = latest((id: string) => get('samvaad.api.get_thread', { name: id }))
+export const searchThreads = latest((params) => post('samvaad.search.search', params))
 export const fetchOlderReplies = (id: string, before: string) => get('samvaad.api.get_replies', { thread: id, before })
 
 export async function markRead(t) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { Avatar, Badge, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, Progress, TextInput, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
@@ -124,6 +124,24 @@ async function loadOlder() {
 }
 
 const router = useRouter()
+const route = useRoute()
+const highlighted = ref<string | null>(null)
+async function revealReply() {
+  const id = route.query.reply as string | undefined
+  const loaded = () => thread.value.replies.some((r) => r.id === id)
+  if (!id || !thread.value) return
+  while (!loaded() && thread.value.hasOlder) {
+    const count = thread.value.replies.length
+    await loadOlder()
+    if (thread.value.replies.length === count) return
+  }
+  highlighted.value = id
+  await nextTick()
+  document.getElementById(`reply-${id}`)?.scrollIntoView({ block: 'center' })
+  setTimeout(() => (highlighted.value = null), 2500)
+}
+watch(() => [thread.value?.id, route.query.reply], revealReply)
+
 const editing = ref<{ title: string; body: string } | null>(null)
 const saving = ref(false)
 const threadMenu = computed(() => [
@@ -241,7 +259,16 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             </div>
             <div class="-mx-2 space-y-1 pt-3">
               <Button v-if="thread.hasOlder" class="mx-2 mb-2" variant="ghost" label="Load older replies" :loading="loadingOlder" @click="loadOlder" />
-              <MessageItem v-for="(m, i) in thread.replies" :key="m.id" :message="m" :compact="sameAuthor(i)" @delete="confirmDelete(m)" />
+              <MessageItem
+                v-for="(m, i) in thread.replies"
+                :id="`reply-${m.id}`"
+                :key="m.id"
+                :message="m"
+                :compact="sameAuthor(i)"
+                class="transition-colors duration-700"
+                :class="{ 'bg-surface-amber-1': highlighted === m.id }"
+                @delete="confirmDelete(m)"
+              />
               <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
             </div>
           </div>

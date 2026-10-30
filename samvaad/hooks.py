@@ -14,3 +14,5 @@ add_to_apps_screen = [
 ]
 
 website_route_rules = [{"from_route": "/samvaad/<path:app_path>", "to_route": "samvaad"}]
+
+sqlite_search = ["samvaad.search.SamvaadSearch"]

@@ -5,6 +5,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from samvaad import api
+from samvaad.search import SamvaadSearch, search
 
 EXTRA_TEST_RECORD_DEPENDENCIES = []
 IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Samvaad Place", "Samvaad Designation", "Samvaad Tag"]
@@ -286,3 +287,16 @@ class IntegrationTestSamvaadThread(IntegrationTestCase):
 		thread = api.get_thread(name)
 		self.assertIsNotNone(thread["editedAt"])
 		self.assertIsNotNone(thread["replies"][0]["editedAt"])
+
+	def test_search_only_finds_threads_in_your_feed(self):
+		thread = self.post(self.lead, [self.block])
+		frappe.set_user(self.lead)
+		api.add_reply(thread, "<p>Zebracrossing drill on Monday</p>")
+		SamvaadSearch().build_index()
+		frappe.set_user(self.volunteer)
+		self.assertEqual({r["thread"] for r in search("zebracrossing")["results"]}, {str(thread)})
+		self.assertEqual(search("zebracrossing", types=["Samvaad Thread"])["results"], [])
+		self.assertEqual(search("zebracrossing", authors=[self.volunteer])["results"], [])
+		self.assertEqual(search("zebracrossing", tags=["No such topic"])["results"], [])
+		frappe.set_user(self.outsider)
+		self.assertEqual(search("zebracrossing")["results"], [])
