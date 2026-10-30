@@ -11,6 +11,9 @@
 }
 
 @layer components {
+	.rich {
+		contain: paint;
+	}
 	.rich p {
 		margin: 0.125rem 0 0.5rem;
 	}
