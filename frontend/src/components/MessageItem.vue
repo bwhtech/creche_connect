@@ -17,7 +17,7 @@ const menu = computed(() => [
 async function save() {
   saving.value = true
   try {
-    await updateMessage(props.message, 'Samvaad Reply', draft.value!)
+    await updateMessage(props.message, 'CrecheConnect Reply', draft.value!)
     draft.value = null
   } catch (e) {
     toast.error(errorText(e, 'Could not save your changes'))
@@ -64,7 +64,7 @@ async function save() {
         class="mt-1.5"
         :class="Object.keys(message.reactions).length ? '' : 'h-0 overflow-hidden group-hover:h-auto group-hover:overflow-visible focus-within:h-auto'"
       >
-        <Reactions :target="message" doctype="Samvaad Reply" />
+        <Reactions :target="message" doctype="CrecheConnect Reply" />
       </div>
     </div>
     <Dropdown

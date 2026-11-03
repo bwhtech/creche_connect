@@ -12,7 +12,7 @@ const me = useMe()
 const router = useRouter()
 const draft = reactive({ places: [] as string[], designations: [] as string[] })
 
-const text = useStorage(`samvaad:compose-draft:${me.value.id}`, { title: '', body: '' })
+const text = useStorage(`crecheconnect:compose-draft:${me.value.id}`, { title: '', body: '' })
 const policy = ref('everyone')
 const ackRequired = ref(false)
 const picked = ref<string[]>([])

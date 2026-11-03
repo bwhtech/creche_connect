@@ -69,7 +69,7 @@ watch(
   (a) => a?.thread === props.id && load(),
 )
 
-const drafts = useStorage<Record<string, string>>(`samvaad:reply-drafts:${me.value.id}`, {})
+const drafts = useStorage<Record<string, string>>(`crecheconnect:reply-drafts:${me.value.id}`, {})
 const reply = computed({ get: () => drafts.value[props.id] ?? '', set: (v) => (drafts.value[props.id] = v) })
 const replyEmpty = computed(() => !excerpt(reply.value))
 const sending = ref(false)
@@ -151,7 +151,7 @@ const threadMenu = computed(() => [
 async function saveEdit() {
   saving.value = true
   try {
-    await updateMessage(thread.value, 'Samvaad Thread', editing.value!.body, editing.value!.title)
+    await updateMessage(thread.value, 'CrecheConnect Thread', editing.value!.body, editing.value!.title)
     editing.value = null
   } catch (e) {
     toast.error(errorText(e, 'Could not save your changes'))
@@ -246,7 +246,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <div v-else class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
             <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
-              <div><Reactions :target="thread" doctype="Samvaad Thread" /></div>
+              <div><Reactions :target="thread" doctype="CrecheConnect Thread" /></div>
             </div>
 
             <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">

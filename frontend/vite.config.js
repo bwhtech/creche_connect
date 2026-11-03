@@ -5,13 +5,13 @@ import frappeui from 'frappe-ui/vite'
 export default defineConfig({
 	plugins: [
 		frappeui({
-			frontendRoute: '/samvaad',
+			frontendRoute: '/c',
 			frappeProxy: true,
 			jinjaBootData: true,
 			buildConfig: {
-				indexHtmlPath: '../samvaad/www/samvaad.html',
-				outDir: '../samvaad/public/frontend',
-				baseUrl: '/assets/samvaad/frontend/',
+				indexHtmlPath: '../crecheconnect/www/c.html',
+				outDir: '../crecheconnect/public/frontend',
+				baseUrl: '/assets/crecheconnect/frontend/',
 			},
 		}),
 		vue(),

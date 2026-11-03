@@ -115,7 +115,7 @@ const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 
 export async function loadBoot() {
   try {
-    const b: any = await get('samvaad.api.get_boot')
+    const b: any = await get('crecheconnect.api.get_boot')
     const places = b.places.map((r) => ({ id: r.name, name: r.place_name, kind: r.kind, parentId: r.parent_place, color: r.color }))
     state.places = places
     for (const p of state.places) p.parent = chain(p.parentId).map((x) => x.name).join(', ')
@@ -127,7 +127,7 @@ export async function loadBoot() {
     state.me = shapeUser(b.me)
     state.ready = true
   } catch (e) {
-    state.error = errorText(e, e?.message ?? 'Could not load Samvaad')
+    state.error = errorText(e, e?.message ?? 'Could not load CrecheConnect')
   }
 }
 
@@ -144,7 +144,7 @@ const latest = <A extends any[], R>(fn: (...args: A) => Promise<R>) => {
   }
 }
 
-const fetchFeed = latest((params) => get('samvaad.api.get_threads', params))
+const fetchFeed = latest((params) => get('crecheconnect.api.get_threads', params))
 export async function loadThreads(mode: 'reset' | 'more' | 'refresh' = 'reset') {
   if (mode === 'reset') state.cursor = null
   try {
@@ -161,7 +161,7 @@ export async function loadThreads(mode: 'reset' | 'more' | 'refresh' = 'reset') 
   }
 }
 
-const fetchCounts = latest((filter?: string) => get('samvaad.api.get_counts', { filter }))
+const fetchCounts = latest((filter?: string) => get('crecheconnect.api.get_counts', { filter }))
 export async function loadCounts() {
   const counts: any = await fetchCounts(state.feed.filter)
   if (counts) state.counts = counts
@@ -173,7 +173,7 @@ export function listenForActivity() {
   const host = window.socketio_port ? `${protocol}//${hostname}:${window.socketio_port}` : origin
   const site = window.site_name && !window.site_name.includes('{{') ? window.site_name : hostname
   let timer: ReturnType<typeof setTimeout>
-  io(`${host}/${site}`, { withCredentials: true }).on('samvaad_activity', (payload) => {
+  io(`${host}/${site}`, { withCredentials: true }).on('crecheconnect_activity', (payload) => {
     clearTimeout(timer)
     timer = setTimeout(() => {
       state.activity = payload
@@ -183,17 +183,17 @@ export function listenForActivity() {
   })
 }
 
-export const fetchThread = latest((id: string) => get('samvaad.api.get_thread', { name: id }))
+export const fetchThread = latest((id: string) => get('crecheconnect.api.get_thread', { name: id }))
 export async function logout() {
   await call('logout')
-  window.location.href = '/login?redirect-to=/samvaad'
+  window.location.href = '/login?redirect-to=/c'
 }
 
-export const searchThreads = latest((params) => post('samvaad.search.search', params))
-export const fetchOlderReplies = (id: string, before: string) => get('samvaad.api.get_replies', { thread: id, before })
+export const searchThreads = latest((params) => post('crecheconnect.search.search', params))
+export const fetchOlderReplies = (id: string, before: string) => get('crecheconnect.api.get_replies', { thread: id, before })
 
 export async function markRead(t) {
-  await post('samvaad.api.mark_read', { name: t.id })
+  await post('crecheconnect.api.mark_read', { name: t.id })
   if (t.unread) loadCounts()
   const row = feedRow(t.id)
   for (const x of [t, row]) if (x) x.unread = false
@@ -204,7 +204,7 @@ export async function markRead(t) {
 }
 
 export async function createThread({ title, body, geo, tags, policy, ackRequired }) {
-  const res: any = await post('samvaad.api.create_thread', {
+  const res: any = await post('crecheconnect.api.create_thread', {
     title,
     content: body,
     places: geo.places,
@@ -220,7 +220,7 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
 }
 
 export async function addReply(t, body: string) {
-  const reply: any = await post('samvaad.api.add_reply', { thread: t.id, content: body })
+  const reply: any = await post('crecheconnect.api.add_reply', { thread: t.id, content: body })
   t.replies.push(reply)
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
@@ -228,30 +228,30 @@ export async function addReply(t, body: string) {
 export const isAuthor = (authorId: string) => authorId === state.me.id
 export const canDelete = (authorId: string) => isAuthor(authorId) || state.me.admin
 
-export async function updateMessage(target, doctype: 'Samvaad Thread' | 'Samvaad Reply', body: string, title?: string) {
-  const res: any = await post('samvaad.api.update_message', { doctype, name: target.id, content: body, title })
+export async function updateMessage(target, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', body: string, title?: string) {
+  const res: any = await post('crecheconnect.api.update_message', { doctype, name: target.id, content: body, title })
   Object.assign(target, { body: res.body, editedAt: res.editedAt })
-  if (doctype === 'Samvaad Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
+  if (doctype === 'CrecheConnect Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
 }
 
 export async function deleteReply(t, reply) {
-  await post('samvaad.api.delete_message', { doctype: 'Samvaad Reply', name: reply.id })
+  await post('crecheconnect.api.delete_message', { doctype: 'CrecheConnect Reply', name: reply.id })
   t.replies = t.replies.filter((r) => r.id !== reply.id)
   for (const x of [t, feedRow(t.id)]) if (x) x.replyCount -= 1
 }
 
 export async function deleteThread(t) {
-  await post('samvaad.api.delete_message', { doctype: 'Samvaad Thread', name: t.id })
+  await post('crecheconnect.api.delete_message', { doctype: 'CrecheConnect Thread', name: t.id })
   state.threads = state.threads.filter((x) => x.id !== t.id)
 }
 
 export async function acknowledge(t) {
-  await post('samvaad.api.acknowledge', { thread: t.id })
+  await post('crecheconnect.api.acknowledge', { thread: t.id })
   loadCounts()
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
 
-export async function toggleReaction(target, emoji: string, doctype: 'Samvaad Thread' | 'Samvaad Reply') {
+export async function toggleReaction(target, emoji: string, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply') {
   const flip = () => {
     const next = toggleIn(target.reactions[emoji] ?? [], state.me.id)
     if (next.length) target.reactions[emoji] = next
@@ -259,7 +259,7 @@ export async function toggleReaction(target, emoji: string, doctype: 'Samvaad Th
   }
   flip()
   try {
-    await post('samvaad.api.toggle_reaction', { doctype, name: target.id, emoji })
+    await post('crecheconnect.api.toggle_reaction', { doctype, name: target.id, emoji })
   } catch (e) {
     flip()
     throw e
@@ -270,7 +270,7 @@ export const placeFrom = (s: string, district: string, block: string) => block |
 
 export async function saveUser(form) {
   const user = shapeUser(
-    await post('samvaad.api.save_member', {
+    await post('crecheconnect.api.save_member', {
       email: form.email.trim(),
       full_name: form.name.trim(),
       designation: form.designation,
@@ -294,22 +294,22 @@ export const RESOURCE_KINDS = {
 
 export async function addResource({ title, kind, url, description }) {
   const doc: any = await post('frappe.client.insert', {
-    doc: { doctype: 'Samvaad Resource', title, kind, url, description, pinned: 1 },
+    doc: { doctype: 'CrecheConnect Resource', title, kind, url, description, pinned: 1 },
   })
   state.resources.push({ ...doc, id: doc.name, pinned: true })
 }
 
 export async function updateResource(r, { title, kind, url, description }) {
-  await post('frappe.client.set_value', { doctype: 'Samvaad Resource', name: r.id, fieldname: { title, kind, url, description } })
+  await post('frappe.client.set_value', { doctype: 'CrecheConnect Resource', name: r.id, fieldname: { title, kind, url, description } })
   Object.assign(r, { title, kind, url, description })
 }
 
 export async function deleteResource(r) {
-  await post('frappe.client.delete', { doctype: 'Samvaad Resource', name: r.id })
+  await post('frappe.client.delete', { doctype: 'CrecheConnect Resource', name: r.id })
   state.resources = state.resources.filter((x) => x.id !== r.id)
 }
 
 export async function setPinned(r, pinned: boolean) {
   r.pinned = pinned
-  await post('frappe.client.set_value', { doctype: 'Samvaad Resource', name: r.id, fieldname: 'pinned', value: pinned ? 1 : 0 })
+  await post('frappe.client.set_value', { doctype: 'CrecheConnect Resource', name: r.id, fieldname: 'pinned', value: pinned ? 1 : 0 })
 }

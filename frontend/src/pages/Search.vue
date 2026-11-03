@@ -12,7 +12,7 @@ const query = ref((route.query.q as string) ?? '')
 const filters = reactive({ tags: list(route.query.tag), authors: list(route.query.author), types: list(route.query.type) })
 const found = ref<any>(null)
 const loading = ref(false)
-const recent = useStorage<string[]>(`samvaad:recent-searches:${useMe().value.id}`, [])
+const recent = useStorage<string[]>(`crecheconnect:recent-searches:${useMe().value.id}`, [])
 
 function remember() {
   const q = query.value.trim()
@@ -22,8 +22,8 @@ function remember() {
 const tagOptions = computed(() => state.tags.map((t) => ({ label: t.name, value: t.id })))
 const authorOptions = computed(() => state.users.map((u) => ({ label: u.name, value: u.id })))
 const typeOptions = [
-  { label: 'Thread', value: 'Samvaad Thread' },
-  { label: 'Reply', value: 'Samvaad Reply' },
+  { label: 'Thread', value: 'CrecheConnect Thread' },
+  { label: 'Reply', value: 'CrecheConnect Reply' },
 ]
 
 watchDebounced(

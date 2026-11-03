@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
-	history: createWebHistory('/samvaad'),
+	history: createWebHistory('/c'),
 	routes: [
 		{ path: '/', component: () => import('./pages/Feed.vue') },
 		{ path: '/search', component: () => import('./pages/Search.vue') },

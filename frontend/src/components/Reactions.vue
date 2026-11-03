@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { Button, Popover, Tooltip, toast } from 'frappe-ui'
 import { state, useMe, toggleReaction, userById } from '../lib/store'
 
-const props = defineProps<{ target: any; doctype: 'Samvaad Thread' | 'Samvaad Reply' }>()
+const props = defineProps<{ target: any; doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply' }>()
 const me = useMe()
 const open = ref(false)
 

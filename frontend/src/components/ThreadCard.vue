@@ -42,7 +42,7 @@ defineProps<{ thread: any }>()
       </div>
     </div>
     <div class="flex items-center gap-3 border-t border-outline-gray-1 bg-surface-gray-1 py-2 pr-5 pl-[4.25rem]">
-      <Reactions :target="thread" doctype="Samvaad Thread" />
+      <Reactions :target="thread" doctype="CrecheConnect Thread" />
       <div class="ml-auto flex items-center gap-4 text-xs text-ink-gray-5">
         <span class="flex items-center gap-1">
           <span class="lucide-message-square size-3.5" aria-hidden="true" />{{ thread.replyCount }}
