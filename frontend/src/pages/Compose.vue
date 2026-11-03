@@ -83,14 +83,6 @@ async function post() {
     <div v-else class="flex min-h-0 flex-1">
       <div class="min-w-0 flex-1 overflow-y-auto">
         <div class="mx-auto max-w-[770px] space-y-12 px-3 pt-10 pb-20 sm:px-6">
-          <section>
-            <h2 class="text-xl text-ink-gray-9">Who is this for?</h2>
-            <p class="mt-1.5 mb-6 text-p-sm text-ink-gray-5">
-              Pick where, then optionally who. Everyone who matches sees the thread in their feed.
-            </p>
-            <GeoPicker v-model="draft" />
-          </section>
-
           <section class="space-y-5">
             <h2 class="text-xl text-ink-gray-9">What's it about?</h2>
             <FormControl v-model="text.title" label="Topic" required />
@@ -129,6 +121,14 @@ async function post() {
                 </div>
               </div>
             </div>
+          </section>
+
+          <section>
+            <h2 class="text-xl text-ink-gray-9">Who is this for?</h2>
+            <p class="mt-1.5 mb-6 text-p-sm text-ink-gray-5">
+              Pick where, then optionally who. Everyone who matches sees the thread in their feed.
+            </p>
+            <GeoPicker v-model="draft" />
           </section>
 
           <section class="space-y-5">
