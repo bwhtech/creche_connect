@@ -583,11 +583,9 @@ def save_member(
 	if is_new and exists:
 		frappe.throw(_("{0} is already a member").format(frappe.bold(email)), frappe.DuplicateEntryError)
 	first_name, _sep, last_name = full_name.strip().partition(" ")
-	if frappe.db.exists("User", email):
-		user = frappe.get_doc("User", email)
-		user.update({"first_name": first_name, "last_name": last_name})
-	else:
-		user = frappe.get_doc(
+	current_name = frappe.db.get_value("User", email, ["first_name", "last_name"])
+	if not current_name:
+		frappe.get_doc(
 			{
 				"doctype": "User",
 				"email": email,
@@ -596,8 +594,11 @@ def save_member(
 				"user_type": "Website User",
 				"send_welcome_email": 0,
 			}
-		)
-	user.save(ignore_permissions=True)
+		).insert(ignore_permissions=True)
+	elif tuple(v or "" for v in current_name) != (first_name, last_name):
+		user = frappe.get_doc("User", email)
+		user.update({"first_name": first_name, "last_name": last_name})
+		user.save(ignore_permissions=True)
 	member = (
 		frappe.get_doc("CrecheConnect Member", email)
 		if exists

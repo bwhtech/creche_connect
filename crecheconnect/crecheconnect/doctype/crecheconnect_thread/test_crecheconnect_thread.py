@@ -269,6 +269,24 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		api.delete_message("CrecheConnect Thread", name)
 		self.assertFalse(frappe.db.exists("CrecheConnect Thread", name))
 
+	def test_saving_a_member_without_renaming_keeps_them_logged_in(self):
+		insert({"doctype": "Role", "role_name": "Test Desk Role", "desk_access": 1})
+		insert({"doctype": "Has Role", "parent": self.volunteer, "parenttype": "User", "parentfield": "roles", "role": "Test Desk Role"})
+		frappe.db.sql(
+			"insert into tabSessions (user, sid, sessiondata, ipaddress, lastupdate, status) values (%s, %s, '{}', '127.0.0.1', now(), 'Active')",
+			(self.volunteer, frappe.generate_hash(length=20)),
+		)
+		api.save_member(self.volunteer, "volunteer", "Test volunteer", self.block)
+		self.assertEqual(frappe.db.get_value("User", self.volunteer, "user_type"), "Website User")
+		self.assertEqual(frappe.db.count("Sessions", {"user": self.volunteer}), 1)
+		frappe.db.delete("Has Role", {"parent": self.volunteer, "role": "Test Desk Role"})
+		frappe.db.delete("Sessions", {"user": self.volunteer})
+
+	def test_renaming_a_member_updates_their_user(self):
+		api.save_member(self.outsider, "Out Sider", "Test volunteer", self.other_state)
+		self.assertEqual(frappe.db.get_value("User", self.outsider, "full_name"), "Out Sider")
+		api.save_member(self.outsider, "outsider", "Test volunteer", self.other_state)
+
 	def test_edits_are_marked(self):
 		name = self.post(self.lead, [self.state])
 		frappe.set_user(self.volunteer)
