@@ -299,6 +299,16 @@ export async function addResource({ title, kind, url, description }) {
   state.resources.push({ ...doc, id: doc.name, pinned: true })
 }
 
+export async function updateResource(r, { title, kind, url, description }) {
+  await post('frappe.client.set_value', { doctype: 'Samvaad Resource', name: r.id, fieldname: { title, kind, url, description } })
+  Object.assign(r, { title, kind, url, description })
+}
+
+export async function deleteResource(r) {
+  await post('frappe.client.delete', { doctype: 'Samvaad Resource', name: r.id })
+  state.resources = state.resources.filter((x) => x.id !== r.id)
+}
+
 export async function setPinned(r, pinned: boolean) {
   r.pinned = pinned
   await post('frappe.client.set_value', { doctype: 'Samvaad Resource', name: r.id, fieldname: 'pinned', value: pinned ? 1 : 0 })
