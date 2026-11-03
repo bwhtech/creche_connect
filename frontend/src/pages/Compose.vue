@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { Breadcrumbs, Button, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
@@ -10,18 +10,18 @@ import { state, useMe, canStart, createThread, reachOf, toggleIn, colorOf, error
 
 const me = useMe()
 const router = useRouter()
-const draft = reactive({ places: [] as string[], designations: [] as string[] })
-
-const text = useStorage(`crecheconnect:compose-draft:${me.value.id}`, { title: '', body: '' })
-const policy = ref('everyone')
-const ackRequired = ref(false)
-const picked = ref<string[]>([])
+const key = `crecheconnect:compose-draft:${me.value.id}`
+const text = useStorage(key, { title: '', body: '' })
+const draft = useStorage(`${key}:audience`, { places: [] as string[], designations: [] as string[] })
+const policy = useStorage(`${key}:policy`, 'everyone')
+const ackRequired = useStorage(`${key}:ack`, false)
+const picked = useStorage<string[]>(`${key}:tags`, [])
+const addedTags = useStorage<any[]>(`${key}:new-tags`, [])
 const newTag = ref('')
-const addedTags = ref<any[]>([])
 const tags = computed(() => [...state.tags, ...addedTags.value])
 const posting = ref(false)
 
-const geo = computed(() => (draft.places.length ? { ...draft } : null))
+const geo = computed(() => (draft.value.places.length ? { ...draft.value } : null))
 const reach = computed(() => reachOf({ geo: geo.value }))
 
 function addTag() {
@@ -49,6 +49,11 @@ async function post() {
       ackRequired: ackRequired.value,
     })
     text.value = { title: '', body: '' }
+    draft.value = { places: [], designations: [] }
+    policy.value = 'everyone'
+    ackRequired.value = false
+    picked.value = []
+    addedTags.value = []
     toast.success(`Thread sent to ${sentTo} people`)
     router.push(`/threads/${id}`)
   } catch (e) {
