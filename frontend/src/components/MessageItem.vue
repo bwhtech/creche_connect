@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
+import EditHistory from './EditHistory.vue'
 import { canDelete, editorKit, isAuthor, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
 
 const props = defineProps<{ message: any; compact?: boolean }>()
@@ -10,9 +11,11 @@ const emit = defineEmits<{ delete: [] }>()
 const author = computed(() => userById(props.message.authorId))
 const draft = ref<string | null>(null)
 const saving = ref(false)
+const showHistory = ref(false)
 const menu = computed(() => [
   isAuthor(props.message.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (draft.value = props.message.body) },
-  { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('delete') },
+  props.message.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
+  canDelete(props.message.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('delete') },
 ].filter(Boolean))
 async function save() {
   saving.value = true
@@ -68,11 +71,12 @@ async function save() {
       </div>
     </div>
     <Dropdown
-      v-if="canDelete(message.authorId) && draft === null"
+      v-if="menu.length && draft === null"
       :options="menu"
       align="end"
       :button="{ icon: 'lucide-ellipsis', variant: 'ghost', size: 'sm', 'aria-label': 'Reply actions' }"
       class="shrink-0 self-start"
     />
+    <EditHistory v-if="showHistory" v-model:open="showHistory" doctype="CrecheConnect Reply" :name="message.id" />
   </div>
 </template>

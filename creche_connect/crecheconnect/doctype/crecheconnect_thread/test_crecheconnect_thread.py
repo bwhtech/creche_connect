@@ -1,6 +1,8 @@
 # Copyright (c) 2026, BWH and Contributors
 # See license.txt
 
+from unittest.mock import patch
+
 import frappe
 from frappe.tests import IntegrationTestCase
 
@@ -247,6 +249,30 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		self.assertRaises(frappe.PermissionError, desk.update({"content": "<p>by admin</p>"}).save)
 		frappe.get_doc("CrecheConnect Thread", name).update({"reply_policy": "posters"}).save()
 		self.assertEqual(frappe.db.get_value("CrecheConnect Reply", reply, "content"), "<p>edited</p>")
+
+	def test_edit_history_shows_every_version_to_the_audience(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.lead)
+		original = frappe.db.get_value("CrecheConnect Thread", name, ["title", "content"], as_dict=True)
+		with patch.object(frappe, "in_test", False):
+			api.update_message("CrecheConnect Thread", name, "<p>second</p>")
+			api.update_message("CrecheConnect Thread", name, "<p>second</p>", "Renamed")
+		history = api.get_edit_history("CrecheConnect Thread", name)
+		self.assertEqual(
+			[(h["title"], h["body"]) for h in history],
+			[
+				("Renamed", "<p>second</p>"),
+				(original.title, "<p>second</p>"),
+				(original.title, original.content),
+			],
+		)
+		frappe.set_user(self.volunteer)
+		self.assertEqual(len(api.get_edit_history("CrecheConnect Thread", name)), 3)
+		reply = api.add_reply(name, "<p>hi</p>")["id"]
+		self.assertEqual(len(api.get_edit_history("CrecheConnect Reply", reply)), 1)
+		frappe.set_user(self.outsider)
+		self.assertRaises(frappe.PermissionError, api.get_edit_history, "CrecheConnect Thread", name)
+		self.assertRaises(frappe.PermissionError, api.get_edit_history, "CrecheConnect Reply", reply)
 
 	def test_edits_are_capped_like_new_messages(self):
 		name = self.post(self.lead, [self.state])

@@ -8,6 +8,7 @@ import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
 import TagChips from '../components/TagChips.vue'
 import Reactions from '../components/Reactions.vue'
+import EditHistory from '../components/EditHistory.vue'
 import {
   useMe,
   fetchThread,
@@ -145,9 +146,11 @@ watch(() => [thread.value?.id, route.query.reply], revealReply)
 
 const editing = ref<{ title: string; body: string } | null>(null)
 const saving = ref(false)
+const showHistory = ref(false)
 const threadMenu = computed(() => [
   isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
-  { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete() },
+  thread.value.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
+  canDelete(thread.value.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete() },
 ].filter(Boolean))
 async function saveEdit() {
   saving.value = true
@@ -217,7 +220,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 <span class="text-sm text-ink-gray-5">(edited)</span>
               </Tooltip>
               <Dropdown
-                v-if="canDelete(thread.authorId) && !editing"
+                v-if="threadMenu.length && !editing"
                 class="ml-auto"
                 align="end"
                 :options="threadMenu"
@@ -363,5 +366,6 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       theme="red"
       :actions="deleteActions"
     />
+    <EditHistory v-if="showHistory" v-model:open="showHistory" doctype="CrecheConnect Thread" :name="thread.id" />
   </div>
 </template>

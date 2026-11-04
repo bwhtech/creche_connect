@@ -236,6 +236,9 @@ export async function updateMessage(target, doctype: 'CrecheConnect Thread' | 'C
   if (doctype === 'CrecheConnect Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
 }
 
+export const fetchEditHistory = (doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', name: string) =>
+  get('creche_connect.api.get_edit_history', { doctype, name })
+
 export async function deleteReply(t, reply) {
   await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Reply', name: reply.id })
   t.replies = t.replies.filter((r) => r.id !== reply.id)
