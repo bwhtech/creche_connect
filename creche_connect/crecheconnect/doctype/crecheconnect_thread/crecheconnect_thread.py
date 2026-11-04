@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import now_datetime
 from frappe.query_builder import DocType
 
-from crecheconnect.api import check_content_length, check_only_author_edits, notify_audience
+from creche_connect.api import check_content_length, check_only_author_edits, notify_audience
 
 
 class CrecheConnectThread(Document):
@@ -18,11 +18,11 @@ class CrecheConnectThread(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
-		from crecheconnect.crecheconnect.doctype.crecheconnect_thread_designation.crecheconnect_thread_designation import (
+		from creche_connect.crecheconnect.doctype.crecheconnect_thread_designation.crecheconnect_thread_designation import (
 			CrecheConnectThreadDesignation,
 		)
-		from crecheconnect.crecheconnect.doctype.crecheconnect_thread_place.crecheconnect_thread_place import CrecheConnectThreadPlace
-		from crecheconnect.crecheconnect.doctype.crecheconnect_thread_tag.crecheconnect_thread_tag import CrecheConnectThreadTag
+		from creche_connect.crecheconnect.doctype.crecheconnect_thread_place.crecheconnect_thread_place import CrecheConnectThreadPlace
+		from creche_connect.crecheconnect.doctype.crecheconnect_thread_tag.crecheconnect_thread_tag import CrecheConnectThreadTag
 
 		ack_required: DF.Check
 		content: DF.TextEditor | None

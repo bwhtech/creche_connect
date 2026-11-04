@@ -115,7 +115,7 @@ const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 
 export async function loadBoot() {
   try {
-    const b: any = await get('crecheconnect.api.get_boot')
+    const b: any = await get('creche_connect.api.get_boot')
     const places = b.places.map((r) => ({ id: r.name, name: r.place_name, kind: r.kind, parentId: r.parent_place, color: r.color }))
     state.places = places
     for (const p of state.places) p.parent = chain(p.parentId).map((x) => x.name).join(', ')
@@ -144,7 +144,7 @@ const latest = <A extends any[], R>(fn: (...args: A) => Promise<R>) => {
   }
 }
 
-const fetchFeed = latest((params) => get('crecheconnect.api.get_threads', params))
+const fetchFeed = latest((params) => get('creche_connect.api.get_threads', params))
 export async function loadThreads(mode: 'reset' | 'more' | 'refresh' = 'reset') {
   if (mode === 'reset') state.cursor = null
   try {
@@ -161,7 +161,7 @@ export async function loadThreads(mode: 'reset' | 'more' | 'refresh' = 'reset') 
   }
 }
 
-const fetchCounts = latest((filter?: string) => get('crecheconnect.api.get_counts', { filter }))
+const fetchCounts = latest((filter?: string) => get('creche_connect.api.get_counts', { filter }))
 export async function loadCounts() {
   const counts: any = await fetchCounts(state.feed.filter)
   if (counts) state.counts = counts
@@ -183,17 +183,17 @@ export function listenForActivity() {
   })
 }
 
-export const fetchThread = latest((id: string) => get('crecheconnect.api.get_thread', { name: id }))
+export const fetchThread = latest((id: string) => get('creche_connect.api.get_thread', { name: id }))
 export async function logout() {
   await call('logout')
   window.location.href = '/login?redirect-to=/c'
 }
 
-export const searchThreads = latest((params) => post('crecheconnect.search.search', params))
-export const fetchOlderReplies = (id: string, before: string) => get('crecheconnect.api.get_replies', { thread: id, before })
+export const searchThreads = latest((params) => post('creche_connect.search.search', params))
+export const fetchOlderReplies = (id: string, before: string) => get('creche_connect.api.get_replies', { thread: id, before })
 
 export async function markRead(t) {
-  await post('crecheconnect.api.mark_read', { name: t.id })
+  await post('creche_connect.api.mark_read', { name: t.id })
   if (t.unread) loadCounts()
   const row = feedRow(t.id)
   for (const x of [t, row]) if (x) x.unread = false
@@ -204,7 +204,7 @@ export async function markRead(t) {
 }
 
 export async function createThread({ title, body, geo, tags, policy, ackRequired }) {
-  const res: any = await post('crecheconnect.api.create_thread', {
+  const res: any = await post('creche_connect.api.create_thread', {
     title,
     content: body,
     places: geo.places,
@@ -220,7 +220,7 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
 }
 
 export async function addReply(t, body: string) {
-  const reply: any = await post('crecheconnect.api.add_reply', { thread: t.id, content: body })
+  const reply: any = await post('creche_connect.api.add_reply', { thread: t.id, content: body })
   t.replies.push(reply)
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
@@ -229,24 +229,24 @@ export const isAuthor = (authorId: string) => authorId === state.me.id
 export const canDelete = (authorId: string) => isAuthor(authorId) || state.me.admin
 
 export async function updateMessage(target, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', body: string, title?: string) {
-  const res: any = await post('crecheconnect.api.update_message', { doctype, name: target.id, content: body, title })
+  const res: any = await post('creche_connect.api.update_message', { doctype, name: target.id, content: body, title })
   Object.assign(target, { body: res.body, editedAt: res.editedAt })
   if (doctype === 'CrecheConnect Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
 }
 
 export async function deleteReply(t, reply) {
-  await post('crecheconnect.api.delete_message', { doctype: 'CrecheConnect Reply', name: reply.id })
+  await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Reply', name: reply.id })
   t.replies = t.replies.filter((r) => r.id !== reply.id)
   for (const x of [t, feedRow(t.id)]) if (x) x.replyCount -= 1
 }
 
 export async function deleteThread(t) {
-  await post('crecheconnect.api.delete_message', { doctype: 'CrecheConnect Thread', name: t.id })
+  await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Thread', name: t.id })
   state.threads = state.threads.filter((x) => x.id !== t.id)
 }
 
 export async function acknowledge(t) {
-  await post('crecheconnect.api.acknowledge', { thread: t.id })
+  await post('creche_connect.api.acknowledge', { thread: t.id })
   loadCounts()
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
@@ -259,7 +259,7 @@ export async function toggleReaction(target, emoji: string, doctype: 'CrecheConn
   }
   flip()
   try {
-    await post('crecheconnect.api.toggle_reaction', { doctype, name: target.id, emoji })
+    await post('creche_connect.api.toggle_reaction', { doctype, name: target.id, emoji })
   } catch (e) {
     flip()
     throw e
@@ -270,7 +270,7 @@ export const placeFrom = (s: string, district: string, block: string) => block |
 
 export async function saveUser(form) {
   const user = shapeUser(
-    await post('crecheconnect.api.save_member', {
+    await post('creche_connect.api.save_member', {
       email: form.email.trim(),
       full_name: form.name.trim(),
       designation: form.designation,

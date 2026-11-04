@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import now_datetime
 
-from crecheconnect.api import check_content_length, check_only_author_edits, notify_audience
+from creche_connect.api import check_content_length, check_only_author_edits, notify_audience
 
 
 class CrecheConnectReply(Document):

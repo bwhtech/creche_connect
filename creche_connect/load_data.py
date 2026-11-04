@@ -7,7 +7,7 @@ import frappe
 from frappe.database.sequence import get_next_val, set_next_val
 from frappe.utils import add_to_date, now_datetime
 
-from crecheconnect import api
+from creche_connect import api
 
 DOMAIN = "load.crecheconnect.local"
 DAYS = 180

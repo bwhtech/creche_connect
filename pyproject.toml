@@ -1,5 +1,5 @@
 [project]
-name = "crecheconnect"
+name = "creche_connect"
 authors = [
     { name = "BWH", email = "vishwajeet@bwh.tech"}
 ]
