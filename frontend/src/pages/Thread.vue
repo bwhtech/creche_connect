@@ -3,7 +3,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { Avatar, Badge, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, Progress, TextInput, Tooltip, toast } from 'frappe-ui'
-import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
+import { Editor, EditorContent } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
 import TagChips from '../components/TagChips.vue'
@@ -31,6 +31,7 @@ import {
   updateMessage,
   deleteThread,
   deleteReply,
+  editorKit,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -234,7 +235,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
             <div v-if="editing" class="mt-8">
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                <Editor v-model="editing.body" :extensions="[RichTextKit]">
+                <Editor v-model="editing.body" :extensions="editorKit">
                   <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-md text-ink-gray-8" />
                 </Editor>
               </div>
@@ -280,7 +281,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <div class="flex items-end gap-2" @keydown="onKey">
                 <div class="flex-1">
                   <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                    <Editor v-model="reply" :extensions="[RichTextKit]" placeholder="Write a reply…  (Ctrl + Enter to send)">
+                    <Editor v-model="reply" :extensions="editorKit" placeholder="Write a reply…  (Ctrl + Enter to send)">
                       <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
                     </Editor>
                   </div>

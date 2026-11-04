@@ -1,6 +1,7 @@
 import { reactive, computed } from 'vue'
 import { call, frappeRequest, dayjsLocal } from 'frappe-ui'
 import { io } from 'socket.io-client'
+import { RichTextKit } from 'frappe-ui/editor'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -9,6 +10,7 @@ const COLORS = {
   violet: { dot: 'bg-surface-violet-7', soft: 'bg-surface-violet-2', ink: 'text-ink-violet-6' },
   red: { dot: 'bg-surface-red-7', soft: 'bg-surface-red-2', ink: 'text-ink-red-6' },
 }
+export const editorKit = [RichTextKit.configure({ textAlign: false })]
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback

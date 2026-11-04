@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
-import { Editor, EditorContent, RichTextKit } from 'frappe-ui/editor'
+import { Editor, EditorContent } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
-import { canDelete, isAuthor, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
+import { canDelete, editorKit, isAuthor, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
 
 const props = defineProps<{ message: any; compact?: boolean }>()
 const emit = defineEmits<{ delete: [] }>()
@@ -45,7 +45,7 @@ async function save() {
       </div>
       <div v-if="draft !== null" class="mt-1.5">
         <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-          <Editor v-model="draft" :extensions="[RichTextKit]">
+          <Editor v-model="draft" :extensions="editorKit">
             <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
           </Editor>
         </div>

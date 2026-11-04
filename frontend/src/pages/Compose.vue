@@ -3,10 +3,10 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { Breadcrumbs, Button, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
-import { Editor, EditorContent, EditorFixedMenu, RichTextKit, minimalToolbar } from 'frappe-ui/editor'
+import { Editor, EditorContent, EditorFixedMenu, minimalToolbar } from 'frappe-ui/editor'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
-import { state, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES } from '../lib/store'
+import { state, editorKit, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES } from '../lib/store'
 
 const me = useMe()
 const router = useRouter()
@@ -94,7 +94,7 @@ async function post() {
             <div>
               <div class="mb-1.5 text-xs text-ink-gray-6">Message</div>
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                <Editor v-model="text.body" :extensions="[RichTextKit]">
+                <Editor v-model="text.body" :extensions="editorKit">
                   <div class="border-b border-outline-gray-1 px-1 py-1">
                     <EditorFixedMenu :items="minimalToolbar" />
                   </div>
