@@ -562,6 +562,37 @@ def update_message(
 	return {"title": doc.get("title"), "body": doc.content, "editedAt": doc.edited_at}
 
 
+@frappe.whitelist(methods=["GET"])
+def get_edit_history(doctype: Literal["CrecheConnect Thread", "CrecheConnect Reply"], name: str) -> list:
+	is_thread = doctype == "CrecheConnect Thread"
+	fields = ("title", "content") if is_thread else ("content",)
+	doc = frappe.db.get_value(
+		doctype, name, ["owner", "creation", *fields, *(() if is_thread else ("thread",))], as_dict=True
+	)
+	if not doc:
+		frappe.throw(_("This message was removed"), frappe.DoesNotExistError)
+	get_visible_thread(name if is_thread else doc.thread, get_me())
+	versions = frappe.get_all(
+		"Version",
+		filters={"ref_doctype": doctype, "docname": name},
+		fields=["owner", "creation", "data"],
+		order_by="creation desc",
+	)
+	current = {f: doc.get(f) for f in fields}
+
+	def snapshot(at, by):
+		return {"at": at, "by": by, "title": current.get("title"), "body": current["content"]}
+
+	history = []
+	for v in versions:
+		changed = {c[0]: c[1] for c in frappe.parse_json(v.data).get("changed", []) if c[0] in fields}
+		if changed:
+			history.append(snapshot(v.creation, v.owner))
+			current.update(changed)
+	history.append(snapshot(doc.creation, doc.owner))
+	return history
+
+
 @frappe.whitelist(methods=["POST"])
 def delete_message(doctype: Literal["CrecheConnect Thread", "CrecheConnect Reply"], name: str):
 	if frappe.db.get_value(doctype, name, "owner") != frappe.session.user and not get_me().is_admin:
