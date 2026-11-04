@@ -50,7 +50,7 @@ const userMenu = computed(() => [
     <DesktopShell v-else>
       <template #sidebar>
         <Sidebar width="14rem" class="border-r">
-          <SidebarHeader title="CrecheConnect" logo="/assets/crecheconnect/logo.svg" />
+          <SidebarHeader title="CrecheConnect" logo="/assets/creche_connect/logo.svg" />
           <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-10">
             <div class="space-y-0.5">
               <SidebarItem label="Search" icon="lucide-search" route="/search" :active="route.path === '/search'" />

@@ -9,9 +9,9 @@ export default defineConfig({
 			frappeProxy: true,
 			jinjaBootData: true,
 			buildConfig: {
-				indexHtmlPath: '../crecheconnect/www/c.html',
-				outDir: '../crecheconnect/public/frontend',
-				baseUrl: '/assets/crecheconnect/frontend/',
+				indexHtmlPath: '../creche_connect/www/c.html',
+				outDir: '../creche_connect/public/frontend',
+				baseUrl: '/assets/creche_connect/frontend/',
 			},
 		}),
 		vue(),

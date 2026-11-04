@@ -4,7 +4,7 @@ from typing import Literal
 import frappe
 from frappe.utils import add_days, get_first_day_of_week, getdate, now_datetime
 
-from crecheconnect.api import ADMIN_ROLES, MEMBER_FIELDS, load_threads, matches
+from creche_connect.api import ADMIN_ROLES, MEMBER_FIELDS, load_threads, matches
 
 PERIODS = {"7d": (7, "day"), "30d": (30, "day"), "90d": (91, "week")}
 

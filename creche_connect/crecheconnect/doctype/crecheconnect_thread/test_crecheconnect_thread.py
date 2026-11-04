@@ -4,8 +4,8 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from crecheconnect import api
-from crecheconnect.search import CrecheConnectSearch, search
+from creche_connect import api
+from creche_connect.search import CrecheConnectSearch, search
 
 EXTRA_TEST_RECORD_DEPENDENCIES = []
 IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "CrecheConnect Place", "CrecheConnect Designation", "CrecheConnect Tag"]

@@ -4,7 +4,7 @@ import frappe
 from frappe.search.sqlite_search import SQLiteSearch
 from frappe.utils import escape_html
 
-from crecheconnect.api import Thread, ThreadTag, feed_query, get_me, thread_ids
+from creche_connect.api import Thread, ThreadTag, feed_query, get_me, thread_ids
 
 
 class CrecheConnectSearch(SQLiteSearch):

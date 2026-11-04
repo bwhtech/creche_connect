@@ -53,7 +53,7 @@ jspm_packages/
 
 # Aider AI Chat
 .aider*
-crecheconnect/public/frontend
-crecheconnect/www/c.html
+creche_connect/public/frontend
+creche_connect/www/c.html
 frontend/node_modules
-crecheconnect/public/node_modules
+creche_connect/public/node_modules

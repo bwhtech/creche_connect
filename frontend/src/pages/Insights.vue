@@ -13,7 +13,7 @@ const RANGES = [
 ]
 const range = ref('30d')
 const insights = useCall<any>({
-  url: '/api/v2/method/crecheconnect.insights.get_insights',
+  url: '/api/v2/method/creche_connect.insights.get_insights',
   params: () => ({ period: range.value }),
   immediate: me.value.admin,
   refetch: true,

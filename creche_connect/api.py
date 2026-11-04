@@ -261,7 +261,7 @@ def audience_users(places: list, designations: list) -> list[str]:
 
 def notify_audience(thread: str):
 	frappe.enqueue(
-		"crecheconnect.api.send_activity",
+		"creche_connect.api.send_activity",
 		queue="short",
 		enqueue_after_commit=True,
 		thread=str(thread),
