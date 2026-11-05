@@ -2,13 +2,14 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
-import { Avatar, Badge, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, Progress, TextInput, Tooltip, toast } from 'frappe-ui'
+import { Avatar, Badge, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, Progress, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
 import TagChips from '../components/TagChips.vue'
 import Reactions from '../components/Reactions.vue'
 import EditHistory from '../components/EditHistory.vue'
+import Poll from '../components/Poll.vue'
 import {
   useMe,
   fetchThread,
@@ -33,6 +34,7 @@ import {
   deleteThread,
   deleteReply,
   editorKit,
+  closePoll,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -150,8 +152,20 @@ const showHistory = ref(false)
 const threadMenu = computed(() => [
   isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
   thread.value.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
+  thread.value.poll?.canManage && !thread.value.poll.closed && { label: 'Close poll', icon: 'lucide-lock', onClick: confirmClose },
   canDelete(thread.value.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete() },
 ].filter(Boolean))
+function confirmClose() {
+  dialog.confirm({
+    title: 'Close this poll?',
+    message: 'Nobody can vote or change their vote after this. Results stay visible.',
+    confirmLabel: 'Close poll',
+    onConfirm: async () => {
+      await closePoll(thread.value)
+      toast.success('Poll closed')
+    },
+  })
+}
 async function saveEdit() {
   saving.value = true
   try {
@@ -248,6 +262,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               </div>
             </div>
             <div v-else class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
+            <Poll v-if="thread.poll" :thread="thread" class="mt-8" />
             <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
               <div><Reactions :target="thread" doctype="CrecheConnect Thread" /></div>

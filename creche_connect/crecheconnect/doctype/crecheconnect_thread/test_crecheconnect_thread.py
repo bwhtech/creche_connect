@@ -344,3 +344,105 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		self.assertEqual(search("zebracrossing", tags=["No such topic"])["results"], [])
 		frappe.set_user(self.outsider)
 		self.assertEqual(search("zebracrossing")["results"], [])
+
+	def poll(self, **kw) -> str:
+		return self.post(self.lead, [self.district], poll_options=["Monday", "Wednesday", "Friday"], **kw)
+
+	def poll_of(self, user: str, thread: str) -> dict:
+		frappe.set_user(user)
+		return api.get_thread(thread)["poll"]
+
+	def vote(self, user: str, thread: str, label: str):
+		option = next(o["id"] for o in self.poll_of(user, thread)["options"] if o["label"] == label)
+		api.vote(thread, option)
+
+	def counts(self, poll: dict) -> dict:
+		return {o["label"]: o["count"] for o in poll["options"]}
+
+	def test_poll_needs_two_to_ten_different_options(self):
+		frappe.set_user(self.lead)
+		for options in (["Only one"], [str(i) for i in range(11)], ["Monday", " monday "]):
+			self.assertRaises(
+				frappe.ValidationError, api.create_thread, "x", "<p>x</p>", [self.block], poll_options=options
+			)
+		self.assertRaises(
+			frappe.ValidationError,
+			api.create_thread,
+			"x",
+			"<p>x</p>",
+			[self.block],
+			poll_options=["a", "b"],
+			poll_closes_at="2000-01-01 00:00:00",
+		)
+		self.assertIsNone(self.poll_of(self.lead, self.post(self.lead, [self.block])))
+
+	def test_voting_again_removes_the_vote(self):
+		thread = self.poll()
+		self.vote(self.volunteer, thread, "Monday")
+		poll = self.poll_of(self.coordinator, thread)
+		self.assertEqual(self.counts(poll)["Monday"], 1)
+		self.assertEqual(poll["options"][0]["voters"], [self.volunteer])
+		self.assertFalse(poll["voted"])
+		self.vote(self.volunteer, thread, "Monday")
+		self.assertEqual(self.poll_of(self.volunteer, thread)["voterCount"], 0)
+
+	def test_single_choice_replaces_and_multiple_choice_adds(self):
+		single, multiple = self.poll(), self.poll(poll_multiple=True)
+		for thread in (single, multiple):
+			self.vote(self.volunteer, thread, "Monday")
+			self.vote(self.volunteer, thread, "Friday")
+		self.assertEqual(
+			self.counts(self.poll_of(self.volunteer, single)), {"Monday": 0, "Wednesday": 0, "Friday": 1}
+		)
+		self.assertEqual(
+			self.counts(self.poll_of(self.volunteer, multiple)), {"Monday": 1, "Wednesday": 0, "Friday": 1}
+		)
+		self.assertEqual(self.poll_of(self.volunteer, multiple)["voterCount"], 1)
+
+	def test_anonymous_poll_hides_voters(self):
+		thread = self.poll(poll_anonymous=True)
+		self.vote(self.volunteer, thread, "Monday")
+		poll = self.poll_of(self.lead, thread)
+		self.assertEqual(self.counts(poll)["Monday"], 1)
+		self.assertTrue(all(o["voters"] == [] for o in poll["options"]))
+		self.assertTrue(self.poll_of(self.volunteer, thread)["options"][0]["mine"])
+
+	def test_only_the_audience_can_vote_on_real_options(self):
+		thread, other = self.poll(), self.poll()
+		option = self.poll_of(self.lead, thread)["options"][0]["id"]
+		frappe.set_user(self.outsider)
+		self.assertRaises(frappe.PermissionError, api.vote, thread, option)
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.ValidationError, api.vote, other, option)
+		self.assertRaises(frappe.ValidationError, api.vote, self.post(self.lead, [self.block]), option)
+
+	def test_closed_poll_refuses_votes(self):
+		thread = self.poll()
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.PermissionError, api.close_poll, thread)
+		frappe.set_user(self.lead)
+		api.close_poll(thread)
+		self.assertTrue(self.poll_of(self.volunteer, thread)["closed"])
+		self.assertRaises(frappe.ValidationError, self.vote, self.volunteer, thread, "Monday")
+
+	def test_reminder_emails_only_people_who_have_not_voted(self):
+		thread = self.poll()
+		self.vote(self.coordinator, thread, "Monday")
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.PermissionError, api.remind_poll, thread)
+		frappe.set_user(self.lead)
+		with patch.object(frappe, "sendmail") as sendmail:
+			api.remind_poll(thread)
+			self.assertRaises(frappe.ValidationError, api.remind_poll, thread)
+		recipients = sendmail.call_args.kwargs["recipients"]
+		self.assertIn(self.volunteer, recipients)
+		self.assertNotIn(self.coordinator, recipients)
+		self.assertNotIn(self.lead, recipients)
+		self.assertNotIn(self.outsider, recipients)
+
+	def test_deleting_a_poll_removes_its_votes(self):
+		thread = self.poll()
+		self.vote(self.volunteer, thread, "Monday")
+		frappe.set_user(self.lead)
+		api.delete_message("CrecheConnect Thread", thread)
+		self.assertFalse(frappe.db.exists("CrecheConnect Poll Vote", {"thread": thread}))

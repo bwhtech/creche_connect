@@ -13,20 +13,20 @@ const allPlaces = computed(() => draft.value.places.length === 1 && draft.value.
 const toggleAllPlaces = () => (draft.value.places = allPlaces.value ? [] : [root.value.id])
 
 const scope = computed(() => allowedPlaces(me.value).filter((p) => p.id !== root.value.id))
-const results = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  const list = q
-    ? scope.value.filter((p) => p.name.toLowerCase().includes(q))
-    : scope.value.filter((p) => p.kind !== 'Block' || expanded.value.includes(p.parentId))
-  return list.slice(0, 80)
-})
+const scopeIds = computed(() => new Set(scope.value.map((p) => p.id)))
 const expanded = ref<string[]>([])
 const toggleExpand = (id: string) => (expanded.value = toggleIn(expanded.value, id))
-const blockCounts = computed(() => {
+const shown = (p) => !scopeIds.value.has(p.parentId) || (expanded.value.includes(p.parentId) && shown(placeById(p.parentId)))
+const results = computed(() => {
+  const q = query.value.trim().toLowerCase()
+  return (q ? scope.value.filter((p) => p.name.toLowerCase().includes(q)) : scope.value.filter(shown)).slice(0, 80)
+})
+const childCounts = computed(() => {
   const counts = {}
-  for (const p of scope.value) if (p.kind === 'Block') counts[p.parentId] = (counts[p.parentId] ?? 0) + 1
+  for (const p of scope.value) counts[p.parentId] = (counts[p.parentId] ?? 0) + 1
   return counts
 })
+const childLabel = (p) => `${childCounts.value[p.id]} ${p.kind === 'State' ? 'districts' : 'blocks'}`
 const indent = (kind: string) => (query.value ? 'pl-4' : ({ Country: 'pl-4', State: 'pl-4', District: 'pl-10', Block: 'pl-16' })[kind])
 const iconFor = (kind: string) => ({ Country: 'lucide-globe', State: 'lucide-map' })[kind] ?? 'lucide-map-pin'
 const togglePlace = (id: string) => (draft.value.places = toggleIn(draft.value.places, id))
@@ -85,28 +85,30 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
           <span class="ml-auto text-xs text-ink-gray-5 tabular-nums">{{ peopleByPlace[root.id] ?? 0 }} people</span>
         </label>
         <div class="max-h-72 divide-y divide-outline-gray-1 overflow-y-auto" :class="allPlaces && 'pointer-events-none opacity-50'">
-          <label v-for="p in results" :key="p.id" class="flex cursor-pointer items-center gap-3 py-2.5 pr-4 hover:bg-surface-gray-1" :class="indent(p.kind)">
-            <Checkbox :model-value="allPlaces || draft.places.includes(p.id)" :disabled="allPlaces" @update:model-value="togglePlace(p.id)" />
-            <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(p.color).soft, colorOf(p.color).ink]">
-              <span :class="iconFor(p.kind)" class="size-3.5" aria-hidden="true" />
-            </span>
-            <div class="min-w-0">
-              <div class="truncate text-sm text-ink-gray-8">{{ p.name }}</div>
-              <div class="truncate text-xs text-ink-gray-5">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</div>
-            </div>
-            <span class="ml-auto text-xs text-ink-gray-5 tabular-nums">{{ peopleByPlace[p.id] ?? 0 }} people</span>
-            <span class="w-24 shrink-0 text-right">
-              <Button
-                v-if="p.kind === 'District' && !query"
-                size="sm"
-                variant="ghost"
-                :icon-right="expanded.includes(p.id) ? 'lucide-chevron-up' : 'lucide-chevron-down'"
-                :label="`${blockCounts[p.id] ?? 0} blocks`"
-                :aria-expanded="expanded.includes(p.id)"
-                @click.prevent.stop="toggleExpand(p.id)"
-              />
-            </span>
-          </label>
+          <div v-for="p in results" :key="p.id" class="flex items-center gap-3 py-2 pr-4 hover:bg-surface-gray-1" :class="indent(p.kind)">
+            <Checkbox :model-value="allPlaces || draft.places.includes(p.id)" :disabled="allPlaces" :aria-label="`Send to ${p.name}`" @update:model-value="togglePlace(p.id)" />
+            <button
+              type="button"
+              class="flex min-w-0 flex-1 items-center gap-3 py-0.5 text-left"
+              :aria-expanded="childCounts[p.id] && !query ? expanded.includes(p.id) : undefined"
+              @click="childCounts[p.id] && !query ? toggleExpand(p.id) : togglePlace(p.id)"
+            >
+              <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(p.color).soft, colorOf(p.color).ink]">
+                <span :class="iconFor(p.kind)" class="size-3.5" aria-hidden="true" />
+              </span>
+              <span class="min-w-0">
+                <span class="block truncate text-sm text-ink-gray-8">{{ p.name }}</span>
+                <span class="block truncate text-xs text-ink-gray-5">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</span>
+              </span>
+              <span class="ml-auto shrink-0 text-xs text-ink-gray-5 tabular-nums">{{ peopleByPlace[p.id] ?? 0 }} people</span>
+              <span class="flex w-28 shrink-0 items-center justify-end gap-1 text-xs text-ink-gray-6">
+                <template v-if="childCounts[p.id] && !query">
+                  {{ childLabel(p) }}
+                  <span class="size-4" :class="expanded.includes(p.id) ? 'lucide-chevron-up' : 'lucide-chevron-down'" aria-hidden="true" />
+                </template>
+              </span>
+            </button>
+          </div>
           <p v-if="!results.length" class="px-4 py-6 text-center text-sm text-ink-gray-5">No place matches “{{ query }}”</p>
         </div>
       </div>

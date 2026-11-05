@@ -2,11 +2,14 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
-from frappe.utils import now_datetime
+from frappe.utils import get_datetime, now_datetime
 from frappe.query_builder import DocType
 
 from creche_connect.api import check_content_length, check_only_author_edits, notify_audience
+
+MAX_POLL_OPTIONS = 10
 
 
 class CrecheConnectThread(Document):
@@ -44,6 +47,21 @@ class CrecheConnectThread(Document):
 		check_only_author_edits(self, "content", "title")
 		if not self.is_new() and (self.has_value_changed("content") or self.has_value_changed("title")):
 			self.edited_at = now_datetime()
+		self.validate_poll()
+
+	def validate_poll(self):
+		for o in self.poll_options:
+			o.option = (o.option or "").strip()
+		labels = [o.option.lower() for o in self.poll_options]
+		if not labels:
+			self.poll_closes_at = None
+			return
+		if not 2 <= len(labels) <= MAX_POLL_OPTIONS:
+			frappe.throw(_("A poll needs between 2 and {0} options").format(MAX_POLL_OPTIONS))
+		if len(set(labels)) < len(labels):
+			frappe.throw(_("Each poll option must be different"))
+		if self.is_new() and self.poll_closes_at and get_datetime(self.poll_closes_at) <= now_datetime():
+			frappe.throw(_("Pick a deadline in the future"))
 
 	def on_update(self):
 		notify_audience(self.name)
@@ -60,7 +78,12 @@ class CrecheConnectThread(Document):
 			)
 			.run()
 		)
-		for doctype in ("CrecheConnect Reply", "CrecheConnect Thread Visit", "CrecheConnect Acknowledgement"):
+		for doctype in (
+			"CrecheConnect Reply",
+			"CrecheConnect Thread Visit",
+			"CrecheConnect Acknowledgement",
+			"CrecheConnect Poll Vote",
+		):
 			frappe.db.delete(doctype, {"thread": self.name})
 
 

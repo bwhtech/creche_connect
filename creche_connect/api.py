@@ -5,7 +5,7 @@ from frappe import _
 from frappe.query_builder import DocType, Order
 from frappe.query_builder.functions import Cast_, Count
 from frappe.rate_limiter import rate_limit
-from frappe.utils import cint, get_fullname, now_datetime
+from frappe.utils import cint, escape_html, get_datetime, get_fullname, get_url, now_datetime
 from frappe.utils.caching import request_cache
 
 Thread = DocType("CrecheConnect Thread")
@@ -35,6 +35,9 @@ THREAD_FIELDS = [
 	"reply_count",
 	"creation",
 	"edited_at",
+	"poll_multiple",
+	"poll_anonymous",
+	"poll_closes_at",
 ]
 
 
@@ -91,6 +94,59 @@ def can_reply(me, thread) -> bool:
 
 def can_acknowledge(me, thread) -> bool:
 	return bool(thread.ack_required) and thread.owner != me.user and matches(me, thread)
+
+
+def poll_closed(thread) -> bool:
+	return bool(thread.poll_closes_at) and get_datetime(thread.poll_closes_at) <= now_datetime()
+
+
+def load_polls(names: list) -> dict:
+	options = frappe.get_all(
+		"CrecheConnect Poll Option",
+		filters={"parenttype": "CrecheConnect Thread", "parent": ["in", names]},
+		fields=["parent", "name", "option"],
+		order_by="idx asc",
+	)
+	if not options:
+		return {}
+	votes = group_by(
+		frappe.get_all(
+			"CrecheConnect Poll Vote",
+			filters={"thread": ["in", names]},
+			fields=["option", "user"],
+			order_by="creation asc",
+		),
+		"option",
+		"user",
+	)
+	polls = {}
+	for o in options:
+		o.votes = votes.get(o.name, [])
+		polls.setdefault(o.parent, []).append(o)
+	return polls
+
+
+def serialize_poll(t, options, me) -> dict:
+	voters = {u for o in options for u in o.votes}
+	return {
+		"multiple": bool(t.poll_multiple),
+		"anonymous": bool(t.poll_anonymous),
+		"closesAt": t.poll_closes_at,
+		"closed": poll_closed(t),
+		"voterCount": len(voters),
+		"voted": me.user in voters,
+		"canManage": t.owner == me.user or bool(me.is_admin),
+		"options": [
+			{
+				"id": o.name,
+				"label": o.option,
+				"count": len(o.votes),
+				"mine": me.user in o.votes,
+				"voters": [] if t.poll_anonymous else o.votes,
+			}
+			for o in options
+		],
+	}
 
 
 def group_by(rows, key, value):
@@ -171,6 +227,7 @@ def serialize(threads, me) -> list:
 		.run()
 	)
 	reactions = reactions_for("CrecheConnect Thread", names)
+	polls = load_polls(names)
 
 	def unread(t):
 		if t.owner == me.user and not t.reply_count:
@@ -201,6 +258,7 @@ def serialize(threads, me) -> list:
 			"unread": unread(t),
 			"canReply": can_reply(me, t),
 			"needsAck": needs_ack(t),
+			"poll": serialize_poll(t, polls[t.name], me) if t.name in polls else None,
 		}
 		for t in threads
 	]
@@ -259,21 +317,22 @@ def audience_users(places: list, designations: list) -> list[str]:
 	return frappe.get_all("CrecheConnect Member", filters=filters, or_filters=or_filters, pluck="user")
 
 
-def notify_audience(thread: str):
+def notify_audience(thread: str, event: str = "crecheconnect_activity"):
 	frappe.enqueue(
 		"creche_connect.api.send_activity",
 		queue="short",
 		enqueue_after_commit=True,
 		thread=str(thread),
 		sender=frappe.session.user,
+		event=event,
 	)
 
 
-def send_activity(thread: str, sender: str):
+def send_activity(thread: str, sender: str, event: str = "crecheconnect_activity"):
 	doc = frappe.get_doc("CrecheConnect Thread", thread)
 	users = set(audience_users([p.place for p in doc.places], [d.designation for d in doc.designations]))
 	for user in (users | {doc.owner}) - {sender}:
-		frappe.publish_realtime("crecheconnect_activity", {"thread": thread}, user=user)
+		frappe.publish_realtime(event, {"thread": thread}, user=user)
 
 
 def get_member(user: str) -> dict:
@@ -466,6 +525,10 @@ def create_thread(
 	tags: list | None = None,
 	reply_policy: Literal["everyone", "posters", "none"] = "everyone",
 	ack_required: bool = False,
+	poll_options: list | None = None,
+	poll_multiple: bool = False,
+	poll_anonymous: bool = False,
+	poll_closes_at: str | None = None,
 ) -> dict:
 	me = get_me()
 	if not me.can_post:
@@ -488,6 +551,10 @@ def create_thread(
 			"tags": [{"tag": t} for t in tag_names],
 			"reply_policy": reply_policy,
 			"ack_required": cint(ack_required),
+			"poll_options": [{"option": o} for o in poll_options or []],
+			"poll_multiple": cint(poll_multiple),
+			"poll_anonymous": cint(poll_anonymous),
+			"poll_closes_at": poll_closes_at,
 		}
 	).insert(ignore_permissions=True)
 	touch_visit(thread.name, me.user)
@@ -532,6 +599,72 @@ def acknowledge(thread: str):
 	frappe.get_doc({"doctype": "CrecheConnect Acknowledgement", "thread": thread, "user": me.user}).insert(
 		ignore_permissions=True, ignore_if_duplicate=True
 	)
+
+
+def get_open_poll(thread: str, me, option: str | None = None, manage: bool = False):
+	doc = get_visible_thread(thread, me)
+	filters = {"parenttype": "CrecheConnect Thread", "parent": thread}
+	if option:
+		filters["name"] = option
+	if not frappe.db.exists("CrecheConnect Poll Option", filters):
+		frappe.throw(_("This option is not part of the poll") if option else _("This thread is not a poll"))
+	if poll_closed(doc):
+		frappe.throw(_("This poll is closed"))
+	if manage and doc.owner != me.user and not me.is_admin:
+		frappe.throw(_("Only the author or an admin can do this"), frappe.PermissionError)
+	return doc
+
+
+@frappe.whitelist(methods=["POST"])
+def vote(thread: str, option: str):
+	me = get_me()
+	doc = get_open_poll(thread, me, option)
+	key = {"thread": thread, "option": option, "user": me.user}
+	if frappe.db.exists("CrecheConnect Poll Vote", key):
+		frappe.db.delete("CrecheConnect Poll Vote", key)
+	else:
+		if not doc.poll_multiple:
+			frappe.db.get_value("CrecheConnect Thread", thread, "name", for_update=True)
+			frappe.db.delete("CrecheConnect Poll Vote", {"thread": thread, "user": me.user})
+		frappe.get_doc({"doctype": "CrecheConnect Poll Vote", **key}).insert(
+			ignore_permissions=True, ignore_if_duplicate=True
+		)
+	notify_audience(thread, "crecheconnect_poll")
+
+
+@frappe.whitelist(methods=["POST"])
+def close_poll(thread: str) -> dict:
+	get_open_poll(thread, get_me(), manage=True)
+	closes_at = now_datetime()
+	frappe.db.set_value("CrecheConnect Thread", thread, "poll_closes_at", closes_at)
+	notify_audience(thread, "crecheconnect_poll")
+	return {"closesAt": closes_at}
+
+
+@frappe.whitelist(methods=["POST"])
+def remind_poll(thread: str) -> int:
+	doc = get_open_poll(thread, get_me(), manage=True)
+	key = f"crecheconnect:poll-reminder:{thread}"
+	if frappe.cache.get_value(key):
+		frappe.throw(_("A reminder was already sent in the last hour"))
+	voted = set(frappe.get_all("CrecheConnect Poll Vote", filters={"thread": thread}, pluck="user"))
+	pending = sorted(set(audience_users(doc.places, doc.designations)) - voted - {doc.owner})
+	if pending:
+		frappe.sendmail(
+			recipients=pending,
+			subject=_("Your vote is needed: {0}").format(doc.title),
+			message='{0}<br><br><a href="{1}">{2}</a>'.format(
+				_("{0} is waiting for your vote on {1}.").format(
+					get_fullname(doc.owner), frappe.bold(escape_html(doc.title))
+				),
+				get_url(f"/c/threads/{thread}"),
+				_("Open the poll"),
+			),
+			reference_doctype="CrecheConnect Thread",
+			reference_name=thread,
+		)
+		frappe.cache.set_value(key, 1, expires_in_sec=3600)
+	return len(pending)
 
 
 @frappe.whitelist(methods=["POST"])
