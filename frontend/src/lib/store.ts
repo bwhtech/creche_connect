@@ -175,7 +175,9 @@ export function listenForActivity() {
   const host = window.socketio_port ? `${protocol}//${hostname}:${window.socketio_port}` : origin
   const site = window.site_name && !window.site_name.includes('{{') ? window.site_name : hostname
   let timer: ReturnType<typeof setTimeout>
-  io(`${host}/${site}`, { withCredentials: true }).on('crecheconnect_activity', (payload) => {
+  const socket = io(`${host}/${site}`, { withCredentials: true })
+  socket.on('crecheconnect_poll', (payload) => (state.activity = payload))
+  socket.on('crecheconnect_activity', (payload) => {
     clearTimeout(timer)
     timer = setTimeout(() => {
       state.activity = payload
@@ -205,7 +207,7 @@ export async function markRead(t) {
   }
 }
 
-export async function createThread({ title, body, geo, tags, policy, ackRequired }) {
+export async function createThread({ title, body, geo, tags, policy, ackRequired, poll }) {
   const res: any = await post('creche_connect.api.create_thread', {
     title,
     content: body,
@@ -214,6 +216,10 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
     tags,
     reply_policy: policy,
     ack_required: ackRequired,
+    poll_options: poll?.options,
+    poll_multiple: poll?.multiple,
+    poll_anonymous: poll?.anonymous,
+    poll_closes_at: poll?.closesAt,
   })
   for (const t of res.tags) if (!tagById(t.name)) state.tags.push(shapeTag(t))
   loadThreads('refresh')
@@ -270,6 +276,40 @@ export async function toggleReaction(target, emoji: string, doctype: 'CrecheConn
     throw e
   }
 }
+
+function applyVote(poll, optionId: string) {
+  const target = poll.options.find((o) => o.id === optionId)
+  const on = !target.mine
+  for (const o of poll.options) {
+    const pick = o === target ? on : poll.multiple && o.mine
+    if (pick === o.mine) continue
+    o.mine = pick
+    o.count += pick ? 1 : -1
+    if (!poll.anonymous) o.voters = toggleIn(o.voters, state.me.id)
+  }
+  const voted = poll.options.some((o) => o.mine)
+  if (voted !== poll.voted) poll.voterCount += voted ? 1 : -1
+  poll.voted = voted
+}
+
+export async function vote(t, optionId: string) {
+  const targets = [t, feedRow(t.id)].filter((x) => x?.poll)
+  const before = targets.map((x) => JSON.parse(JSON.stringify(x.poll)))
+  for (const x of targets) applyVote(x.poll, optionId)
+  try {
+    await post('creche_connect.api.vote', { thread: t.id, option: optionId })
+  } catch (e) {
+    targets.forEach((x, i) => (x.poll = before[i]))
+    throw e
+  }
+}
+
+export async function closePoll(t) {
+  const res: any = await post('creche_connect.api.close_poll', { thread: t.id })
+  for (const x of [t, feedRow(t.id)]) if (x?.poll) Object.assign(x.poll, { closed: true, closesAt: res.closesAt })
+}
+
+export const remindPoll = (t) => post('creche_connect.api.remind_poll', { thread: t.id })
 
 export const placeFrom = (s: string, district: string, block: string) => block || district || s || ''
 

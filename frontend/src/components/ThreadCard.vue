@@ -4,7 +4,7 @@ import { Avatar, Badge } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
-import { excerpt, userById, policyOf, threadReach, when } from '../lib/store'
+import { excerpt, userById, policyOf, threadReach, when, isAuthor } from '../lib/store'
 
 defineProps<{ thread: any }>()
 </script>
@@ -37,6 +37,12 @@ defineProps<{ thread: any }>()
             <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
           </Badge>
           <Badge v-if="thread.needsAck" label="Needs your acknowledgment" theme="amber" variant="solid" size="sm" />
+          <template v-if="thread.poll">
+            <Badge :label="thread.poll.closed ? 'Poll closed' : 'Poll'" theme="violet" variant="subtle" size="sm">
+              <template #prefix><span class="lucide-chart-bar-big size-3" aria-hidden="true" /></template>
+            </Badge>
+            <Badge v-if="!thread.poll.closed && !thread.poll.voted && !isAuthor(thread.authorId)" label="Waiting for your vote" theme="amber" variant="solid" size="sm" />
+          </template>
           <TagChips v-if="thread.tags.length" :tags="thread.tags" />
         </div>
       </div>
@@ -44,6 +50,9 @@ defineProps<{ thread: any }>()
     <div class="flex items-center gap-3 border-t border-outline-gray-1 bg-surface-gray-1 py-2 pr-5 pl-[4.25rem]">
       <Reactions :target="thread" doctype="CrecheConnect Thread" />
       <div class="ml-auto flex items-center gap-4 text-xs text-ink-gray-5">
+        <span v-if="thread.poll" class="flex items-center gap-1">
+          <span class="lucide-vote size-3.5" aria-hidden="true" />{{ thread.poll.voterCount }} voted
+        </span>
         <span class="flex items-center gap-1">
           <span class="lucide-message-square size-3.5" aria-hidden="true" />{{ thread.replyCount }}
           {{ thread.replyCount === 1 ? 'reply' : 'replies' }}

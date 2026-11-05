@@ -17,6 +17,11 @@
   "reply_policy",
   "ack_required",
   "tags",
+  "poll_section",
+  "poll_options",
+  "poll_multiple",
+  "poll_anonymous",
+  "poll_closes_at",
   "activity_section",
   "last_activity",
   "reply_count",
@@ -80,6 +85,34 @@
    "options": "CrecheConnect Thread Tag"
   },
   {
+   "fieldname": "poll_section",
+   "fieldtype": "Section Break",
+   "label": "Poll"
+  },
+  {
+   "fieldname": "poll_options",
+   "fieldtype": "Table",
+   "label": "Poll Options",
+   "options": "CrecheConnect Poll Option"
+  },
+  {
+   "default": "0",
+   "fieldname": "poll_multiple",
+   "fieldtype": "Check",
+   "label": "Allow More Than One Answer"
+  },
+  {
+   "default": "0",
+   "fieldname": "poll_anonymous",
+   "fieldtype": "Check",
+   "label": "Anonymous Votes"
+  },
+  {
+   "fieldname": "poll_closes_at",
+   "fieldtype": "Datetime",
+   "label": "Voting Closes At"
+  },
+  {
    "fieldname": "activity_section",
    "fieldtype": "Section Break",
    "label": "Activity"
@@ -111,7 +144,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-22 15:12:33.698423",
+ "modified": "2026-11-05 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "CrecheConnect",
  "name": "CrecheConnect Thread",
