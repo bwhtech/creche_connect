@@ -29,7 +29,11 @@ const childCounts = computed(() => {
 const childLabel = (p) => `${childCounts.value[p.id]} ${p.kind === 'State' ? 'districts' : 'blocks'}`
 const indent = (kind: string) => (query.value ? 'pl-4' : ({ Country: 'pl-4', State: 'pl-4', District: 'pl-10', Block: 'pl-16' })[kind])
 const iconFor = (kind: string) => ({ Country: 'lucide-globe', State: 'lucide-map' })[kind] ?? 'lucide-map-pin'
-const togglePlace = (id: string) => (draft.value.places = toggleIn(draft.value.places, id))
+const covered = (id: string) => draft.value.places.some((a) => a !== id && inPlace(id, a))
+const togglePlace = (id: string) =>
+  (draft.value.places = draft.value.places.includes(id)
+    ? draft.value.places.filter((x) => x !== id)
+    : [...draft.value.places.filter((x) => !inPlace(x, id)), id])
 
 const inSelected = computed(() => state.users.filter((u) => draft.value.places.some((p) => inPlace(u.place, p))))
 const designations = computed(() =>
@@ -86,12 +90,12 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
         </label>
         <div class="max-h-72 divide-y divide-outline-gray-1 overflow-y-auto" :class="allPlaces && 'pointer-events-none opacity-50'">
           <div v-for="p in results" :key="p.id" class="flex items-center gap-3 py-2 pr-4 hover:bg-surface-gray-1" :class="indent(p.kind)">
-            <Checkbox :model-value="allPlaces || draft.places.includes(p.id)" :disabled="allPlaces" :aria-label="`Send to ${p.name}`" @update:model-value="togglePlace(p.id)" />
+            <Checkbox :model-value="covered(p.id) || draft.places.includes(p.id)" :disabled="covered(p.id)" :aria-label="`Send to ${p.name}`" @update:model-value="togglePlace(p.id)" />
             <button
               type="button"
               class="flex min-w-0 flex-1 items-center gap-3 py-0.5 text-left"
               :aria-expanded="childCounts[p.id] && !query ? expanded.includes(p.id) : undefined"
-              @click="childCounts[p.id] && !query ? toggleExpand(p.id) : togglePlace(p.id)"
+              @click="childCounts[p.id] && !query ? toggleExpand(p.id) : covered(p.id) || togglePlace(p.id)"
             >
               <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(p.color).soft, colorOf(p.color).ink]">
                 <span :class="iconFor(p.kind)" class="size-3.5" aria-hidden="true" />
