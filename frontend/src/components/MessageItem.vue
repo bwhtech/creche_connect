@@ -63,10 +63,7 @@ async function save() {
           <span class="text-xs text-ink-gray-5">(edited)</span>
         </Tooltip>
       </template>
-      <div
-        class="mt-1.5"
-        :class="Object.keys(message.reactions).length ? '' : 'h-0 overflow-hidden group-hover:h-auto group-hover:overflow-visible focus-within:h-auto'"
-      >
+      <div class="mt-1.5">
         <Reactions :target="message" doctype="CrecheConnect Reply" />
       </div>
     </div>
