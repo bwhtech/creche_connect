@@ -10,8 +10,7 @@
   "place_name",
   "kind",
   "code",
-  "parent_place",
-  "color"
+  "parent_place"
  ],
  "fields": [
   {
@@ -43,19 +42,12 @@
    "in_standard_filter": 1,
    "label": "Parent Place",
    "options": "CrecheConnect Place"
-  },
-  {
-   "default": "blue",
-   "fieldname": "color",
-   "fieldtype": "Select",
-   "label": "Color",
-   "options": "blue\ngreen\namber\nviolet\nred"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-19 15:34:00.526427",
+ "modified": "2026-11-12 12:40:00.000000",
  "modified_by": "Administrator",
  "module": "CrecheConnect",
  "name": "CrecheConnect Place",

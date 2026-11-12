@@ -7,7 +7,6 @@ GEO = [
 	(
 		"CG",
 		"Chhattisgarh",
-		"green",
 		[
 			(
 				"JSP",
@@ -35,7 +34,6 @@ GEO = [
 	(
 		"MP",
 		"Madhya Pradesh",
-		"red",
 		[
 			("BPL", "Bhopal", [("PHN", "Phanda"), ("BRS", "Berasia")]),
 			("IDR", "Indore", [("MHW", "Mhow"), ("DPL", "Depalpur"), ("SNW", "Sanwer")]),
@@ -47,7 +45,6 @@ GEO = [
 	(
 		"MH",
 		"Maharashtra",
-		"amber",
 		[
 			("PUN", "Pune", [("HVL", "Haveli"), ("MLS", "Mulshi")]),
 			("NSK", "Nashik", [("SNR", "Sinnar"), ("IGP", "Igatpuri")]),
@@ -56,7 +53,6 @@ GEO = [
 	(
 		"UP",
 		"Uttar Pradesh",
-		"blue",
 		[
 			("LKO", "Lucknow", [("MLH", "Malihabad"), ("MHG", "Mohanlalganj")]),
 			("STP", "Sitapur", [("BSW", "Biswan"), ("MMD", "Mahmudabad")]),
@@ -65,7 +61,6 @@ GEO = [
 	(
 		"BR",
 		"Bihar",
-		"violet",
 		[
 			("PAT", "Patna", [("PHL", "Phulwari"), ("DNP", "Danapur")]),
 			("GAY", "Gaya", [("BDG", "Bodh Gaya"), ("SHG", "Sherghati")]),
@@ -503,10 +498,9 @@ def make_places():
 			"place_name": "All India",
 			"kind": "Country",
 			"code": "IN",
-			"color": "violet",
 		}
 	)
-	for code, name, color, districts in GEO:
+	for code, name, districts in GEO:
 		insert(
 			{
 				"doctype": "CrecheConnect Place",
@@ -514,7 +508,6 @@ def make_places():
 				"kind": "State",
 				"code": code,
 				"parent_place": "IN",
-				"color": color,
 			}
 		)
 		for dcode, dname, blocks in districts:
@@ -525,7 +518,6 @@ def make_places():
 					"kind": "District",
 					"code": dcode,
 					"parent_place": code,
-					"color": color,
 				}
 			)
 			for bcode, bname in blocks:
@@ -536,7 +528,6 @@ def make_places():
 						"kind": "Block",
 						"code": bcode,
 						"parent_place": district.name,
-						"color": color,
 					}
 				)
 

@@ -14,7 +14,6 @@ class CrecheConnectPlace(Document):
 		from frappe.types import DF
 
 		code: DF.Data
-		color: DF.Literal["blue", "green", "amber", "violet", "red"]
 		kind: DF.Literal["Country", "State", "District", "Block"]
 		parent_place: DF.Link | None
 		place_name: DF.Data

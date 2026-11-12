@@ -363,7 +363,7 @@ def get_boot() -> dict:
 		"members": members,
 		"places": frappe.get_all(
 			"CrecheConnect Place",
-			fields=["name", "place_name", "kind", "parent_place", "color"],
+			fields=["name", "place_name", "kind", "parent_place"],
 			order_by="name asc",
 		),
 		"designations": frappe.get_all(
