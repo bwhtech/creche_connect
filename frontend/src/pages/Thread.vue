@@ -24,7 +24,7 @@ import {
   placeById,
   placePath,
   state,
-  excerpt,
+  isBlank,
   when,
   errorText,
   colorOf,
@@ -75,7 +75,7 @@ watch(
 
 const drafts = useStorage<Record<string, string>>(`crecheconnect:reply-drafts:${me.value.id}`, {})
 const reply = computed({ get: () => drafts.value[props.id] ?? '', set: (v) => (drafts.value[props.id] = v) })
-const replyEmpty = computed(() => !excerpt(reply.value))
+const replyEmpty = computed(() => isBlank(reply.value))
 const sending = ref(false)
 const scroller = ref<HTMLElement>()
 async function send() {
@@ -258,7 +258,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               </div>
               <div class="mt-2 flex justify-end gap-2">
                 <Button label="Cancel" @click="editing = null" />
-                <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || !excerpt(editing.body)" :loading="saving" @click="saveEdit" />
+                <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || isBlank(editing.body)" :loading="saving" @click="saveEdit" />
               </div>
             </div>
             <div v-else class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
