@@ -12,6 +12,7 @@ const COLORS = {
 }
 export const editorKit = [RichTextKit.configure({ textAlign: false })]
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
+const PLACE_COLORS = { Country: 'amber', State: 'green', District: 'blue', Block: 'violet' }
 export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback
 
@@ -118,7 +119,7 @@ const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 export async function loadBoot() {
   try {
     const b: any = await get('creche_connect.api.get_boot')
-    const places = b.places.map((r) => ({ id: r.name, name: r.place_name, kind: r.kind, parentId: r.parent_place, color: r.color }))
+    const places = b.places.map((r) => ({ id: r.name, name: r.place_name, kind: r.kind, parentId: r.parent_place, color: PLACE_COLORS[r.kind] }))
     state.places = places
     for (const p of state.places) p.parent = chain(p.parentId).map((x) => x.name).join(', ')
     state.designations = b.designations
