@@ -3,7 +3,7 @@ import { computed, nextTick, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
 import { Breadcrumbs, Button, DateTimePicker, FormControl, PageHeader, Switch, TabButtons, TextInput, toast } from 'frappe-ui'
-import { Editor, EditorContent, EditorFixedMenu, minimalToolbar } from 'frappe-ui/editor'
+import { Editor, EditorContent, EditorFixedMenu, InsertImage, minimalToolbar } from 'frappe-ui/editor'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
 import dayjs from 'dayjs'
@@ -140,7 +140,7 @@ async function post() {
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
                 <Editor v-model="text.body" :extensions="editorKit">
                   <div class="border-b border-outline-gray-1 px-1 py-1">
-                    <EditorFixedMenu :items="minimalToolbar" />
+                    <EditorFixedMenu :items="[...minimalToolbar, InsertImage]" />
                   </div>
                   <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-base text-ink-gray-8" />
                 </Editor>

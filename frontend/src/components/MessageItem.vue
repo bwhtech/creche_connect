@@ -4,7 +4,7 @@ import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
 import EditHistory from './EditHistory.vue'
-import { canDelete, editorKit, isAuthor, errorText, excerpt, updateMessage, userById, when } from '../lib/store'
+import { canDelete, editorKit, isAuthor, errorText, isBlank, updateMessage, userById, when } from '../lib/store'
 
 const props = defineProps<{ message: any; compact?: boolean }>()
 const emit = defineEmits<{ delete: [] }>()
@@ -54,7 +54,7 @@ async function save() {
         </div>
         <div class="mt-2 flex justify-end gap-2">
           <Button label="Cancel" @click="draft = null" />
-          <Button variant="solid" theme="gray" label="Save" :disabled="!excerpt(draft)" :loading="saving" @click="save" />
+          <Button variant="solid" theme="gray" label="Save" :disabled="isBlank(draft)" :loading="saving" @click="save" />
         </div>
       </div>
       <template v-else>
