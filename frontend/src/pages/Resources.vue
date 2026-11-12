@@ -28,7 +28,7 @@ async function save() {
     if (editing.value) await updateResource(editing.value, { ...form.value })
     else await addResource({ ...form.value })
     showNew.value = false
-    toast.success(editing.value ? 'Resource updated' : 'Resource added and pinned to the sidebar')
+    toast.success(editing.value ? 'Resource updated' : 'Resource added')
   } catch (e) {
     toast.error(errorText(e, editing.value ? 'Could not update the resource' : 'Could not add the resource'))
   } finally {
@@ -103,7 +103,7 @@ function togglePin(r, pinned: boolean) {
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />
           <Button label="Cancel" @click="showNew = false" />
-          <Button variant="solid" theme="gray" :label="editing ? 'Save' : 'Add and pin'" :loading="saving" @click="save" />
+          <Button variant="solid" theme="gray" :label="editing ? 'Save' : 'Add'" :loading="saving" @click="save" />
         </div>
       </div>
     </Dialog>

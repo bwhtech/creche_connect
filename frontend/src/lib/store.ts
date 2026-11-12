@@ -339,9 +339,9 @@ export const RESOURCE_KINDS = {
 
 export async function addResource({ title, kind, url, description }) {
   const doc: any = await post('frappe.client.insert', {
-    doc: { doctype: 'CrecheConnect Resource', title, kind, url, description, pinned: 1 },
+    doc: { doctype: 'CrecheConnect Resource', title, kind, url, description },
   })
-  state.resources.push({ ...doc, id: doc.name, pinned: true })
+  state.resources.push({ ...doc, id: doc.name, pinned: !!doc.pinned })
 }
 
 export async function updateResource(r, { title, kind, url, description }) {
