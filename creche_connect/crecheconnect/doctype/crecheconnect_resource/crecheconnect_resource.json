@@ -43,7 +43,7 @@
    "label": "Description"
   },
   {
-   "default": "1",
+   "default": "0",
    "description": "Pinned resources show in the sidebar",
    "fieldname": "pinned",
    "fieldtype": "Check",
@@ -54,7 +54,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-10-19 15:34:00.901613",
+ "modified": "2026-11-12 14:00:00.000000",
  "modified_by": "Administrator",
  "module": "CrecheConnect",
  "name": "CrecheConnect Resource",
