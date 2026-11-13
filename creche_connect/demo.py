@@ -66,8 +66,8 @@ GEO = [
 			("GAY", "Gaya", [("BDG", "Bodh Gaya"), ("SHG", "Sherghati")]),
 		],
 	),
-	("KA", "Karnataka", "red", [("MYS", "Mysuru", [("HNS", "Hunsur"), ("NJG", "Nanjangud")])]),
-	("TN", "Tamil Nadu", "blue", [("MDU", "Madurai", [("MLR", "Melur"), ("USL", "Usilampatti")])]),
+	("KA", "Karnataka", [("MYS", "Mysuru", [("HNS", "Hunsur"), ("NJG", "Nanjangud")])]),
+	("TN", "Tamil Nadu", [("MDU", "Madurai", [("MLR", "Melur"), ("USL", "Usilampatti")])]),
 ]
 
 DESIGNATIONS = [
