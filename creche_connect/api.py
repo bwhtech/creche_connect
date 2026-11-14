@@ -256,6 +256,7 @@ def serialize(threads, me) -> list:
 			"lastActivity": t.last_activity,
 			"replyCount": cint(t.reply_count),
 			"unread": unread(t),
+			"lastVisit": my_visits.get(t.name),
 			"canReply": can_reply(me, t),
 			"needsAck": needs_ack(t),
 			"poll": serialize_poll(t, polls[t.name], me) if t.name in polls else None,

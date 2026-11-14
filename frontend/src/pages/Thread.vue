@@ -44,6 +44,11 @@ const visible = computed(() => !!thread.value)
 const author = computed(() => thread.value && userById(thread.value.authorId))
 const reach = computed(() => (thread.value ? reachOf(thread.value) : 0))
 const showInfo = ref(false)
+const seenBefore = ref<string | null>()
+const firstNew = computed(() => {
+  const since = seenBefore.value
+  return since ? (thread.value?.replies ?? []).findIndex((r) => r.at > since && r.authorId !== me.value.id) : -1
+})
 
 const removed = ref(false)
 const unavailable = computed(() =>
@@ -56,6 +61,7 @@ async function load() {
     const t = await fetchThread(props.id)
     if (!t) return
     thread.value = t
+    if (seenBefore.value === undefined) seenBefore.value = t.lastVisit
     markRead(t)
   } catch (e) {
     thread.value = null
@@ -64,7 +70,7 @@ async function load() {
     loading.value = false
   }
 }
-watch(() => props.id, () => ((loading.value = true), load()), { immediate: true })
+watch(() => props.id, () => ((loading.value = true), (seenBefore.value = undefined), load()), { immediate: true })
 watch(
   () => state.activity,
   (a) => a?.thread === props.id && load(),
@@ -130,7 +136,11 @@ const highlighted = ref<string | null>(null)
 async function revealReply() {
   const id = route.query.reply as string | undefined
   const loaded = () => thread.value.replies.some((r) => r.id === id)
-  if (!id || !thread.value) return
+  if (!thread.value) return
+  if (!id) {
+    await nextTick()
+    return document.getElementById('new-replies')?.scrollIntoView({ block: 'center' })
+  }
   while (!loaded() && thread.value.hasOlder) {
     const count = thread.value.replies.length
     await loadOlder()
@@ -276,16 +286,19 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             </div>
             <div class="-mx-2 space-y-1 pt-3">
               <Button v-if="thread.hasOlder" class="mx-2 mb-2" variant="ghost" label="Load older replies" :loading="loadingOlder" @click="loadOlder" />
-              <MessageItem
-                v-for="(m, i) in thread.replies"
-                :id="`reply-${m.id}`"
-                :key="m.id"
-                :message="m"
-                :compact="sameAuthor(i)"
-                class="transition-colors duration-700"
-                :class="{ 'bg-surface-amber-1': highlighted === m.id }"
-                @delete="confirmDelete(m)"
-              />
+              <template v-for="(m, i) in thread.replies" :key="m.id">
+                <div v-if="i === firstNew" id="new-replies" class="flex items-center gap-2 px-2 py-1 text-xs font-medium text-ink-red-4">
+                  <span class="h-px flex-1 bg-surface-red-4" aria-hidden="true" />New
+                </div>
+                <MessageItem
+                  :id="`reply-${m.id}`"
+                  :message="m"
+                  :compact="sameAuthor(i) && i !== firstNew"
+                  class="transition-colors duration-700"
+                  :class="{ 'bg-surface-amber-1': highlighted === m.id }"
+                  @delete="confirmDelete(m)"
+                />
+              </template>
               <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
             </div>
           </div>

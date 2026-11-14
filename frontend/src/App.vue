@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue'
 import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
+import { useTitle } from '@vueuse/core'
 import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
 import StatusPage from './components/StatusPage.vue'
 import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile } from './lib/store'
@@ -26,6 +27,7 @@ const isActive = (to: string) => {
 
 const unreadCount = computed(() => state.counts.unread)
 const ackCount = computed(() => state.counts.ack)
+useTitle(computed(() => (unreadCount.value ? `(${unreadCount.value}) CrecheConnect` : 'CrecheConnect')))
 const pinned = computed(() => state.resources.filter((r) => r.pinned))
 
 const mainNav = computed(() => [
