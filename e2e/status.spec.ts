@@ -20,3 +20,13 @@ test('losing the connection shows the offline screen and keeps the page', async 
   await expect(page.getByText("You're offline")).toHaveCount(0)
   await expect(page.locator('a[href*="/c/threads/"]').first()).toBeVisible()
 })
+
+test('the app opens offline once it has been loaded', async ({ page, context }) => {
+  await page.goto('/c')
+  await page.evaluate(() => navigator.serviceWorker.ready)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Feed' })).toBeVisible()
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page.getByText("You're offline")).toBeVisible()
+})
