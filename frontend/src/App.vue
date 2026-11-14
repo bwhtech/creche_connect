@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
+import { useTitle } from '@vueuse/core'
 import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
+import StatusPage from './components/StatusPage.vue'
 import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile } from './lib/store'
 
 const me = useMe()
@@ -10,6 +13,9 @@ onMounted(() => {
   loadCounts().catch(() => {})
   listenForActivity()
 })
+const online = useOnline()
+const offline = { icon: 'lucide-wifi-off', title: "You're offline", text: "Check your mobile data or Wi-Fi. CrecheConnect will carry on from here once you're back online." }
+watch(online, (on) => on && !state.ready && loadBoot())
 const route = useRoute()
 const router = useRouter()
 
@@ -21,6 +27,7 @@ const isActive = (to: string) => {
 
 const unreadCount = computed(() => state.counts.unread)
 const ackCount = computed(() => state.counts.ack)
+useTitle(computed(() => (unreadCount.value ? `(${unreadCount.value}) CrecheConnect` : 'CrecheConnect')))
 const pinned = computed(() => state.resources.filter((r) => r.pinned))
 
 const mainNav = computed(() => [
@@ -48,7 +55,8 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
 
 <template>
   <div class="h-dvh w-full bg-surface-base text-ink-gray-9">
-    <div v-if="!state.ready" class="flex h-full flex-col items-center justify-center gap-3 text-center">
+    <StatusPage v-if="!state.ready && !online" v-bind="offline" />
+    <div v-else-if="!state.ready" class="flex h-full flex-col items-center justify-center gap-3 text-center">
       <template v-if="state.error">
         <span class="lucide-lock size-6 text-ink-gray-5" aria-hidden="true" />
         <p class="max-w-sm text-p-sm text-ink-gray-7">{{ state.error }}</p>
@@ -56,7 +64,8 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
       <LoadingIndicator v-else class="size-5 text-ink-gray-5" />
     </div>
     <MobileShell v-else-if="isMobile">
-      <RouterView />
+      <StatusPage v-if="!online" v-bind="offline" />
+      <RouterView v-show="online" />
       <template v-if="showTabs" #nav>
         <MobileNav>
           <MobileNavItem label="Feed" route="/" :active="route.path === '/'">
@@ -78,7 +87,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
         </MobileNav>
       </template>
     </MobileShell>
-    <DesktopShell v-else>
+    <DesktopShell v-else :scroll="false">
       <template #sidebar>
         <Sidebar width="14rem" class="border-r">
           <SidebarHeader title="CrecheConnect" logo="/assets/creche_connect/logo.svg" />
@@ -131,7 +140,8 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
           </Dropdown>
         </Sidebar>
       </template>
-      <RouterView />
+      <StatusPage v-if="!online" v-bind="offline" />
+      <RouterView v-show="online" />
     </DesktopShell>
   </div>
 </template>

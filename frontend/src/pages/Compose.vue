@@ -6,6 +6,7 @@ import { Breadcrumbs, Button, DateTimePicker, FormControl, PageHeader, PageHeade
 import { Editor, EditorContent, EditorFixedMenu, InsertImage, minimalToolbar } from 'frappe-ui/editor'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
+import StatusPage from '../components/StatusPage.vue'
 import dayjs from 'dayjs'
 import { state, editorKit, audienceOf, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
 
@@ -117,16 +118,9 @@ async function post() {
       </div>
     </PageHeader>
 
-    <div v-if="!canStart(me)" class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-      <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-5">
-        <span class="lucide-lock size-6" aria-hidden="true" />
-      </div>
-      <p class="text-base text-ink-gray-7">You can't start threads</p>
-      <p class="max-w-sm text-p-sm text-ink-gray-5">
-        An admin can turn on “Can start threads” for you on the Users page.
-      </p>
+    <StatusPage v-if="!canStart(me)" icon="lucide-lock" title="You can't start threads" text="An admin can turn on “Can start threads” for you on the Users page.">
       <Button label="Back to feed" route="/" class="mt-2" />
-    </div>
+    </StatusPage>
 
     <div v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
       <div class="min-w-0 flex-1 lg:overflow-y-auto">

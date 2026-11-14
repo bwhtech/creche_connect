@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { Button, LoadingIndicator, PageHeader, TabButtons, Tooltip, toast, useCall } from 'frappe-ui'
 import { AreaChart, BarChart } from 'frappe-ui/charts'
 import { useMe, tagById, colorOf, errorText, placeById } from '../lib/store'
+import StatusPage from '../components/StatusPage.vue'
 
 const me = useMe()
 const RANGES = [
@@ -97,13 +98,9 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
       </div>
     </PageHeader>
 
-    <div v-if="!me.admin" class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-      <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-5">
-        <span class="lucide-lock size-6" aria-hidden="true" />
-      </div>
-      <p class="text-base text-ink-gray-7">Insights are for admins</p>
+    <StatusPage v-if="!me.admin" icon="lucide-lock" title="Insights are for admins">
       <Button label="Back to feed" route="/" class="mt-2" />
-    </div>
+    </StatusPage>
 
     <div v-else-if="!data" class="flex flex-1 items-center justify-center">
       <LoadingIndicator class="size-5 text-ink-gray-5" />
