@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue'
 import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
+import { useTitle } from '@vueuse/core'
 import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
 import StatusPage from './components/StatusPage.vue'
 import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile } from './lib/store'
@@ -27,12 +28,14 @@ const isActive = (to: string) => {
 
 const unreadCount = computed(() => state.counts.unread)
 const ackCount = computed(() => state.counts.ack)
+useTitle(computed(() => (unreadCount.value ? `(${unreadCount.value}) CrecheConnect` : 'CrecheConnect')))
 const pinned = computed(() => state.resources.filter((r) => r.pinned))
 
 const mainNav = computed(() => [
   { label: 'Feed', icon: 'lucide-rss', to: '/' },
   { label: 'Unread', icon: 'lucide-circle-dot', to: '/?filter=unread', count: unreadCount.value },
   { label: 'To acknowledge', icon: 'lucide-badge-check', to: '/?filter=ack', count: ackCount.value },
+  { label: 'Mentions', icon: 'lucide-at-sign', to: '/?filter=mentions' },
   ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const openResource = (url: string) => window.open(url, '_blank', 'noopener')

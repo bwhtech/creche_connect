@@ -173,6 +173,20 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		self.assertIn(read, self.feed(filter="mine"))
 		self.assertNotIn(unread, self.feed(filter="unread"))
 
+	def test_mentions_filter_finds_threads_and_replies_that_mention_you(self):
+		mention = f'<p><span class="mention" data-type="mention" data-id="{self.volunteer}" data-label="volunteer">@volunteer</span></p>'
+		in_thread = self.post(self.lead, [self.state])
+		frappe.set_user(self.lead)
+		api.update_message("CrecheConnect Thread", in_thread, mention)
+		in_reply = self.post(self.lead, [self.state])
+		api.add_reply(in_reply, mention)
+		elsewhere = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		mentions = set(self.feed(filter="mentions"))
+		self.assertEqual(mentions & {in_thread, in_reply, elsewhere}, {in_thread, in_reply})
+		frappe.set_user(self.coordinator)
+		self.assertFalse(set(self.feed(filter="mentions")) & {in_thread, in_reply})
+
 	def test_feed_counts_who_has_seen_a_thread(self):
 		name = self.post(self.lead, [self.state])
 		frappe.set_user(self.volunteer)

@@ -39,12 +39,13 @@ const filters = computed(() => [
   { label: 'All', value: '' },
   { label: `Unread${count(state.counts.unread)}`, value: 'unread' },
   { label: `To ack${count(state.counts.ack)}`, value: 'ack' },
+  { label: 'Mentions', value: 'mentions' },
   ...(canStart(me.value) ? [{ label: 'Mine', value: 'mine' }] : []),
 ])
 const setFilter = (f: string) => router.push({ path: '/', query: { ...route.query, filter: f || undefined } })
 
 const title = computed(
-  () => ({ unread: 'Unread', ack: 'To acknowledge', mine: 'Started by me' })[filter.value ?? ''] ?? 'Feed',
+  () => ({ unread: 'Unread', ack: 'To acknowledge', mentions: 'Mentions', mine: 'Started by me' })[filter.value ?? ''] ?? 'Feed',
 )
 </script>
 
