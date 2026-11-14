@@ -12,13 +12,14 @@ const COLORS = {
   red: { dot: 'bg-surface-red-7', soft: 'bg-surface-red-2', ink: 'text-ink-red-6' },
 }
 const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) => upload(file, { ...o, private: false, optimize: true })
-export const editorKit = [
+export const editorKit = (people: () => any[]) => [
   RichTextKit.configure({
     textAlign: false,
     image: { uploadFunction },
     contentPaste: { uploadFunction },
     video: false,
     attachment: false,
+    mention: { items: () => people().filter((u) => u.id !== state.me?.id).map((u) => ({ label: u.name, value: u.id })) },
   }),
 ]
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
@@ -102,7 +103,8 @@ export const matchesGeo = (u, geo) =>
   !!geo?.places.length &&
   geo.places.some((p) => inPlace(u.place, p)) &&
   (!geo.designations.length || geo.designations.includes(u.designation))
-export const reachOf = (a) => state.users.filter((u) => matchesGeo(u, a.geo)).length
+export const audienceOf = (geo, authorId?: string) => state.users.filter((u) => u.id === authorId || matchesGeo(u, geo))
+export const reachOf = (a) => audienceOf(a.geo).length
 const reachById = computed(() => Object.fromEntries(state.threads.map((t) => [t.id, reachOf(t)])))
 export const threadReach = (t) => reachById.value[t.id] ?? reachOf(t)
 export const allowedPlaces = (u) =>

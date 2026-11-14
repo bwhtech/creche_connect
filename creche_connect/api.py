@@ -14,7 +14,9 @@ ThreadDesignation = DocType("CrecheConnect Thread Designation")
 ThreadTag = DocType("CrecheConnect Thread Tag")
 Visit = DocType("CrecheConnect Thread Visit")
 Acknowledgement = DocType("CrecheConnect Acknowledgement")
+Reply = DocType("CrecheConnect Reply")
 
+FeedFilter = Literal["unread", "ack", "mine", "mentions"]
 PAGE_SIZE = 30
 MAX_PAGE_SIZE = 300
 REPLY_PAGE_SIZE = 50
@@ -415,6 +417,10 @@ def feed_query(me, filter: str | None = None, tag: str | None = None):
 	elif filter == "ack":
 		acked = thread_ids(Acknowledgement, "thread").where(Acknowledgement.user == me.user)
 		query = query.where((Thread.ack_required == 1) & (Thread.owner != me.user) & Thread.name.notin(acked))
+	elif filter == "mentions":
+		mention = f'%data-id="{me.user}"%'
+		replies = thread_ids(Reply, "thread").where(Reply.content.like(mention))
+		query = query.where(Thread.content.like(mention) | Thread.name.isin(replies))
 	if tag:
 		tagged = thread_ids(ThreadTag).where(ThreadTag.tag == tag)
 		query = query.where(Thread.name.isin(tagged))
@@ -427,7 +433,7 @@ def count(query) -> int:
 
 @frappe.whitelist(methods=["GET"])
 def get_threads(
-	filter: Literal["unread", "ack", "mine"] | None = None,
+	filter: FeedFilter | None = None,
 	tag: str | None = None,
 	cursor: str | None = None,
 	limit: int = PAGE_SIZE,
@@ -458,7 +464,7 @@ def get_threads(
 
 
 @frappe.whitelist(methods=["GET"])
-def get_counts(filter: Literal["unread", "ack", "mine"] | None = None) -> dict:
+def get_counts(filter: FeedFilter | None = None) -> dict:
 	me = get_me()
 	tags = (
 		feed_query(me, filter)

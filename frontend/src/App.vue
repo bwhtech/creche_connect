@@ -34,6 +34,7 @@ const mainNav = computed(() => [
   { label: 'Feed', icon: 'lucide-rss', to: '/' },
   { label: 'Unread', icon: 'lucide-circle-dot', to: '/?filter=unread', count: unreadCount.value },
   { label: 'To acknowledge', icon: 'lucide-badge-check', to: '/?filter=ack', count: ackCount.value },
+  { label: 'Mentions', icon: 'lucide-at-sign', to: '/?filter=mentions' },
   ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const openResource = (url: string) => window.open(url, '_blank', 'noopener')
