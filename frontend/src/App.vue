@@ -15,6 +15,7 @@ onMounted(() => {
 const online = useOnline()
 const offline = { icon: 'lucide-wifi-off', title: "You're offline", text: "Check your mobile data or Wi-Fi. CrecheConnect will carry on from here once you're back online." }
 watch(online, (on) => on && !state.ready && loadBoot())
+const reload = () => window.location.reload()
 const route = useRoute()
 const router = useRouter()
 
@@ -52,7 +53,9 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
 
 <template>
   <div class="h-dvh w-full bg-surface-base text-ink-gray-9">
-    <StatusPage v-if="!state.ready && !online" v-bind="offline" />
+    <StatusPage v-if="!state.ready && (!online || state.unreachable)" v-bind="offline">
+      <Button label="Try again" class="mt-2" @click="reload" />
+    </StatusPage>
     <div v-else-if="!state.ready" class="flex h-full flex-col items-center justify-center gap-3 text-center">
       <template v-if="state.error">
         <span class="lucide-lock size-6 text-ink-gray-5" aria-hidden="true" />
