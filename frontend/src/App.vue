@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
-import { DesktopShell, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
-import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout } from './lib/store'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
+import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile } from './lib/store'
 
 const me = useMe()
 onMounted(() => {
@@ -11,6 +11,7 @@ onMounted(() => {
   listenForActivity()
 })
 const route = useRoute()
+const router = useRouter()
 
 const isActive = (to: string) => {
   const [path, qs] = to.split('?')
@@ -36,10 +37,16 @@ const userMenu = computed(() => [
     : { label: 'Dark mode', icon: 'lucide-moon', onClick: toggleColorScheme },
   { label: 'Log out', icon: 'lucide-log-out', onClick: logout },
 ])
+const mobileMenu = computed(() => [
+  ...(me.value.admin ? [{ label: 'Insights', icon: 'lucide-chart-column', onClick: () => router.push('/insights') }] : []),
+  { label: 'Users', icon: 'lucide-users', onClick: () => router.push('/users') },
+  ...userMenu.value,
+])
+const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
 </script>
 
 <template>
-  <div class="h-screen w-full bg-surface-base text-ink-gray-9">
+  <div class="h-dvh w-full bg-surface-base text-ink-gray-9">
     <div v-if="!state.ready" class="flex h-full flex-col items-center justify-center gap-3 text-center">
       <template v-if="state.error">
         <span class="lucide-lock size-6 text-ink-gray-5" aria-hidden="true" />
@@ -47,6 +54,29 @@ const userMenu = computed(() => [
       </template>
       <LoadingIndicator v-else class="size-5 text-ink-gray-5" />
     </div>
+    <MobileShell v-else-if="isMobile">
+      <RouterView />
+      <template v-if="showTabs" #nav>
+        <MobileNav>
+          <MobileNavItem label="Feed" route="/" :active="route.path === '/'">
+            <template #default="{ active }">
+              <span class="relative">
+                <span class="lucide-rss block size-6" :class="active ? 'text-ink-gray-8' : 'text-ink-gray-5'" aria-hidden="true" />
+                <Badge v-if="unreadCount" class="absolute -top-1.5 left-4" :label="String(unreadCount)" theme="red" variant="solid" size="sm" />
+              </span>
+            </template>
+          </MobileNavItem>
+          <MobileNavItem label="Search" icon="lucide-search" route="/search" />
+          <MobileNavItem v-if="canStart(me)" label="New" icon="lucide-square-pen" route="/new" />
+          <MobileNavItem label="Resources" icon="lucide-library" route="/resources" />
+          <Dropdown :options="mobileMenu" side="top" align="end">
+            <MobileNavItem label="You" :active="['/users', '/insights'].includes(route.path)">
+              <Avatar :label="me.name" size="md" />
+            </MobileNavItem>
+          </Dropdown>
+        </MobileNav>
+      </template>
+    </MobileShell>
     <DesktopShell v-else>
       <template #sidebar>
         <Sidebar width="14rem" class="border-r">

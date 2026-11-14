@@ -2,12 +2,12 @@
 import { computed, nextTick, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
-import { Breadcrumbs, Button, DateTimePicker, FormControl, PageHeader, Switch, TabButtons, TextInput, toast } from 'frappe-ui'
+import { Breadcrumbs, Button, DateTimePicker, FormControl, PageHeader, PageHeaderBackButton, PageHeaderMobile, Switch, TabButtons, TextInput, toast } from 'frappe-ui'
 import { Editor, EditorContent, EditorFixedMenu, InsertImage, minimalToolbar } from 'frappe-ui/editor'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
 import dayjs from 'dayjs'
-import { state, editorKit, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES } from '../lib/store'
+import { state, editorKit, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
 
 const me = useMe()
 const router = useRouter()
@@ -102,7 +102,13 @@ async function post() {
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeader>
+    <PageHeaderMobile v-if="isMobile" :title="isPoll ? 'New poll' : 'New thread'">
+      <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/' }" /></template>
+      <template v-if="canStart(me)" #suffix>
+        <Button variant="solid" theme="gray" label="Post" :loading="posting" @click="post" />
+      </template>
+    </PageHeaderMobile>
+    <PageHeader v-else>
       <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: 'New thread' }]" />
       <div v-if="canStart(me)" class="ml-auto flex items-center gap-2">
         <Button label="Cancel" route="/" />
@@ -242,7 +248,7 @@ async function post() {
             <Switch v-model="poll.multiple" label="Allow more than one answer" description="People can tick every option that works for them." />
             <Switch v-model="poll.anonymous" label="Anonymous votes" description="Show counts only. Nobody, including you, sees who voted for what." />
             <Switch :model-value="!!poll.closesAt" label="Set a deadline" description="Voting closes on its own. You can also close it any time." @update:model-value="setDeadline" />
-            <DateTimePicker v-if="poll.closesAt" v-model="poll.closesAt" label="Voting closes" />
+            <DateTimePicker v-if="poll.closesAt" v-model="poll.closesAt" label="Voting closes" format="ddd D MMM YYYY, h:mm A" />
           </section>
           <section class="space-y-4">
             <h2 class="text-sm text-ink-gray-5">Thread rules</h2>

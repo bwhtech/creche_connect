@@ -5,8 +5,26 @@
 @tailwind utilities;
 
 @layer base {
+	html {
+		-webkit-tap-highlight-color: transparent;
+		-webkit-text-size-adjust: 100%;
+		overscroll-behavior: none;
+	}
 	body {
 		@apply bg-surface-base text-ink-gray-8 antialiased;
+	}
+	button,
+	a,
+	[role='button'] {
+		touch-action: manipulation;
+	}
+	@media (pointer: coarse) {
+		input,
+		textarea,
+		select,
+		[contenteditable='true'] {
+			font-size: 16px !important;
+		}
 	}
 }
 

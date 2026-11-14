@@ -126,12 +126,12 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
 
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <section class="rounded-5 border border-outline-gray-1 p-5">
-            <div class="flex items-start gap-3">
+            <div class="flex flex-wrap items-start gap-3">
               <div>
                 <h2 class="text-lg-semibold text-ink-gray-9">Reach across India</h2>
                 <p class="mt-0.5 text-sm text-ink-gray-5">One tile per state. Pick a state to see its districts.</p>
               </div>
-              <TabButtons v-model="metric" class="ml-auto shrink-0" :options="METRICS" />
+              <TabButtons v-model="metric" class="shrink-0 sm:ml-auto" :options="METRICS" />
             </div>
 
             <div class="mt-6 grid grid-cols-8 gap-1.5" role="group" aria-label="Map of programme states">

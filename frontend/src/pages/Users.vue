@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { Avatar, Badge, Button, Dialog, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
 import { List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell } from 'frappe-ui/list'
-import { state, useMe, STATES, DESIGNATIONS, districtsOf, blocksOf, placeById, placePath, placeFrom, saveUser, chain, inPlace, errorText } from '../lib/store'
+import { state, useMe, STATES, DESIGNATIONS, districtsOf, blocksOf, placeById, placePath, placeFrom, saveUser, chain, inPlace, errorText, isMobile } from '../lib/store'
 
 const me = useMe()
 const query = ref('')
@@ -13,7 +13,7 @@ const stateOptions = computed(() => [{ label: 'All states', value: '' }, { label
 const people = computed(() =>
   state.users.map((u) => {
     const levels = chain(u.place).reverse().map((p) => p.name)
-    return { ...u, levels, search: `${u.name} ${u.designation} ${levels.join(' ')}`.toLowerCase() }
+    return { ...u, levels, where: levels.join(', ') || 'National', search: `${u.name} ${u.designation} ${levels.join(' ')}`.toLowerCase() }
   }),
 )
 const rows = computed(() => {
@@ -78,7 +78,8 @@ async function save() {
   <div class="flex h-full flex-col">
     <PageHeader>
       <h1 class="text-2xl text-ink-gray-9">Users</h1>
-      <div class="ml-auto flex items-center gap-2">
+      <Button v-if="me.admin && isMobile" class="ml-auto" variant="solid" theme="gray" icon-left="lucide-user-plus" label="Add" @click="add" />
+      <div v-if="!isMobile" class="ml-auto flex items-center gap-2">
         <div class="w-40">
           <FormControl v-model="stateFilter" type="select" :options="stateOptions" aria-label="Filter by state" />
         </div>
@@ -93,17 +94,27 @@ async function save() {
 
     <div class="min-h-0 flex-1 overflow-y-auto">
       <div class="px-3 pt-6 pb-20 sm:px-5">
+        <div v-if="isMobile" class="mb-4 flex gap-2">
+          <div class="w-32 shrink-0">
+            <FormControl v-model="stateFilter" type="select" :options="stateOptions" aria-label="Filter by state" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <TextInput v-model="query" placeholder="Search users" aria-label="Search users">
+              <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
+            </TextInput>
+          </div>
+        </div>
         <p class="mb-5 text-p-sm text-ink-gray-5">
           Each user has a state, district, block and designation. Threads reach people by these four fields.
           <span class="tabular-nums">{{ rows.length }} of {{ state.users.length }}</span> shown.
         </p>
-        <List :columns="['minmax(0,1.4fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', '8rem', '4rem']" :row-height="56">
+        <List :columns="{ base: ['minmax(0,1fr)', '3rem'], md: ['minmax(0,1.4fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', '8rem', '4rem'] }" :row-height="56">
           <ListHeader>
             <ListHeaderCell>Name</ListHeaderCell>
-            <ListHeaderCell>State</ListHeaderCell>
-            <ListHeaderCell>District</ListHeaderCell>
-            <ListHeaderCell>Block</ListHeaderCell>
-            <ListHeaderCell>Posting</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">State</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">District</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">Block</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">Posting</ListHeaderCell>
             <ListHeaderCell />
           </ListHeader>
           <ListRows :items="rows" v-slot="{ item }">
@@ -116,16 +127,18 @@ async function save() {
                       {{ item.name }}
                       <span v-if="item.admin" class="ml-1 text-xs text-ink-gray-5">Admin</span>
                     </div>
-                    <div class="truncate text-xs text-ink-gray-5">{{ item.designation }}</div>
+                    <div class="truncate text-xs text-ink-gray-5">
+                      {{ item.designation }}<span class="md:hidden"> · {{ item.where }}</span>
+                    </div>
                   </div>
                 </div>
               </ListCell>
-              <ListCell>
+              <ListCell class="max-md:hidden">
                 <span class="truncate text-sm" :class="item.place ? 'text-ink-gray-7' : 'text-ink-gray-5'">{{ item.levels[0] || 'National' }}</span>
               </ListCell>
-              <ListCell><span class="truncate text-sm text-ink-gray-7">{{ item.levels[1] || '—' }}</span></ListCell>
-              <ListCell><span class="truncate text-sm text-ink-gray-7">{{ item.levels[2] || '—' }}</span></ListCell>
-              <ListCell>
+              <ListCell class="max-md:hidden"><span class="truncate text-sm text-ink-gray-7">{{ item.levels[1] || '—' }}</span></ListCell>
+              <ListCell class="max-md:hidden"><span class="truncate text-sm text-ink-gray-7">{{ item.levels[2] || '—' }}</span></ListCell>
+              <ListCell class="max-md:hidden">
                 <Badge v-if="item.canPost" label="Can start threads" theme="green" variant="subtle" size="sm" />
                 <span v-else class="text-sm text-ink-gray-4">Read and reply</span>
               </ListCell>
