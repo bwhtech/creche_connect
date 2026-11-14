@@ -11,6 +11,7 @@ import Reactions from '../components/Reactions.vue'
 import EditHistory from '../components/EditHistory.vue'
 import Poll from '../components/Poll.vue'
 import ThreadInfo from '../components/ThreadInfo.vue'
+import StatusPage from '../components/StatusPage.vue'
 import {
   useMe,
   fetchThread,
@@ -212,14 +213,9 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       <LoadingIndicator class="size-5 text-ink-gray-5" />
     </div>
 
-    <div v-else-if="!visible" class="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-      <div class="rounded-full bg-surface-gray-2 p-3 text-ink-gray-5">
-        <span :class="unavailable.icon" class="size-6" aria-hidden="true" />
-      </div>
-      <p class="text-base text-ink-gray-7">{{ unavailable.title }}</p>
-      <p class="max-w-sm text-p-sm text-ink-gray-5">{{ unavailable.text }}</p>
+    <StatusPage v-else-if="!visible" v-bind="unavailable">
       <Button label="Back to feed" route="/" class="mt-2" />
-    </div>
+    </StatusPage>
 
     <div v-else class="flex min-h-0 flex-1">
       <div class="flex min-w-0 flex-1 flex-col">
