@@ -1,6 +1,7 @@
 import { reactive, computed } from 'vue'
 import { call, frappeRequest, dayjsLocal, upload } from 'frappe-ui'
 import { io } from 'socket.io-client'
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { RichTextKit } from 'frappe-ui/editor'
 
 const COLORS = {
@@ -38,6 +39,8 @@ async function post(method: string, params = {}, tries = 5) {
 
 export const get = (method: string, params = {}) =>
   frappeRequest({ url: method, method: 'GET', params: Object.fromEntries(Object.entries(params).filter(([, v]) => v != null)) })
+
+export const isMobile = useBreakpoints(breakpointsTailwind).smaller('md')
 
 export const state = reactive({
   ready: false,

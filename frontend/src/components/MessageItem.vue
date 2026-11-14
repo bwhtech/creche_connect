@@ -40,8 +40,8 @@ async function save() {
     </div>
     <div class="min-w-0 flex-1">
       <div v-if="!compact" class="flex items-baseline gap-2">
-        <span class="text-base-semibold text-ink-gray-9">{{ author.name }}</span>
-        <span class="truncate text-xs text-ink-gray-5">{{ author.title }}</span>
+        <span class="shrink-0 text-base-semibold text-ink-gray-9">{{ author.name }}</span>
+        <span class="truncate text-xs text-ink-gray-5 max-md:hidden">{{ author.title }}</span>
         <Tooltip :text="when(message.at).format('DD MMM YYYY, h:mm A')">
           <span class="ml-auto shrink-0 text-xs text-ink-gray-5">{{ when(message.at).fromNow() }}</span>
         </Tooltip>

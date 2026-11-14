@@ -2,7 +2,7 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStorage } from '@vueuse/core'
-import { Avatar, Badge, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, Progress, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
+import { Avatar, Badge, BottomSheet, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, PageHeaderBackButton, PageHeaderMobile, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
@@ -10,6 +10,7 @@ import TagChips from '../components/TagChips.vue'
 import Reactions from '../components/Reactions.vue'
 import EditHistory from '../components/EditHistory.vue'
 import Poll from '../components/Poll.vue'
+import ThreadInfo from '../components/ThreadInfo.vue'
 import {
   useMe,
   fetchThread,
@@ -20,14 +21,10 @@ import {
   userById,
   reachOf,
   policyOf,
-  matchesGeo,
-  placeById,
-  placePath,
   state,
   isBlank,
   when,
   errorText,
-  colorOf,
   canDelete,
   isAuthor,
   updateMessage,
@@ -35,6 +32,7 @@ import {
   deleteReply,
   editorKit,
   closePoll,
+  isMobile,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -44,9 +42,7 @@ const loading = ref(true)
 const visible = computed(() => !!thread.value)
 const author = computed(() => thread.value && userById(thread.value.authorId))
 const reach = computed(() => (thread.value ? reachOf(thread.value) : 0))
-const geoPlaces = computed(() => (thread.value?.geo?.places ?? []).map(placeById).filter(Boolean))
-const viaGeo = computed(() => thread.value?.geo && matchesGeo(me.value, thread.value.geo))
-const seenPct = computed(() => (reach.value ? Math.min(100, Math.round((thread.value.seenBy.length / reach.value) * 100)) : 0))
+const showInfo = ref(false)
 
 const removed = ref(false)
 const unavailable = computed(() =>
@@ -202,7 +198,13 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeader>
+    <PageHeaderMobile v-if="isMobile" :title="thread?.title ?? 'Thread'">
+      <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/' }" /></template>
+      <template v-if="visible" #suffix>
+        <Button variant="ghost" icon="lucide-info" aria-label="Thread details" @click="showInfo = true" />
+      </template>
+    </PageHeaderMobile>
+    <PageHeader v-else>
       <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: thread?.title ?? 'Thread' }]" />
     </PageHeader>
 
@@ -222,14 +224,14 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
     <div v-else class="flex min-h-0 flex-1">
       <div class="flex min-w-0 flex-1 flex-col">
         <div ref="scroller" class="min-h-0 flex-1 overflow-y-auto">
-          <div class="mx-auto max-w-[770px] px-3 pt-10 pb-12 sm:px-6">
+          <div class="mx-auto max-w-[770px] px-4 pt-5 pb-12 sm:px-6 md:pt-10">
             <AudienceChips :geo="thread.geo" />
             <TextInput v-if="editing" v-model="editing.title" class="mt-4" size="lg" aria-label="Topic" />
-            <h1 v-else class="mt-4 text-3xl font-semibold text-ink-gray-9">{{ thread.title }}</h1>
+            <h1 v-else class="mt-4 text-2xl font-semibold text-ink-gray-9 md:text-3xl">{{ thread.title }}</h1>
             <div class="mt-4 flex items-center gap-2.5">
               <Avatar :label="author.name" size="md" />
-              <span class="text-sm text-ink-gray-8">{{ author.name }}</span>
-              <span class="text-sm text-ink-gray-5">{{ author.title }} · {{ when(thread.createdAt).fromNow() }}</span>
+              <span class="shrink-0 text-sm text-ink-gray-8">{{ author.name }}</span>
+              <span class="truncate text-sm text-ink-gray-5"><span class="max-md:hidden">{{ author.title }} · </span>{{ when(thread.createdAt).fromNow() }}</span>
               <Tooltip v-if="thread.editedAt" :text="`Edited ${when(thread.editedAt).format('DD MMM YYYY, h:mm A')}`">
                 <span class="text-sm text-ink-gray-5">(edited)</span>
               </Tooltip>
@@ -299,7 +301,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <div class="flex items-end gap-2" @keydown="onKey">
                 <div class="flex-1">
                   <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                    <Editor v-model="reply" :extensions="editorKit" placeholder="Write a reply…  (Ctrl + Enter to send)">
+                    <Editor v-model="reply" :extensions="editorKit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
                       <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
                     </Editor>
                   </div>
@@ -316,60 +318,8 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
         </div>
       </div>
 
-      <aside class="hidden w-[20rem] shrink-0 overflow-y-auto border-l border-outline-gray-1 lg:block">
-        <div class="space-y-8 p-6">
-          <section>
-            <h2 class="text-sm text-ink-gray-5">Audience</h2>
-            <div class="mt-3 space-y-2">
-              <div v-for="p in geoPlaces" :key="p.id" class="flex items-center gap-2.5 py-1">
-                <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(p.color).soft, colorOf(p.color).ink]">
-                  <span class="lucide-map-pin size-3.5" aria-hidden="true" />
-                </span>
-                <div class="min-w-0">
-                  <div class="truncate text-sm text-ink-gray-8">{{ p.name }}</div>
-                  <div class="truncate text-xs text-ink-gray-5">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</div>
-                </div>
-              </div>
-              <div v-if="thread.geo" class="pt-1 text-xs text-ink-gray-5">
-                {{ thread.geo.designations.length ? thread.geo.designations.join(', ') : 'Every designation' }}
-              </div>
-            </div>
-            <div class="mt-3 flex justify-between border-t border-outline-gray-1 pt-3 text-sm">
-              <span class="text-ink-gray-6">Unique people</span>
-              <span class="text-ink-gray-9 tabular-nums">{{ reach }}</span>
-            </div>
-          </section>
-
-          <section>
-            <h2 class="text-sm text-ink-gray-5">Seen</h2>
-            <div class="mt-2 flex items-baseline justify-between">
-              <span class="text-xl text-ink-gray-9 tabular-nums">{{ seenPct }}%</span>
-              <span class="text-xs text-ink-gray-5 tabular-nums">{{ thread.seenBy.length }} of {{ reach }}</span>
-            </div>
-            <Progress class="mt-2" :value="seenPct" />
-          </section>
-
-          <section v-if="thread.ackRequired">
-            <h2 class="text-sm text-ink-gray-5">Acknowledged</h2>
-            <div class="mt-2.5 flex items-center gap-2">
-              <div class="flex -space-x-1.5">
-                <Tooltip v-for="uid in thread.acks.slice(0, 6)" :key="uid" :text="userById(uid).name">
-                  <Avatar :label="userById(uid).name" size="sm" class="ring-2 ring-surface-base" />
-                </Tooltip>
-              </div>
-              <span class="text-sm text-ink-gray-7 tabular-nums">{{ thread.acks.length }} of {{ reach }}</span>
-            </div>
-          </section>
-
-          <section>
-            <h2 class="text-sm text-ink-gray-5">Your access</h2>
-            <div class="mt-2.5 flex flex-wrap gap-1">
-              <Badge v-if="thread.authorId === me.id" label="You started this" theme="blue" variant="subtle" />
-              <Badge v-if="viaGeo" :label="`Via ${placePath(me.place)}`" :theme="geoPlaces[0]?.color ?? 'blue'" variant="subtle" />
-            </div>
-            <p class="mt-2 text-p-xs text-ink-gray-5">{{ thread.canReply ? 'You can reply.' : 'You can read but not reply.' }}</p>
-          </section>
-        </div>
+      <aside v-if="!isMobile" class="hidden w-[20rem] shrink-0 overflow-y-auto border-l border-outline-gray-1 lg:block">
+        <ThreadInfo :thread="thread" :reach="reach" />
       </aside>
     </div>
 
@@ -381,6 +331,9 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       theme="red"
       :actions="deleteActions"
     />
+    <BottomSheet v-if="visible" v-model:open="showInfo" title="Thread details">
+      <ThreadInfo :thread="thread" :reach="reach" class="pb-[env(safe-area-inset-bottom)]" />
+    </BottomSheet>
     <EditHistory v-if="showHistory" v-model:open="showHistory" doctype="CrecheConnect Thread" :name="thread.id" />
   </div>
 </template>
