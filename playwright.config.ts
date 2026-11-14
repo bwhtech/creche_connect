@@ -10,6 +10,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL,
+    channel: 'chromium',
     launchOptions: { args: [`--unsafely-treat-insecure-origin-as-secure=${baseURL}`] },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
