@@ -7,7 +7,7 @@ import { Editor, EditorContent, EditorFixedMenu, InsertImage, minimalToolbar } f
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
 import dayjs from 'dayjs'
-import { state, editorKit, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
+import { state, editorKit, audienceOf, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
 
 const me = useMe()
 const router = useRouter()
@@ -52,6 +52,7 @@ const tags = computed(() => [...state.tags, ...addedTags.value])
 const posting = ref(false)
 
 const geo = computed(() => (draft.value.places.length ? { ...draft.value } : null))
+const kit = editorKit(() => audienceOf(geo.value))
 const reach = computed(() => reachOf({ geo: geo.value }))
 
 function addTag() {
@@ -144,7 +145,7 @@ async function post() {
             <div>
               <div class="mb-1.5 text-xs text-ink-gray-6">Message</div>
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                <Editor v-model="text.body" :extensions="editorKit">
+                <Editor v-model="text.body" :extensions="kit">
                   <div class="border-b border-outline-gray-1 px-1 py-1">
                     <EditorFixedMenu :items="[...minimalToolbar, InsertImage]" />
                   </div>

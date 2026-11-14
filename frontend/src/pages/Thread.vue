@@ -31,6 +31,7 @@ import {
   deleteThread,
   deleteReply,
   editorKit,
+  audienceOf,
   closePoll,
   isMobile,
 } from '../lib/store'
@@ -43,6 +44,7 @@ const visible = computed(() => !!thread.value)
 const author = computed(() => thread.value && userById(thread.value.authorId))
 const reach = computed(() => (thread.value ? reachOf(thread.value) : 0))
 const showInfo = ref(false)
+const kit = editorKit(() => audienceOf(thread.value?.geo, thread.value?.authorId))
 
 const removed = ref(false)
 const unavailable = computed(() =>
@@ -254,7 +256,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
             <div v-if="editing" class="mt-8">
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                <Editor v-model="editing.body" :extensions="editorKit">
+                <Editor v-model="editing.body" :extensions="kit">
                   <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-md text-ink-gray-8" />
                 </Editor>
               </div>
@@ -285,6 +287,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 :id="`reply-${m.id}`"
                 :key="m.id"
                 :message="m"
+                :kit="kit"
                 :compact="sameAuthor(i)"
                 class="transition-colors duration-700"
                 :class="{ 'bg-surface-amber-1': highlighted === m.id }"
@@ -301,7 +304,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <div class="flex items-end gap-2" @keydown="onKey">
                 <div class="flex-1">
                   <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                    <Editor v-model="reply" :extensions="editorKit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
+                    <Editor v-model="reply" :extensions="kit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
                       <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
                     </Editor>
                   </div>

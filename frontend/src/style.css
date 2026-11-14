@@ -57,4 +57,7 @@
 	.rich a {
 		@apply text-ink-blue-link underline underline-offset-2;
 	}
+	.mention {
+		@apply text-ink-blue-6;
+	}
 }
