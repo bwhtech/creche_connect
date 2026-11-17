@@ -15,6 +15,12 @@ add_to_apps_screen = [
 
 website_route_rules = [{"from_route": "/c/<path:app_path>", "to_route": "c"}]
 page_renderer = ["creche_connect.service_worker.ServiceWorker"]
+has_permission = {
+	"CrecheConnect Resource": "creche_connect.crecheconnect.doctype.crecheconnect_resource.crecheconnect_resource.has_permission"
+}
+permission_query_conditions = {
+	"CrecheConnect Resource": "creche_connect.crecheconnect.doctype.crecheconnect_resource.crecheconnect_resource.permission_query_conditions"
+}
 website_redirects = [{"source": "/", "target": "/c"}]
 
 sqlite_search = ["creche_connect.search.CrecheConnectSearch"]
