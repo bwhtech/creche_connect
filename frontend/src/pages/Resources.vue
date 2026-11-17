@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Badge, Button, Dialog, FileUploader, FormControl, PageHeader, Switch, toast } from 'frappe-ui'
+import { Badge, Button, Dialog, FileUploader, FormControl, PageHeader, Switch, TabButtons, toast } from 'frappe-ui'
 import { state, useMe, addResource, updateResource, deleteResource, setPinned, errorText, RESOURCE_KINDS, colorOf, isMobile } from '../lib/store'
 
 const me = useMe()
@@ -8,17 +8,24 @@ const showNew = ref(false)
 const editing = ref(null)
 const blankForm = () => ({ title: '', kind: 'Video', url: '', description: '' })
 const form = ref(blankForm())
+const source = ref('link')
+const SOURCES = [{ label: 'Link', value: 'link' }, { label: 'File', value: 'file' }]
+const isFile = (url: string) => url.startsWith('/private/files/')
+const fileName = (url: string) => decodeURIComponent(url.split('/').pop())
+const onUploaded = (f) => Object.assign(form.value, { url: f.file_url, kind: /\.(mp4|mov|webm|m4v)$/i.test(f.file_url) ? 'Video' : 'Document' })
 const saving = ref(false)
 const kindOptions = Object.entries(RESOURCE_KINDS).map(([value, k]) => ({ label: k.label, value }))
 
 function openNew() {
   editing.value = null
   form.value = blankForm()
+  source.value = 'link'
   showNew.value = true
 }
 function openEdit(r) {
   editing.value = r
   form.value = { title: r.title, kind: r.kind, url: r.url, description: r.description || '' }
+  source.value = isFile(r.url) ? 'file' : 'link'
   showNew.value = true
 }
 async function save() {
@@ -97,16 +104,34 @@ function togglePin(r, pinned: boolean) {
     <Dialog v-model:open="showNew" :title="editing ? 'Edit resource' : 'Add resource'">
       <div class="space-y-4">
         <FormControl v-model="form.title" label="Title" required />
-        <FormControl v-model="form.kind" type="select" label="Type" :options="kindOptions" />
-        <div class="flex items-end gap-2">
-          <FormControl v-model="form.url" label="Link" class="flex-1" />
-          <FileUploader @success="(f) => Object.assign(form, { url: f.file_url, kind: 'Document' })" @failure="toast.error('Could not upload the file')">
+        <div>
+          <div class="mb-1.5 flex items-center">
+            <span class="text-xs text-ink-gray-6">Source</span>
+            <TabButtons
+              v-model="source"
+              class="ml-auto [&_[data-state=active]]:font-medium [&_[data-state=active]_*]:!text-ink-gray-9 [&_[data-state=inactive]_*]:!text-ink-gray-7"
+              :options="SOURCES"
+              @update:model-value="form.url = ''"
+            />
+          </div>
+          <FormControl v-if="source === 'link'" v-model="form.url" placeholder="https://" aria-label="Link" />
+          <FileUploader v-else @success="onUploaded" @failure="toast.error('Could not upload the file')">
             <template #default="{ openFileSelector, uploading, progress }">
-              <Button icon-left="lucide-upload" :label="uploading ? `${progress}%` : 'Upload file'" :loading="uploading" @click="openFileSelector" />
+              <div v-if="form.url" class="flex items-center gap-2 rounded-4 border border-outline-gray-2 px-3 py-2">
+                <span :class="RESOURCE_KINDS[form.kind].icon" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
+                <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8">{{ fileName(form.url) }}</span>
+                <Button size="sm" :label="uploading ? `${progress}%` : 'Replace'" :loading="uploading" @click="openFileSelector" />
+                <Button size="sm" variant="ghost" icon="lucide-x" aria-label="Remove file" @click="form.url = ''" />
+              </div>
+              <div v-else class="flex flex-col items-center gap-2 rounded-4 border border-dashed border-outline-gray-3 px-3 py-5 text-center">
+                <Button icon-left="lucide-upload" :label="uploading ? `Uploading ${progress}%` : 'Choose file'" :loading="uploading" @click="openFileSelector" />
+                <span class="text-p-sm text-ink-gray-5">PDF, document, picture or video. Only members can open it.</span>
+              </div>
             </template>
           </FileUploader>
         </div>
-        <FormControl v-model="form.description" label="Short description" />
+        <FormControl v-model="form.kind" type="select" label="Type" :options="kindOptions" />
+        <FormControl v-model="form.description" label="Short description" placeholder="Optional" />
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />
           <Button label="Cancel" @click="showNew = false" />
