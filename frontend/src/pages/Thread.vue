@@ -282,7 +282,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <span class="text-lg-semibold text-ink-gray-8">
                 {{ thread.replyCount }} {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
               </span>
-              <Badge :label="policyOf(thread.policy).short" :theme="policyOf(thread.policy).theme" variant="subtle" size="sm" class="ml-auto">
+              <Badge v-if="thread.policy !== 'everyone'" :label="policyOf(thread.policy).short" :theme="policyOf(thread.policy).theme" variant="subtle" size="sm" class="ml-auto">
                 <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
               </Badge>
             </div>
