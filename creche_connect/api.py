@@ -375,7 +375,7 @@ def get_boot() -> dict:
 		"tags": frappe.get_all("CrecheConnect Tag", fields=["name", "color"], order_by="creation asc"),
 		"resources": frappe.get_all(
 			"CrecheConnect Resource",
-			fields=["name", "title", "kind", "url", "description", "pinned"],
+			fields=["name", "title", "kind", "description", "pinned", {"files": ["label", "url"]}],
 			order_by="creation asc",
 		),
 		"emojis": EMOJIS,
