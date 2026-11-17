@@ -6,10 +6,10 @@ import { state, useMe, addResource, updateResource, deleteResource, setPinned, e
 const me = useMe()
 const showNew = ref(false)
 const editing = ref(null)
-const blankForm = () => ({ title: '', kind: 'Video', url: '', description: '' })
+const blankForm = () => ({ title: '', kind: 'Document', url: '', description: '' })
 const form = ref(blankForm())
-const source = ref('link')
-const SOURCES = [{ label: 'Link', value: 'link' }, { label: 'File', value: 'file' }]
+const source = ref('file')
+const SOURCES = [{ label: 'File', value: 'file' }, { label: 'Link', value: 'link' }]
 const isFile = (url: string) => url.startsWith('/private/files/')
 const fileName = (url: string) => decodeURIComponent(url.split('/').pop())
 const onUploaded = (f) => Object.assign(form.value, { url: f.file_url, kind: /\.(mp4|mov|webm|m4v)$/i.test(f.file_url) ? 'Video' : 'Document' })
@@ -19,7 +19,7 @@ const kindOptions = Object.entries(RESOURCE_KINDS).map(([value, k]) => ({ label:
 function openNew() {
   editing.value = null
   form.value = blankForm()
-  source.value = 'link'
+  source.value = 'file'
   showNew.value = true
 }
 function openEdit(r) {
@@ -114,8 +114,7 @@ function togglePin(r, pinned: boolean) {
               @update:model-value="form.url = ''"
             />
           </div>
-          <FormControl v-if="source === 'link'" v-model="form.url" placeholder="https://" aria-label="Link" />
-          <FileUploader v-else @success="onUploaded" @failure="toast.error('Could not upload the file')">
+          <FileUploader v-if="source === 'file'" @success="onUploaded" @failure="toast.error('Could not upload the file')">
             <template #default="{ openFileSelector, uploading, progress }">
               <div v-if="form.url" class="flex items-center gap-2 rounded-4 border border-outline-gray-2 px-3 py-2">
                 <span :class="RESOURCE_KINDS[form.kind].icon" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
@@ -129,6 +128,7 @@ function togglePin(r, pinned: boolean) {
               </div>
             </template>
           </FileUploader>
+          <FormControl v-else v-model="form.url" placeholder="https://" aria-label="Link" />
         </div>
         <FormControl v-model="form.kind" type="select" label="Type" :options="kindOptions" />
         <FormControl v-model="form.description" label="Short description" placeholder="Optional" />
