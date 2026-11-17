@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Badge, Button, Dialog, FileUploader, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
+import FileViewer, { canView, fileKind } from '../components/FileViewer.vue'
 import { state, useMe, addResource, updateResource, deleteResource, setPinned, errorText, RESOURCE_KINDS, colorOf, isMobile } from '../lib/store'
 
 const me = useMe()
@@ -11,11 +12,14 @@ const selected = computed(() => state.resources.find((r) => r.id === route.query
 const pick = (r) => router.replace({ query: r ? { r: r.id } : {} })
 
 const isFile = (url: string) => url.startsWith('/private/files/')
-const isVideo = (url: string) => /\.(mp4|mov|webm|m4v)$/i.test(url)
+const isVideo = (url: string) => fileKind(url) === 'video'
 const fileName = (url: string) => decodeURIComponent(url.split('/').pop())
 const fileLabel = (f) => f.label || (isFile(f.url) ? fileName(f.url) : f.url.replace(/^https?:\/\//, ''))
 const fileIcon = (f) => (!isFile(f.url) ? 'lucide-link' : isVideo(f.url) ? 'lucide-file-video' : 'lucide-file-text')
 const kindOf = (r) => ({ ...RESOURCE_KINDS[r.kind], ...colorOf(RESOURCE_KINDS[r.kind].color) })
+const viewing = ref(null)
+const viewable = (f) => isFile(f.url) && canView(f.url)
+const view = (f) => (viewing.value = { url: f.url, name: fileLabel(f) })
 const filesCount = (r) => `${r.files.length} ${r.files.length === 1 ? 'file' : 'files'}`
 
 const showNew = ref(false)
@@ -138,11 +142,12 @@ function togglePin(r, pinned: boolean) {
               target="_blank"
               rel="noopener"
               class="flex items-center gap-3 rounded-4 px-3 py-2.5 hover:bg-surface-gray-1"
+              @click.exact="viewable(f) && ($event.preventDefault(), view(f))"
             >
               <span class="w-4 shrink-0 text-right text-xs text-ink-gray-4 tabular-nums">{{ i + 1 }}</span>
               <span :class="fileIcon(f)" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
               <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8" :title="fileLabel(f)">{{ fileLabel(f) }}</span>
-              <span class="lucide-arrow-up-right size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+              <span :class="viewable(f) ? 'lucide-eye' : 'lucide-arrow-up-right'" class="size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
             </a>
           </div>
         </div>
@@ -194,5 +199,6 @@ function togglePin(r, pinned: boolean) {
       theme="red"
       :actions="deleteActions"
     />
+    <FileViewer :file="viewing" @close="viewing = null" />
   </div>
 </template>
