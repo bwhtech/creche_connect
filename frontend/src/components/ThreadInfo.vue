@@ -60,7 +60,6 @@ const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.th
         <Badge v-if="thread.authorId === me.id" label="You started this" theme="blue" variant="subtle" size="sm" />
         <Badge v-if="viaGeo" :label="`via ${placePath(me.place)}`" :theme="geoPlaces[0]?.color ?? 'blue'" variant="subtle" size="sm" />
       </div>
-      <p class="mt-2 text-p-xs text-ink-gray-5">{{ thread.canReply ? 'You can reply.' : 'You can read but not reply.' }}</p>
     </section>
   </div>
 </template>
