@@ -111,7 +111,7 @@ function togglePin(r, pinned: boolean) {
               v-model="source"
               class="ml-auto [&_[data-state=active]]:font-medium [&_[data-state=active]_*]:!text-ink-gray-9 [&_[data-state=inactive]_*]:!text-ink-gray-7"
               :options="SOURCES"
-              @update:model-value="form.url = ''"
+              @update:model-value="(v) => Object.assign(form, { url: '', kind: v === 'file' ? 'Document' : 'Link' })"
             />
           </div>
           <FileUploader v-if="source === 'file'" @success="onUploaded" @failure="toast.error('Could not upload the file')">
@@ -130,7 +130,7 @@ function togglePin(r, pinned: boolean) {
           </FileUploader>
           <FormControl v-else v-model="form.url" placeholder="https://" aria-label="Link" />
         </div>
-        <FormControl v-model="form.kind" type="select" label="Type" :options="kindOptions" />
+        <FormControl v-if="source === 'link'" v-model="form.kind" type="select" label="Type" :options="kindOptions" />
         <FormControl v-model="form.description" label="Short description" placeholder="Optional" />
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />
