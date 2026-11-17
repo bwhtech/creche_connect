@@ -9,7 +9,7 @@ const versions = ref<any[] | null>(null)
 const error = ref('')
 const label = (i: number) => (i === 0 ? 'Current' : i === versions.value!.length - 1 ? 'Original' : `Edit ${versions.value!.length - 1 - i}`)
 
-const MARK = { '': '', add: 'font-bold text-ink-gray-9', del: 'hidden' }
+const MARK = { '': '', add: 'font-bold text-ink-gray-9', del: 'mx-0.5 text-ink-gray-5 line-through' }
 
 function diff(before: string, after: string) {
   const a = before.split(/(\s+)/)
