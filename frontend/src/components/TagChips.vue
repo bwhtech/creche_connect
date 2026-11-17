@@ -13,11 +13,11 @@ const list = computed(() => props.tags.map(tagById).filter(Boolean))
       v-for="t in list"
       :key="t.id"
       :to="{ path: '/', query: { tag: t.id } }"
-      class="inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-xs text-ink-gray-7 hover:bg-surface-gray-3"
+      class="inline-flex h-5 items-center gap-0.5 rounded-full px-2 text-xs text-ink-gray-7 hover:bg-surface-gray-3"
       :class="colorOf(t.color).soft"
       @click.stop
     >
-      <span class="size-1.5 rounded-full" :class="colorOf(t.color).dot" aria-hidden="true" />
+      <span :class="colorOf(t.color).ink" aria-hidden="true">#</span>
       {{ t.name }}
     </RouterLink>
   </div>

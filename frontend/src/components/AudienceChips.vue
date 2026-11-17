@@ -11,12 +11,12 @@ const chip = computed(() => {
   const plural = (d: string) => (d === 'Head of operations' ? 'Heads of operations' : `${d}s`)
   const all = DESIGNATIONS.value.filter((d) => !NATIONAL_DESIGNATIONS.value.includes(d)).every((d) => g.designations.includes(d))
   const who = g.designations.length && !all ? g.designations.map(plural).join(', ') : 'Everyone'
-  return { label: `${places} · ${who}`, color: placeById(g.places[0])?.color ?? 'blue' }
+  return `${places} · ${who}`
 })
 </script>
 
 <template>
-  <Badge v-if="chip" :label="chip.label" variant="subtle" :theme="chip.color" size="sm" class="max-w-full">
+  <Badge v-if="chip" :label="chip" variant="outline" theme="blue" size="sm" class="max-w-full !rounded-md">
     <template #prefix><span class="lucide-map-pin size-3 shrink-0" aria-hidden="true" /></template>
   </Badge>
 </template>

@@ -38,8 +38,8 @@ defineProps<{ thread: any }>()
           </Badge>
           <Badge v-if="thread.needsAck" label="Needs your acknowledgment" theme="amber" variant="solid" size="sm" />
           <template v-if="thread.poll">
-            <Badge :label="thread.poll.closed ? 'Poll closed' : 'Poll'" theme="violet" variant="subtle" size="sm">
-              <template #prefix><span class="lucide-chart-bar-big size-3" aria-hidden="true" /></template>
+            <Badge :label="thread.poll.closed ? 'Poll closed' : 'Poll'" theme="violet" variant="outline" size="sm" class="!rounded-md">
+              <template #prefix><span :class="thread.poll.closed ? 'lucide-lock' : 'lucide-chart-bar-big'" class="size-3" aria-hidden="true" /></template>
             </Badge>
             <Badge v-if="!thread.poll.closed && !thread.poll.voted && !isAuthor(thread.authorId)" label="Waiting for your vote" theme="amber" variant="solid" size="sm" />
           </template>
