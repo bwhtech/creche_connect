@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { usePointerSwipe } from '@vueuse/core'
 import { Avatar, BottomSheet, Dialog, LoadingIndicator } from 'frappe-ui'
 import HtmlDiff from 'htmldiff-js'
+import DOMPurify from 'dompurify'
 import { errorText, fetchEditHistory, isMobile, userById, when } from '../lib/store'
 
 const props = defineProps<{ doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply'; name: string }>()
@@ -12,7 +13,8 @@ const error = ref('')
 const current = ref(0)
 const label = (i: number) => (i === 0 ? 'Current' : i === versions.value!.length - 1 ? 'Original' : `Edit ${versions.value!.length - 1 - i}`)
 
-const makeDiff = (HtmlDiff as any).default?.execute || HtmlDiff.execute
+const execute = (HtmlDiff as any).default?.execute || HtmlDiff.execute
+const makeDiff = (before: string, after: string) => DOMPurify.sanitize(execute(before, after))
 const escape = (t = '') => t.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 const shown = computed(() => {
   const v = versions.value?.[current.value]
@@ -21,7 +23,7 @@ const shown = computed(() => {
   return {
     ...v,
     title: v.title && (prev ? makeDiff(escape(prev.title), escape(v.title)) : escape(v.title)),
-    body: prev ? makeDiff(prev.body ?? '', v.body ?? '') : v.body,
+    body: prev ? makeDiff(prev.body ?? '', v.body ?? '') : DOMPurify.sanitize(v.body ?? ''),
   }
 })
 

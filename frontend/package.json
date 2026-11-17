@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^14.1.0",
+    "dompurify": "^3.4.0",
     "frappe-ui": "1.0.2",
     "htmldiff-js": "^1.0.5",
     "socket.io-client": "^4.8.4",
