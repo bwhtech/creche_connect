@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 from creche_connect.api import is_admin
@@ -26,6 +27,11 @@ class CrecheConnectResource(Document):
 	# end: auto-generated types
 
 	_DOCTYPE_NAME = "CrecheConnect Resource"
+
+	def validate(self):
+		for f in self.files:
+			if not f.url.startswith(("/files/", "/private/files/", "https://", "http://")):
+				frappe.throw(_("Row {0}: add a file, or a link that starts with https://").format(f.idx))
 
 
 def has_permission(doc=None, ptype=None, user=None):
