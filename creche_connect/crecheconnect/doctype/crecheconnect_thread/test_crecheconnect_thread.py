@@ -463,7 +463,7 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 
 	def test_uploaded_resource_file_is_private_to_members(self):
 		file = insert({"doctype": "File", "file_name": "guide.txt", "content": "hello", "is_private": 1})
-		resource = insert({"doctype": "CrecheConnect Resource", "title": "Guide", "kind": "Document", "url": file.file_url})
+		resource = insert({"doctype": "CrecheConnect Resource", "title": "Guide", "kind": "Document", "files": [{"url": file.file_url}]})
 		file.reload()
 		self.assertEqual((file.attached_to_doctype, file.attached_to_name), (resource.doctype, resource.name))
 		frappe.set_user(self.volunteer)

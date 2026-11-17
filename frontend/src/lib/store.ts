@@ -357,16 +357,18 @@ export const RESOURCE_KINDS = {
   Link: { label: 'Link', icon: 'lucide-link', color: 'green' },
 }
 
-export async function addResource({ title, kind, url, description }) {
+export async function addResource({ title, kind, files, description }) {
   const doc: any = await post('frappe.client.insert', {
-    doc: { doctype: 'CrecheConnect Resource', title, kind, url, description },
+    doc: { doctype: 'CrecheConnect Resource', title, kind, files, description },
   })
-  state.resources.push({ ...doc, id: doc.name, pinned: !!doc.pinned })
+  const r = { ...doc, id: doc.name, pinned: !!doc.pinned }
+  state.resources.push(r)
+  return r
 }
 
-export async function updateResource(r, { title, kind, url, description }) {
-  await post('frappe.client.set_value', { doctype: 'CrecheConnect Resource', name: r.id, fieldname: { title, kind, url, description } })
-  Object.assign(r, { title, kind, url, description })
+export async function updateResource(r, { title, kind, files, description }) {
+  await post('frappe.client.set_value', { doctype: 'CrecheConnect Resource', name: r.id, fieldname: { title, kind, files, description } })
+  Object.assign(r, { title, kind, files, description })
 }
 
 export async function deleteResource(r) {

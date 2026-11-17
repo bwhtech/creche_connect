@@ -9,7 +9,7 @@
  "field_order": [
   "title",
   "kind",
-  "url",
+  "files",
   "description",
   "pinned"
  ],
@@ -31,10 +31,10 @@
    "reqd": 1
   },
   {
-   "fieldname": "url",
-   "fieldtype": "Data",
-   "label": "URL",
-   "options": "URL",
+   "fieldname": "files",
+   "fieldtype": "Table",
+   "label": "Files",
+   "options": "CrecheConnect Resource File",
    "reqd": 1
   },
   {
@@ -54,7 +54,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-12 14:00:00.000000",
+ "modified": "2026-11-17 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "CrecheConnect",
  "name": "CrecheConnect Resource",

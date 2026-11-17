@@ -16,23 +16,16 @@ class CrecheConnectResource(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		from creche_connect.crecheconnect.doctype.crecheconnect_resource_file.crecheconnect_resource_file import CrecheConnectResourceFile
+
 		description: DF.SmallText | None
+		files: DF.Table[CrecheConnectResourceFile]
 		kind: DF.Literal["Video", "Course", "Document", "Link"]
 		pinned: DF.Check
 		title: DF.Data
-		url: DF.Data
 	# end: auto-generated types
 
 	_DOCTYPE_NAME = "CrecheConnect Resource"
-
-	def on_update(self):
-		if not self.has_value_changed("url") or not self.url.startswith("/private/files/"):
-			return
-		frappe.db.set_value(
-			"File",
-			{"file_url": self.url, "is_private": 1, "owner": frappe.session.user, "attached_to_name": ("is", "not set")},
-			{"attached_to_doctype": self.doctype, "attached_to_name": self.name},
-		)
 
 
 def has_permission(doc=None, ptype=None, user=None):

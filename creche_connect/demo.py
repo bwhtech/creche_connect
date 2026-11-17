@@ -477,7 +477,7 @@ def make_demo():
 					"doctype": "CrecheConnect Resource",
 					"title": title,
 					"kind": kind,
-					"url": url,
+					"files": [{"url": url}],
 					"description": description,
 					"pinned": pinned,
 				}

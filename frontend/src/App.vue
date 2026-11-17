@@ -38,7 +38,6 @@ const mainNav = computed(() => [
   { label: 'Mentions', icon: 'lucide-at-sign', to: '/?filter=mentions' },
   ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
-const openResource = (url: string) => window.open(url, '_blank', 'noopener')
 const { resolvedColorScheme, toggleColorScheme } = useColorScheme()
 const userMenu = computed(() => [
   resolvedColorScheme.value === 'dark'
@@ -115,10 +114,11 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
                   :key="r.id"
                   :label="r.title"
                   :icon="RESOURCE_KINDS[r.kind].icon"
-                  @click="openResource(r.url)"
+                  :route="{ path: '/resources', query: { r: r.id } }"
+                  :active="route.path === '/resources' && route.query.r === r.id"
                 >
                   <template #suffix>
-                    <span class="lucide-arrow-up-right size-3 text-ink-gray-4" aria-hidden="true" />
+                    <span class="text-xs text-ink-gray-5 tabular-nums">{{ r.files.length }}</span>
                   </template>
                 </SidebarItem>
               </div>
