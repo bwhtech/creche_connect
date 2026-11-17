@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Badge, Button, Dialog, FormControl, PageHeader, Switch, toast } from 'frappe-ui'
+import { Badge, Button, Dialog, FileUploader, FormControl, PageHeader, Switch, toast } from 'frappe-ui'
 import { state, useMe, addResource, updateResource, deleteResource, setPinned, errorText, RESOURCE_KINDS, colorOf, isMobile } from '../lib/store'
 
 const me = useMe()
@@ -22,7 +22,7 @@ function openEdit(r) {
   showNew.value = true
 }
 async function save() {
-  if (!form.value.title.trim() || !form.value.url.trim()) return toast.error('Add a title and a link')
+  if (!form.value.title.trim() || !form.value.url.trim()) return toast.error('Add a title and a link or file')
   saving.value = true
   try {
     if (editing.value) await updateResource(editing.value, { ...form.value })
@@ -98,7 +98,14 @@ function togglePin(r, pinned: boolean) {
       <div class="space-y-4">
         <FormControl v-model="form.title" label="Title" required />
         <FormControl v-model="form.kind" type="select" label="Type" :options="kindOptions" />
-        <FormControl v-model="form.url" label="Link" required />
+        <div class="flex items-end gap-2">
+          <FormControl v-model="form.url" label="Link" class="flex-1" />
+          <FileUploader @success="(f) => Object.assign(form, { url: f.file_url, kind: 'Document' })" @failure="toast.error('Could not upload the file')">
+            <template #default="{ openFileSelector, uploading, progress }">
+              <Button icon-left="lucide-upload" :label="uploading ? `${progress}%` : 'Upload file'" :loading="uploading" @click="openFileSelector" />
+            </template>
+          </FileUploader>
+        </div>
         <FormControl v-model="form.description" label="Short description" />
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />

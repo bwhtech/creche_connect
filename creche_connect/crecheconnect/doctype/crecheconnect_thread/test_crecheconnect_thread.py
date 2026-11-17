@@ -460,3 +460,16 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		frappe.set_user(self.lead)
 		api.delete_message("CrecheConnect Thread", thread)
 		self.assertFalse(frappe.db.exists("CrecheConnect Poll Vote", {"thread": thread}))
+
+	def test_uploaded_resource_file_is_private_to_members(self):
+		file = insert({"doctype": "File", "file_name": "guide.txt", "content": "hello", "is_private": 1})
+		resource = insert({"doctype": "CrecheConnect Resource", "title": "Guide", "kind": "Document", "url": file.file_url})
+		file.reload()
+		self.assertEqual((file.attached_to_doctype, file.attached_to_name), (resource.doctype, resource.name))
+		frappe.set_user(self.volunteer)
+		self.assertTrue(file.is_downloadable())
+		stranger = "stranger@crecheconnect.test"
+		insert({"doctype": "User", "email": stranger, "first_name": "stranger", "user_type": "Website User"})
+		frappe.set_user(stranger)
+		self.assertFalse(file.is_downloadable())
+		self.assertEqual(frappe.get_list("CrecheConnect Resource"), [])

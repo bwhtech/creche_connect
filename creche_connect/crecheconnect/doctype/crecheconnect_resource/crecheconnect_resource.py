@@ -1,7 +1,10 @@
 # Copyright (c) 2026, BWH and contributors
 # For license information, please see license.txt
 
+import frappe
 from frappe.model.document import Document
+
+from creche_connect.api import is_admin
 
 
 class CrecheConnectResource(Document):
@@ -21,3 +24,21 @@ class CrecheConnectResource(Document):
 	# end: auto-generated types
 
 	_DOCTYPE_NAME = "CrecheConnect Resource"
+
+	def on_update(self):
+		if not self.has_value_changed("url") or not self.url.startswith("/private/files/"):
+			return
+		frappe.db.set_value(
+			"File",
+			{"file_url": self.url, "is_private": 1, "owner": frappe.session.user, "attached_to_name": ("is", "not set")},
+			{"attached_to_doctype": self.doctype, "attached_to_name": self.name},
+		)
+
+
+def has_permission(doc=None, ptype=None, user=None):
+	user = user or frappe.session.user
+	return is_admin(user) or bool(frappe.db.exists("CrecheConnect Member", user))
+
+
+def permission_query_conditions(user=None):
+	return "" if has_permission(user=user) else "1=0"
