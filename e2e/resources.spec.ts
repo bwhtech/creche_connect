@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { test, expect } from '@playwright/test'
 import { api, as } from './helpers'
 
@@ -65,4 +66,22 @@ test('one resource holds several files and links', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'checklist-english.txt' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'checklist-hindi.txt' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'example.org/creche-safety' })).toBeVisible()
+})
+
+test('a word file opens in the viewer instead of downloading', async ({ page }) => {
+  await page.goto('/c/resources')
+  await page.getByRole('button', { name: 'Add resource' }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByLabel('Title').fill(title)
+  const chooser = page.waitForEvent('filechooser')
+  await dialog.getByRole('button', { name: 'Upload file' }).click()
+  await (await chooser).setFiles(path.join(__dirname, 'fixtures/safety-checklist.docx'))
+  await expect(dialog.getByPlaceholder('safety-checklist.docx')).toBeVisible()
+  await dialog.getByRole('button', { name: 'Add', exact: true }).click()
+  await expect(page.getByText('Resource added')).toBeVisible()
+  await page.getByRole('link', { name: 'safety-checklist.docx' }).click()
+  const viewer = page.getByRole('dialog', { name: 'safety-checklist.docx' })
+  await expect(viewer.getByText('Check the gate before children arrive.')).toBeVisible()
+  await viewer.getByRole('button', { name: 'Close' }).click()
+  await expect(viewer).toHaveCount(0)
 })
