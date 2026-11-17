@@ -320,7 +320,6 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 </div>
                 <Button variant="solid" theme="gray" icon="lucide-send-horizontal" size="md" :disabled="replyEmpty" :loading="sending" @click="send" />
               </div>
-              <p class="mt-2 text-xs text-ink-gray-5">Visible to {{ reach }} people in this thread's audience</p>
             </template>
             <div v-else class="flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-3 text-sm text-ink-gray-6">
               <span :class="replyBlock.icon" class="size-4 shrink-0" aria-hidden="true" />
