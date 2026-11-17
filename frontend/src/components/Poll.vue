@@ -67,7 +67,7 @@ async function remind() {
       type="button"
       :disabled="poll.closed"
       :aria-pressed="o.mine"
-      class="relative flex w-full items-center gap-3 overflow-hidden rounded-4 border px-3 py-3 text-left transition-colors enabled:hover:border-outline-gray-5"
+      class="relative flex w-full items-center gap-2.5 overflow-hidden rounded-4 border px-3 py-2.5 text-left transition-colors enabled:hover:border-outline-gray-5"
       :class="o.mine ? 'border-outline-blue-4' : 'border-outline-gray-3'"
       @click="pick(o)"
     >
@@ -78,19 +78,16 @@ async function remind() {
         :style="{ width: `${(o.count / top) * 100}%` }"
       />
       <span class="relative size-4 shrink-0" :class="icon(o)" aria-hidden="true" />
-      <span class="relative flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
-        <span class="flex-1 text-base" :class="isLeader(o) ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'">
-          {{ o.label }}
-        </span>
-        <Tooltip v-if="showResults && o.voters.length" :text="names(o.voters).join(', ')">
-          <span class="flex shrink-0 items-center -space-x-1">
-            <Avatar v-for="n in names(o.voters.slice(0, 3))" :key="n" :label="n" size="sm" class="ring-2 ring-surface-base" />
-            <span v-if="o.voters.length > 3" class="pl-2 text-xs text-ink-gray-5 tabular-nums">+{{ o.voters.length - 3 }}</span>
-          </span>
-        </Tooltip>
+      <span class="relative min-w-0 flex-1 text-base" :class="isLeader(o) ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'">
+        {{ o.label }}
       </span>
-      <span v-if="showResults" class="relative w-16 shrink-0 text-right text-sm font-medium text-ink-gray-9 tabular-nums">
-        {{ o.count }} {{ o.count === 1 ? 'vote' : 'votes' }}
+      <Tooltip v-if="showResults && o.voters.length" :text="names(o.voters).join(', ')">
+        <span class="relative flex shrink-0 items-center -space-x-1">
+          <Avatar v-for="(n, k) in names(o.voters.slice(0, 3))" :key="n" :label="n" size="sm" class="ring-2 ring-surface-base" :class="k === 2 && 'max-sm:hidden'" />
+        </span>
+      </Tooltip>
+      <span v-if="showResults" class="relative shrink-0 text-right text-sm font-medium text-ink-gray-9 tabular-nums sm:w-16">
+        {{ o.count }}<span class="max-sm:hidden"> {{ o.count === 1 ? 'vote' : 'votes' }}</span>
       </span>
     </button>
     <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
