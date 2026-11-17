@@ -27,8 +27,9 @@ watch(docxEl, async (el) => {
   failed.value = false
   try {
     const [{ renderAsync }, blob] = await Promise.all([import('docx-preview'), fetch(props.file.url).then((r) => r.blob())])
-    await renderAsync(blob, el, undefined, { inWrapper: true, renderAltChunks: false, ignoreWidth: isMobile.value, ignoreHeight: isMobile.value })
-    el.innerHTML = DOMPurify.sanitize(el.innerHTML, { FORCE_BODY: true })
+    const draft = document.createElement('div')
+    await renderAsync(blob, draft, undefined, { inWrapper: true, renderAltChunks: false, ignoreFonts: true, ignoreWidth: isMobile.value, ignoreHeight: isMobile.value })
+    el.innerHTML = DOMPurify.sanitize(draft.innerHTML, { FORCE_BODY: true })
   } catch {
     failed.value = true
   } finally {
