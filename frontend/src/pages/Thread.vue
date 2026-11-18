@@ -252,8 +252,8 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               />
             </div>
 
-            <div v-if="thread.needsAck" class="mt-8 flex items-center gap-3 rounded-5 bg-surface-amber-2 px-4 py-3.5">
-              <span class="lucide-badge-check size-5 shrink-0 text-ink-amber-6" aria-hidden="true" />
+            <div v-if="thread.needsAck" class="mt-8 flex items-center gap-3 rounded-5 bg-surface-blue-2 px-4 py-3.5">
+              <span class="lucide-badge-check size-5 shrink-0 text-ink-blue-6" aria-hidden="true" />
               <p class="flex-1 text-p-sm text-ink-gray-8">
                 {{ author.name.split(' ')[0] }} asked everyone in the audience to acknowledge this thread.
               </p>
@@ -298,7 +298,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                   :kit="kit"
                   :compact="sameAuthor(i) && i !== firstNew"
                   class="transition-colors duration-700"
-                  :class="{ 'bg-surface-amber-1': highlighted === m.id }"
+                  :class="{ 'bg-surface-gray-2': highlighted === m.id }"
                   @delete="confirmDelete(m)"
                 />
               </template>
