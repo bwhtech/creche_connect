@@ -38,7 +38,7 @@ const count = (n: number) => (n ? ` ${n}` : '')
 const filters = computed(() => [
   { label: 'All', value: '' },
   { label: `Unread${count(state.counts.unread)}`, value: 'unread' },
-  { label: `To ack${count(state.counts.ack)}`, value: 'ack' },
+  { label: `To acknowledge${count(state.counts.ack)}`, value: 'ack' },
   { label: 'Mentions', value: 'mentions' },
   ...(canStart(me.value) ? [{ label: 'Mine', value: 'mine' }] : []),
 ])
@@ -58,7 +58,7 @@ const title = computed(
 
     <div class="min-h-0 flex-1 overflow-y-auto">
       <div class="mx-auto max-w-[860px] px-3 pt-4 pb-20 sm:px-6 md:pt-8">
-        <TabButtons v-if="isMobile" class="mb-3 w-full [&>*]:flex-1" :model-value="filter ?? ''" :options="filters" @update:model-value="setFilter" />
+        <TabButtons v-if="isMobile" class="mb-3 w-full overflow-x-auto [scrollbar-width:none] [&>*]:flex-1" :model-value="filter ?? ''" :options="filters" @update:model-value="setFilter" />
         <TagFilter />
         <div class="mt-4 md:mt-8">
           <FeedList :rows="state.threads" :loading="loading" />
