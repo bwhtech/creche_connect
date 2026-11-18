@@ -155,7 +155,7 @@ TAGS = [
 	("Enrolment", "green"),
 	("Reporting", "violet"),
 	("Training", "blue"),
-	("Logistics", "amber"),
+	("Logistics", "red"),
 	("Urgent", "red"),
 	("Field stories", "green"),
 	("Budget", "violet"),

@@ -7,7 +7,7 @@ import { RichTextKit } from 'frappe-ui/editor'
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
   green: { dot: 'bg-surface-green-7', soft: 'bg-surface-green-2', ink: 'text-ink-green-6' },
-  amber: { dot: 'bg-surface-amber-7', soft: 'bg-surface-amber-2', ink: 'text-ink-amber-6' },
+  gray: { dot: 'bg-surface-gray-7', soft: 'bg-surface-gray-2', ink: 'text-ink-gray-6' },
   violet: { dot: 'bg-surface-violet-7', soft: 'bg-surface-violet-2', ink: 'text-ink-violet-6' },
   red: { dot: 'bg-surface-red-7', soft: 'bg-surface-red-2', ink: 'text-ink-red-6' },
 }
@@ -23,7 +23,7 @@ export const editorKit = (people: () => any[]) => [
   }),
 ]
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
-const PLACE_COLORS = { Country: 'amber', State: 'green', District: 'blue', Block: 'violet' }
+const PLACE_COLORS = { Country: 'gray', State: 'green', District: 'blue', Block: 'violet' }
 export const when = (s: string) => dayjsLocal(s)
 export const errorText = (e, fallback: string) => e?.messages?.[0] ?? fallback
 
@@ -124,7 +124,7 @@ export const canStart = (u) => !!u?.canPost
 export const POLICIES = [
   { value: 'everyone', label: 'Anyone in the audience can reply', short: 'Open replies', icon: 'lucide-messages-square', theme: 'green' },
   { value: 'posters', label: 'Only people who can start threads can reply', short: 'Leads reply', icon: 'lucide-shield', theme: 'blue' },
-  { value: 'none', label: 'Announcement, replies off', short: 'Announcement', icon: 'lucide-megaphone', theme: 'amber' },
+  { value: 'none', label: 'Announcement, replies off', short: 'Announcement', icon: 'lucide-megaphone', theme: 'violet' },
 ]
 export const policyOf = (v: string) => POLICIES.find((p) => p.value === v)!
 

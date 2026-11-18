@@ -23,7 +23,7 @@ REPLY_PAGE_SIZE = 50
 MAX_CONTENT_LENGTH = 50_000
 ADMIN_ROLES = {"System Manager", "CrecheConnect Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
-TAG_COLORS = ["blue", "green", "amber", "violet", "red"]
+TAG_COLORS = ["blue", "green", "violet", "red"]
 limit_posts = rate_limit(limit=30, seconds=60, ip_based=False, user_based=True)
 MEMBER_FIELDS = ["user", "full_name", "designation", "place", "can_post"]
 THREAD_FIELDS = [

@@ -90,7 +90,7 @@ watchDebounced(
             v-for="r in found?.results ?? []"
             :key="r.id"
             :to="{ path: `/threads/${r.thread}`, query: r.reply ? { reply: r.reply } : {} }"
-            class="flex gap-3 rounded-4 px-2 py-3 hover:bg-surface-gray-1 [&_mark]:bg-surface-amber-2 [&_mark]:text-ink-gray-9"
+            class="flex gap-3 rounded-4 px-2 py-3 hover:bg-surface-gray-1 [&_mark]:bg-surface-blue-2 [&_mark]:text-ink-gray-9"
             @click="remember"
           >
             <Avatar :label="userById(r.authorId).name" size="lg" class="mt-0.5" />
