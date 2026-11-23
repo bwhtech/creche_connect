@@ -232,7 +232,7 @@ function togglePin(r, pinned: boolean) {
           </div>
         </div>
         <div>
-          <Switch v-model="restricted" label="Only some places and designations" description="Off: every member can see it" />
+          <Switch v-model="restricted" label="Only some places and designations" description="Leave off to show it to every member" />
           <GeoPicker v-if="restricted" v-model="form" class="mt-3" />
         </div>
         <div class="flex justify-end gap-2 pt-2">
