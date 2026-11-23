@@ -522,6 +522,38 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		insert({"doctype": "File", "file_name": "voice-note.m4a", "content": b"0" * 1024})
 		insert({"doctype": "File", "file_name": "clip.mp4", "content": big})
 
+	def test_resource_audience_limits_who_sees_it_and_its_files(self):
+		file = insert({"doctype": "File", "file_name": "block-plan.txt", "content": "plan", "is_private": 1})
+		resource = insert(
+			{
+				"doctype": "CrecheConnect Resource",
+				"title": "Block plan",
+				"kind": "Document",
+				"files": [{"url": file.file_url}],
+				"places": [{"place": self.district}],
+				"designations": [{"designation": "Test volunteer"}],
+			}
+		)
+		file.reload()
+		for user, sees in ((self.volunteer, True), (self.coordinator, False), (self.outsider, False)):
+			frappe.set_user(user)
+			self.assertEqual(resource.name in [r.name for r in api.get_boot()["resources"]], sees, user)
+			self.assertEqual(file.is_downloadable(), sees, user)
+
+	def test_resource_audience_rows_do_not_leak_into_the_feed(self):
+		name = self.post(self.lead, [self.block])
+		resource = insert(
+			{
+				"doctype": "CrecheConnect Resource",
+				"title": "Elsewhere",
+				"kind": "Link",
+				"files": [{"url": "https://example.com"}],
+				"places": [{"place": self.other_state}],
+			}
+		)
+		frappe.db.set_value("CrecheConnect Thread Place", {"parent": resource.name}, "parent", name)
+		self.assertNotIn(name, self.visible_to(self.outsider))
+
 	def test_uploaded_resource_file_is_private_to_members(self):
 		file = insert({"doctype": "File", "file_name": "guide.txt", "content": "hello", "is_private": 1})
 		resource = insert({"doctype": "CrecheConnect Resource", "title": "Guide", "kind": "Document", "files": [{"url": file.file_url}]})

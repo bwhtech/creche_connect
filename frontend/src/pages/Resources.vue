@@ -3,6 +3,8 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Badge, Button, Dialog, FileUploader, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
 import FileViewer, { canView, fileKind } from '../components/FileViewer.vue'
+import GeoPicker from '../components/GeoPicker.vue'
+import AudienceChips from '../components/AudienceChips.vue'
 import { state, useMe, addResource, updateResource, deleteResource, setPinned, errorText, RESOURCE_KINDS, colorOf, isMobile } from '../lib/store'
 
 const me = useMe()
@@ -24,10 +26,11 @@ const filesCount = (r) => `${r.files.length} ${r.files.length === 1 ? 'file' : '
 
 const showNew = ref(false)
 const editing = ref(null)
-const blankForm = () => ({ title: '', kind: 'Document', description: '', files: [] })
+const blankForm = () => ({ title: '', kind: 'Document', description: '', files: [], places: [], designations: [] })
 const form = ref(blankForm())
 const link = ref('')
 const saving = ref(false)
+const restricted = ref(false)
 const kindOptions = Object.entries(RESOURCE_KINDS).map(([value, k]) => ({ label: k.label, value }))
 
 function addFile(url: string) {
@@ -42,17 +45,21 @@ function addLink() {
 function openNew() {
   editing.value = null
   form.value = blankForm()
+  restricted.value = false
   link.value = ''
   showNew.value = true
 }
 function openEdit(r) {
   editing.value = r
-  form.value = { title: r.title, kind: r.kind, description: r.description || '', files: r.files.map(({ label, url }) => ({ label, url })) }
+  form.value = { title: r.title, kind: r.kind, description: r.description || '', files: r.files.map(({ label, url }) => ({ label, url })), places: [...r.places], designations: [...r.designations] }
+  restricted.value = !!r.places.length
   link.value = ''
   showNew.value = true
 }
 async function save() {
   if (!form.value.title.trim() || !form.value.files.length) return toast.error('Add a title and at least one file or link')
+  if (restricted.value && !form.value.places.length) return toast.error('Pick at least one place, or show it to everyone')
+  if (!restricted.value) Object.assign(form.value, { places: [], designations: [] })
   saving.value = true
   try {
     if (editing.value) await updateResource(editing.value, { ...form.value })
@@ -129,6 +136,7 @@ function togglePin(r, pinned: boolean) {
                 <Badge class="max-md:hidden" :label="kindOf(selected).label" :theme="kindOf(selected).color" variant="subtle" size="sm" />
               </div>
               <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-5">{{ selected.description }}</p>
+              <AudienceChips v-if="me.admin && selected.places.length" :geo="selected" class="mt-2" />
             </div>
             <Switch v-if="me.admin" :model-value="selected.pinned" :label="isMobile ? undefined : 'Pinned'" aria-label="Pinned" @update:model-value="togglePin(selected, $event)" />
             <Button v-if="me.admin" icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
@@ -182,6 +190,10 @@ function togglePin(r, pinned: boolean) {
               <Button icon="lucide-plus" aria-label="Add this link" @click="addLink" />
             </div>
           </div>
+        </div>
+        <div>
+          <Switch v-model="restricted" label="Only some places and designations" description="Off: every member can see it" />
+          <GeoPicker v-if="restricted" v-model="form" class="mt-3" />
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />

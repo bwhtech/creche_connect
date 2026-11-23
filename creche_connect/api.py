@@ -87,6 +87,10 @@ def can_see(me, thread) -> bool:
 	return thread.owner == me.user or matches(me, thread)
 
 
+def can_see_resource(me, resource) -> bool:
+	return not resource.places or matches(me, resource)
+
+
 def can_reply(me, thread) -> bool:
 	if not can_see(me, thread):
 		return False
@@ -401,17 +405,36 @@ def get_boot() -> dict:
 			"CrecheConnect Designation", fields=["name", "seniority", "is_national"], order_by="seniority asc"
 		),
 		"tags": frappe.get_all("CrecheConnect Tag", fields=["name", "color"], order_by="creation asc"),
-		"resources": frappe.get_all(
-			"CrecheConnect Resource",
-			fields=["name", "title", "kind", "description", "pinned", {"files": ["label", "url"]}],
-			order_by="creation asc",
-		),
+		"resources": [r for r in load_resources() if me.is_admin or can_see_resource(me, r)],
 		"emojis": EMOJIS,
 	}
 
 
+def load_resources(filters=None) -> list:
+	resources = frappe.get_all(
+		"CrecheConnect Resource",
+		filters=filters,
+		fields=[
+			"name",
+			"title",
+			"kind",
+			"description",
+			"pinned",
+			{"files": ["label", "url"]},
+			{"places": ["place"]},
+			{"designations": ["designation"]},
+		],
+		order_by="creation asc",
+	)
+	for r in resources:
+		r.places = [p.place for p in r.places]
+		r.designations = [d.designation for d in r.designations]
+	return resources
+
+
 def thread_ids(table, column="parent"):
-	return frappe.qb.from_(table).select(Cast_(table[column], "unsigned"))
+	query = frappe.qb.from_(table).select(Cast_(table[column], "unsigned"))
+	return query.where(table.parenttype == "CrecheConnect Thread") if column == "parent" else query
 
 
 def thread_key():
