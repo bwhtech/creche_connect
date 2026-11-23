@@ -312,7 +312,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
           <div class="mx-auto max-w-[770px] px-3 py-4 sm:px-6">
             <template v-if="thread.canReply">
               <div class="flex items-end gap-2" @keydown="onKey">
-                <div class="flex-1">
+                <div class="min-w-0 flex-1">
                   <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
                     <Editor v-slot="{ editor }" v-model="reply" :extensions="kit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
                       <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
