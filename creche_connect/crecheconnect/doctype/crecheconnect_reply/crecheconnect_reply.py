@@ -44,7 +44,7 @@ class CrecheConnectReply(Document):
 
 	def on_trash(self):
 		self.update_thread_stats(exclude=self.name)
-		delete_media(self.thread, self.content)
+		delete_media(self.thread, self.content, self.owner)
 		frappe.db.delete("CrecheConnect Reaction", {"reference_doctype": self.doctype, "reference_name": str(self.name)})
 		notify_audience(self.thread)
 

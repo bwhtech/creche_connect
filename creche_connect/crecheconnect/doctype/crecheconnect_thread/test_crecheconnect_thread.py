@@ -486,7 +486,11 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		frappe.set_user(self.outsider)
 		self.assertFalse(file.is_downloadable())
 		self.assertEqual(frappe.get_list("CrecheConnect Thread"), [])
+		frappe.set_user(self.coordinator)
+		other = api.add_reply(name, f'<audio src="{file.file_url}" controls=""></audio>')
 		frappe.set_user("Administrator")
+		frappe.delete_doc("CrecheConnect Reply", other["id"])
+		self.assertTrue(frappe.db.exists("File", file.name))
 		frappe.delete_doc("CrecheConnect Reply", reply["id"])
 		self.assertFalse(frappe.db.exists("File", file.name))
 

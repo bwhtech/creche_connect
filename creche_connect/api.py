@@ -291,11 +291,16 @@ def attach_media(thread: str, content: str | None):
 		)
 
 
-def delete_media(thread: str, content: str | None):
+def delete_media(thread: str, content: str | None, owner: str):
 	if urls := PRIVATE_MEDIA.findall(content or ""):
 		for name in frappe.get_all(
 			"File",
-			filters={"attached_to_doctype": "CrecheConnect Thread", "attached_to_name": thread, "file_url": ["in", urls]},
+			filters={
+				"attached_to_doctype": "CrecheConnect Thread",
+				"attached_to_name": thread,
+				"file_url": ["in", urls],
+				"owner": owner,
+			},
 			pluck="name",
 		):
 			frappe.delete_doc("File", name, ignore_permissions=True)
