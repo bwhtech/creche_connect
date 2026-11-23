@@ -6,6 +6,7 @@ import { Breadcrumbs, Button, DateTimePicker, FormControl, PageHeader, PageHeade
 import { Editor, EditorContent, EditorFixedMenu, InsertImage, minimalToolbar } from 'frappe-ui/editor'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
+import MediaButtons from '../components/MediaButtons.vue'
 import StatusPage from '../components/StatusPage.vue'
 import dayjs from 'dayjs'
 import { state, editorKit, audienceOf, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
@@ -139,9 +140,10 @@ async function post() {
             <div>
               <div class="mb-1.5 text-xs text-ink-gray-6">Message</div>
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                <Editor v-model="text.body" :extensions="kit">
-                  <div class="border-b border-outline-gray-1 px-1 py-1">
+                <Editor v-slot="{ editor }" v-model="text.body" :extensions="kit">
+                  <div class="flex items-center gap-1 border-b border-outline-gray-1 px-1 py-1">
                     <EditorFixedMenu :items="[...minimalToolbar, InsertImage]" />
+                    <MediaButtons :editor="editor" />
                   </div>
                   <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-base text-ink-gray-8" />
                 </Editor>

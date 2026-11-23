@@ -466,6 +466,21 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			insert({**doc, "files": [{"url": "javascript:alert(1)"}]})
 
+	def test_reply_can_be_only_audio_or_video_but_not_empty(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		api.add_reply(name, '<audio src="/files/a.mp3" controls=""></audio>')
+		api.add_reply(name, '<video src="/files/a.mp4" controls=""></video>')
+		with self.assertRaisesRegex(frappe.ValidationError, "Write a reply"):
+			api.add_reply(name, "<p> </p>")
+
+	def test_audio_uploads_are_capped_at_10_mb(self):
+		big = b"0" * (10 * 1024 * 1024 + 1)
+		with self.assertRaisesRegex(frappe.ValidationError, "Audio can be up to 10 MB"):
+			insert({"doctype": "File", "file_name": "voice-note.mp3", "content": big})
+		insert({"doctype": "File", "file_name": "voice-note.m4a", "content": b"0" * 1024})
+		insert({"doctype": "File", "file_name": "clip.mp4", "content": big})
+
 	def test_uploaded_resource_file_is_private_to_members(self):
 		file = insert({"doctype": "File", "file_name": "guide.txt", "content": "hello", "is_private": 1})
 		resource = insert({"doctype": "CrecheConnect Resource", "title": "Guide", "kind": "Document", "files": [{"url": file.file_url}]})
