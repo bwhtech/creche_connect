@@ -67,7 +67,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
     </div>
     <MobileShell v-else-if="isMobile">
       <StatusPage v-if="!online" v-bind="offline" />
-      <RouterView v-show="online" />
+      <RouterView v-show="online" :class="!showTabs && 'pb-[env(safe-area-inset-bottom)]'" />
       <template v-if="showTabs" #nav>
         <MobileNav>
           <MobileNavItem label="Feed" route="/" :active="route.path === '/'">

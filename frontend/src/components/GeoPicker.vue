@@ -88,7 +88,7 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
           </div>
           <span class="ml-auto text-xs text-ink-gray-5 tabular-nums">{{ peopleByPlace[root.id] ?? 0 }} people</span>
         </label>
-        <div class="max-h-72 divide-y divide-outline-gray-1 overflow-y-auto" :class="allPlaces && 'pointer-events-none opacity-50'">
+        <div class="divide-y divide-outline-gray-1 md:max-h-72 md:overflow-y-auto" :class="allPlaces && 'pointer-events-none opacity-50'">
           <div v-for="p in results" :key="p.id" class="flex items-center gap-3 py-2 pr-4 hover:bg-surface-gray-1" :class="indent(p.kind)">
             <Checkbox :model-value="covered(p.id) || draft.places.includes(p.id)" :disabled="covered(p.id)" :aria-label="`Send to ${p.name}`" @update:model-value="togglePlace(p.id)" />
             <button
