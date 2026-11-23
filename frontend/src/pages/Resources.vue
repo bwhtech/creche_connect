@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDropZone } from '@vueuse/core'
-import { Badge, Button, Dialog, FormControl, PageHeader, Switch, TabButtons, TextInput, toast, useFileUpload } from 'frappe-ui'
+import { Badge, Button, Dialog, FormControl, PageHeader, Switch, TextInput, toast, useFileUpload } from 'frappe-ui'
 import FileViewer, { canView, fileKind } from '../components/FileViewer.vue'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
@@ -31,11 +31,7 @@ const blankForm = () => ({ title: '', kind: 'Document', description: '', files: 
 const form = ref(blankForm())
 const link = ref('')
 const saving = ref(false)
-const audience = ref('everyone')
-const AUDIENCES = [
-  { label: 'Every member', value: 'everyone' },
-  { label: 'Selected places', value: 'places' },
-]
+const restricted = ref(false)
 const { upload, isUploading, progress } = useFileUpload()
 const picker = ref<HTMLInputElement>()
 const linking = ref(false)
@@ -57,10 +53,9 @@ async function uploadFiles(files: FileList | File[] | null | undefined) {
   }
 }
 const { isOverDropZone } = useDropZone(zone, { onDrop: uploadFiles, multiple: true })
-const kindOptions = Object.entries(RESOURCE_KINDS).map(([value, k]) => ({ label: k.label, value }))
+const guessKind = (url: string) => (!isFile(url) ? 'Link' : isVideo(url) ? 'Video' : 'Document')
 
 function addFile(url: string) {
-  if (!form.value.files.length) form.value.kind = !isFile(url) ? 'Link' : isVideo(url) ? 'Video' : 'Document'
   form.value.files.push({ label: '', url })
 }
 function addLink() {
@@ -72,7 +67,7 @@ function addLink() {
 function openNew() {
   editing.value = null
   form.value = blankForm()
-  audience.value = 'everyone'
+  restricted.value = false
   linking.value = false
   link.value = ''
   showNew.value = true
@@ -80,15 +75,16 @@ function openNew() {
 function openEdit(r) {
   editing.value = r
   form.value = { title: r.title, kind: r.kind, description: r.description || '', files: r.files.map(({ label, url }) => ({ label, url })), places: [...r.places], designations: [...r.designations] }
-  audience.value = r.places.length ? 'places' : 'everyone'
+  restricted.value = !!r.places.length
   linking.value = false
   link.value = ''
   showNew.value = true
 }
 async function save() {
   if (!form.value.title.trim() || !form.value.files.length) return toast.error('Add a title and at least one file or link')
-  if (audience.value === 'places' && !form.value.places.length) return toast.error('Pick at least one place, or show it to every member')
-  if (audience.value === 'everyone') Object.assign(form.value, { places: [], designations: [] })
+  if (restricted.value && !form.value.places.length) return toast.error('Pick at least one place, or turn off the limit')
+  if (!restricted.value) Object.assign(form.value, { places: [], designations: [] })
+  if (form.value.kind !== 'Course') form.value.kind = guessKind(form.value.files[0].url)
   saving.value = true
   try {
     if (editing.value) await updateResource(editing.value, { ...form.value })
@@ -194,7 +190,6 @@ function togglePin(r, pinned: boolean) {
     <Dialog v-model:open="showNew" :title="editing ? 'Edit resource' : 'Add resource'">
       <div class="space-y-4">
         <FormControl v-model="form.title" label="Title" required />
-        <FormControl v-model="form.kind" type="select" label="Type" :options="kindOptions" />
         <FormControl v-model="form.description" label="Short description" placeholder="Optional" />
         <div>
           <div class="mb-1.5 text-xs text-ink-gray-6">Files and links</div>
@@ -237,12 +232,8 @@ function togglePin(r, pinned: boolean) {
           </div>
         </div>
         <div>
-          <div class="flex items-center gap-3">
-            <div class="shrink-0 text-xs text-ink-gray-6">Who can see this</div>
-            <TabButtons v-model="audience" class="ml-auto" :options="AUDIENCES" />
-          </div>
-          <p class="mt-1.5 text-p-xs text-ink-gray-5">Files are private: only members who can see this resource can open them.</p>
-          <GeoPicker v-if="audience === 'places'" v-model="form" class="mt-3" />
+          <Switch v-model="restricted" label="Only some places and designations" description="Off: every member can see it" />
+          <GeoPicker v-if="restricted" v-model="form" class="mt-3" />
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />
