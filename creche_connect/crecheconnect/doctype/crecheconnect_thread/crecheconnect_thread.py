@@ -107,7 +107,9 @@ def has_permission(doc=None, ptype=None, user=None):
 		return True
 	if ptype != "read" or not doc:
 		return False
-	me = frappe.db.get_value("CrecheConnect Member", user, MEMBER_FIELDS, as_dict=True) or frappe._dict(user=user)
+	me = frappe.db.get_value("CrecheConnect Member", user, MEMBER_FIELDS, as_dict=True)
+	if not me:
+		return frappe.db.get_value("CrecheConnect Thread", doc.name, "owner") == user
 	threads = load_threads({"name": doc.name})
 	return bool(threads) and can_see(me, threads[0])
 
