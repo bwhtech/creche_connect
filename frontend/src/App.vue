@@ -41,7 +41,9 @@ const mainNav = computed(() => [
   ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const { resolvedColorScheme, toggleColorScheme } = useColorScheme()
+const isIOS = /iPhone|iPad/.test(navigator.userAgent)
 async function togglePush() {
+  if (!pushSupported) return toast.info('On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on.', { duration: 10000 })
   try {
     await (pushOn.value ? disablePush() : enablePush())
     toast.success(pushOn.value ? 'Notifications are on for this device' : 'Notifications are off for this device')
@@ -50,7 +52,7 @@ async function togglePush() {
   }
 }
 const userMenu = computed(() => [
-  ...(pushSupported ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
+  ...(pushSupported || isIOS ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
   resolvedColorScheme.value === 'dark'
     ? { label: 'Light mode', icon: 'lucide-sun', onClick: toggleColorScheme }
     : { label: 'Dark mode', icon: 'lucide-moon', onClick: toggleColorScheme },
