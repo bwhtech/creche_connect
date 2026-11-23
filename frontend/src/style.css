@@ -57,6 +57,12 @@
 	.rich a {
 		@apply text-ink-blue-link underline underline-offset-2;
 	}
+	.rich audio {
+		@apply my-1 w-full max-w-sm;
+	}
+	.rich video {
+		@apply my-1 max-h-96 max-w-full rounded-4;
+	}
 	.mention {
 		@apply text-ink-blue-6;
 	}

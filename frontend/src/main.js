@@ -5,6 +5,7 @@ import router from './router'
 import './style.css'
 
 setConfig('systemTimezone', window.system_timezone ?? null)
+setConfig('maxFileSize', window.max_file_size ?? null)
 
 createApp({ render: () => h(FrappeUIProvider, () => h(App)) }).use(router).use(FrappeUI).mount('#app')
 

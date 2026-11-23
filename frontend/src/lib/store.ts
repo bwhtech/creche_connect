@@ -3,6 +3,7 @@ import { call, frappeRequest, dayjsLocal, upload } from 'frappe-ui'
 import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { RichTextKit } from 'frappe-ui/editor'
+import { Audio } from './audio'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -11,16 +12,21 @@ const COLORS = {
   violet: { dot: 'bg-surface-violet-7', soft: 'bg-surface-violet-2', ink: 'text-ink-violet-6' },
   red: { dot: 'bg-surface-red-7', soft: 'bg-surface-red-2', ink: 'text-ink-red-6' },
 }
-const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) => upload(file, { ...o, private: false, optimize: true })
+const MAX_AUDIO_MB = 10
+export const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) =>
+  file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024
+    ? Promise.reject(new Error(`Audio can be up to ${MAX_AUDIO_MB} MB`))
+    : upload(file, { ...o, private: !file.type.startsWith('image/'), optimize: true })
 export const editorKit = (people: () => any[]) => [
   RichTextKit.configure({
     textAlign: false,
     image: { uploadFunction },
     contentPaste: { uploadFunction },
-    video: false,
+    video: { uploadFunction, HTMLAttributes: { preload: 'metadata' } },
     attachment: false,
     mention: { items: () => people().filter((u) => u.id !== state.me?.id).map((u) => ({ label: u.name, value: u.id })) },
   }),
+  Audio,
 ]
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 const PLACE_COLORS = { Country: 'gray', State: 'green', District: 'blue', Block: 'violet' }
@@ -129,7 +135,7 @@ export const POLICIES = [
 export const policyOf = (v: string) => POLICIES.find((p) => p.value === v)!
 
 export const excerpt = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-export const isBlank = (html: string) => !excerpt(html) && !html.includes('<img')
+export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 
 export async function loadBoot() {

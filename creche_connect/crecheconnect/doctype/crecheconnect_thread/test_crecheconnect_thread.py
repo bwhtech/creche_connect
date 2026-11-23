@@ -466,6 +466,62 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		with self.assertRaises(frappe.ValidationError):
 			insert({**doc, "files": [{"url": "javascript:alert(1)"}]})
 
+	def test_reply_can_be_only_audio_or_video_but_not_empty(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		api.add_reply(name, '<audio src="/files/a.mp3" controls=""></audio>')
+		api.add_reply(name, '<video src="/files/a.mp4" controls=""></video>')
+		with self.assertRaisesRegex(frappe.ValidationError, "Write a reply"):
+			api.add_reply(name, "<p> </p>")
+
+	def test_reply_media_is_private_to_the_thread_audience(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		file = insert({"doctype": "File", "file_name": "note.mp3", "content": b"voice", "is_private": 1})
+		reply = api.add_reply(name, f'<audio src="{file.file_url}" controls=""></audio>')
+		file.reload()
+		self.assertEqual((file.attached_to_doctype, file.attached_to_name), ("CrecheConnect Thread", name))
+		frappe.set_user(self.coordinator)
+		self.assertTrue(file.is_downloadable())
+		frappe.set_user(self.outsider)
+		self.assertFalse(file.is_downloadable())
+		self.assertEqual(frappe.get_list("CrecheConnect Thread"), [])
+		for child in ("CrecheConnect Thread Place", "CrecheConnect Poll Option"):
+			self.assertEqual(frappe.get_list(child, parent_doctype="CrecheConnect Thread", fields=["parent"]), [])
+		stranger = "media-stranger@crecheconnect.test"
+		insert({"doctype": "User", "email": stranger, "first_name": "stranger", "user_type": "Website User"})
+		frappe.set_user("Administrator")
+		everyone = self.post("Administrator", [self.root])
+		frappe.set_user(self.volunteer)
+		public = insert({"doctype": "File", "file_name": "all.mp3", "content": b"all", "is_private": 1})
+		api.add_reply(everyone, f'<audio src="{public.file_url}" controls=""></audio>')
+		frappe.set_user(stranger)
+		self.assertFalse(file.is_downloadable())
+		self.assertFalse(public.reload().is_downloadable())
+		frappe.set_user(self.coordinator)
+		other = api.add_reply(name, f'<audio src="{file.file_url}" controls=""></audio>')
+		frappe.set_user("Administrator")
+		frappe.delete_doc("CrecheConnect Reply", other["id"])
+		self.assertTrue(frappe.db.exists("File", file.name))
+		frappe.delete_doc("CrecheConnect Reply", reply["id"])
+		self.assertFalse(frappe.db.exists("File", file.name))
+
+	def test_deleting_a_thread_deletes_its_media(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		file = insert({"doctype": "File", "file_name": "gone.mp4", "content": b"video", "is_private": 1})
+		api.add_reply(name, f'<video src="{file.file_url}" controls=""></video>')
+		frappe.set_user(self.lead)
+		api.delete_message("CrecheConnect Thread", name)
+		self.assertFalse(frappe.db.exists("File", file.name))
+
+	def test_audio_uploads_are_capped_at_10_mb(self):
+		big = b"0" * (10 * 1024 * 1024 + 1)
+		with self.assertRaisesRegex(frappe.ValidationError, "Audio can be up to 10 MB"):
+			insert({"doctype": "File", "file_name": "voice-note.mp3", "content": big})
+		insert({"doctype": "File", "file_name": "voice-note.m4a", "content": b"0" * 1024})
+		insert({"doctype": "File", "file_name": "clip.mp4", "content": big})
+
 	def test_uploaded_resource_file_is_private_to_members(self):
 		file = insert({"doctype": "File", "file_name": "guide.txt", "content": "hello", "is_private": 1})
 		resource = insert({"doctype": "CrecheConnect Resource", "title": "Guide", "kind": "Document", "files": [{"url": file.file_url}]})
@@ -475,6 +531,12 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		self.assertTrue(file.is_downloadable())
 		stranger = "stranger@crecheconnect.test"
 		insert({"doctype": "User", "email": stranger, "first_name": "stranger", "user_type": "Website User"})
+		frappe.set_user("Administrator")
+		everyone = self.post("Administrator", [self.root])
+		frappe.set_user(self.volunteer)
+		public = insert({"doctype": "File", "file_name": "all.mp3", "content": b"all", "is_private": 1})
+		api.add_reply(everyone, f'<audio src="{public.file_url}" controls=""></audio>')
 		frappe.set_user(stranger)
 		self.assertFalse(file.is_downloadable())
+		self.assertFalse(public.reload().is_downloadable())
 		self.assertEqual(frappe.get_list("CrecheConnect Resource"), [])
