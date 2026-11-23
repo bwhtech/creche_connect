@@ -309,18 +309,16 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
         </div>
 
         <div class="border-t border-outline-gray-1 bg-surface-base">
-          <div class="mx-auto max-w-[770px] px-3 py-4 sm:px-6">
+          <div class="mx-auto max-w-[770px] px-3 py-2 sm:px-6 sm:py-4">
             <template v-if="thread.canReply">
-              <div class="flex items-end gap-2" @keydown="onKey">
-                <div class="min-w-0 flex-1">
-                  <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
-                    <Editor v-slot="{ editor }" v-model="reply" :extensions="kit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
-                      <EditorContent class="rich max-h-60 min-h-[3.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8" />
-                      <MediaButtons :editor="editor" class="px-1 pb-1" />
-                    </Editor>
+              <div class="rounded-4 border border-outline-gray-2 bg-surface-base" @keydown="onKey">
+                <Editor v-slot="{ editor }" v-model="reply" :extensions="kit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
+                  <EditorContent class="rich max-h-60 min-h-[2.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8 sm:min-h-[3.5rem]" />
+                  <div class="flex items-center px-1 pb-1">
+                    <MediaButtons :editor="editor" />
+                    <Button class="ml-auto" variant="solid" theme="gray" icon="lucide-send-horizontal" aria-label="Send reply" :disabled="replyEmpty" :loading="sending" @click="send" />
                   </div>
-                </div>
-                <Button variant="solid" theme="gray" icon="lucide-send-horizontal" size="md" :disabled="replyEmpty" :loading="sending" @click="send" />
+                </Editor>
               </div>
             </template>
             <div v-else class="flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-3 text-sm text-ink-gray-6">
