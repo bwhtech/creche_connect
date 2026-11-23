@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Badge, Button, Dialog, FileUploader, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
+import { useDropZone } from '@vueuse/core'
+import { Badge, Button, Dialog, FormControl, PageHeader, Switch, TabButtons, TextInput, toast, useFileUpload } from 'frappe-ui'
 import FileViewer, { canView, fileKind } from '../components/FileViewer.vue'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
@@ -30,7 +31,32 @@ const blankForm = () => ({ title: '', kind: 'Document', description: '', files: 
 const form = ref(blankForm())
 const link = ref('')
 const saving = ref(false)
-const restricted = ref(false)
+const audience = ref('everyone')
+const AUDIENCES = [
+  { label: 'Every member', value: 'everyone' },
+  { label: 'Selected places', value: 'places' },
+]
+const { upload, isUploading, progress } = useFileUpload()
+const picker = ref<HTMLInputElement>()
+const linking = ref(false)
+const zone = ref<HTMLElement>()
+const SOURCES = [
+  { label: 'My device', icon: 'lucide-monitor', go: () => picker.value?.click() },
+  { label: 'Link', icon: 'lucide-link', go: () => (linking.value = true) },
+]
+
+async function uploadFiles(files: FileList | File[] | null | undefined) {
+  const list = [...(files ?? [])]
+  if (picker.value) picker.value.value = ''
+  for (const file of list) {
+    try {
+      addFile((await upload(file, { private: true })).file_url)
+    } catch (e) {
+      toast.error(errorText(e, e?.message || `Could not upload ${file.name}`))
+    }
+  }
+}
+const { isOverDropZone } = useDropZone(zone, { onDrop: uploadFiles, multiple: true })
 const kindOptions = Object.entries(RESOURCE_KINDS).map(([value, k]) => ({ label: k.label, value }))
 
 function addFile(url: string) {
@@ -41,25 +67,28 @@ function addLink() {
   if (!link.value.trim()) return
   addFile(link.value.trim())
   link.value = ''
+  linking.value = false
 }
 function openNew() {
   editing.value = null
   form.value = blankForm()
-  restricted.value = false
+  audience.value = 'everyone'
+  linking.value = false
   link.value = ''
   showNew.value = true
 }
 function openEdit(r) {
   editing.value = r
   form.value = { title: r.title, kind: r.kind, description: r.description || '', files: r.files.map(({ label, url }) => ({ label, url })), places: [...r.places], designations: [...r.designations] }
-  restricted.value = !!r.places.length
+  audience.value = r.places.length ? 'places' : 'everyone'
+  linking.value = false
   link.value = ''
   showNew.value = true
 }
 async function save() {
   if (!form.value.title.trim() || !form.value.files.length) return toast.error('Add a title and at least one file or link')
-  if (restricted.value && !form.value.places.length) return toast.error('Pick at least one place, or show it to everyone')
-  if (!restricted.value) Object.assign(form.value, { places: [], designations: [] })
+  if (audience.value === 'places' && !form.value.places.length) return toast.error('Pick at least one place, or show it to every member')
+  if (audience.value === 'everyone') Object.assign(form.value, { places: [], designations: [] })
   saving.value = true
   try {
     if (editing.value) await updateResource(editing.value, { ...form.value })
@@ -176,24 +205,44 @@ function togglePin(r, pinned: boolean) {
               <Button size="sm" variant="ghost" icon="lucide-x" aria-label="Remove file" @click="form.files.splice(i, 1)" />
             </div>
           </div>
-          <div class="space-y-2 rounded-4 border border-dashed border-outline-gray-3 px-3 py-4">
-            <FileUploader @success="(f) => addFile(f.file_url)" @failure="toast.error('Could not upload the file')">
-              <template #default="{ openFileSelector, uploading, progress }">
-                <div class="flex flex-col items-center gap-2 text-center">
-                  <Button icon-left="lucide-upload" :label="uploading ? `Uploading ${progress}%` : 'Upload file'" :loading="uploading" @click="openFileSelector" />
-                  <span class="text-p-sm text-ink-gray-5">PDF, document, picture or video. Only members can open it.</span>
-                </div>
-              </template>
-            </FileUploader>
-            <div class="flex gap-2">
-              <TextInput v-model="link" class="flex-1" placeholder="Or paste a link: https://" aria-label="Link" @keydown.enter="addLink" />
-              <Button icon="lucide-plus" aria-label="Add this link" @click="addLink" />
+          <div
+            class="rounded-4 border border-dashed px-3 py-6 text-center transition-colors"
+            ref="zone"
+            :class="isOverDropZone ? 'border-outline-gray-4 bg-surface-gray-2' : 'border-outline-gray-3'"
+          >
+            <div v-if="linking" class="flex gap-2">
+              <TextInput v-model="link" class="flex-1" placeholder="https://" aria-label="Link" autofocus @keydown.enter="addLink" />
+              <Button variant="solid" theme="gray" label="Add link" @click="addLink" />
+              <Button icon="lucide-x" aria-label="Cancel link" @click="linking = false" />
             </div>
+            <template v-else>
+              <p class="text-p-sm text-ink-gray-6">{{ isUploading ? `Uploading ${progress}%…` : 'Drag and drop files here or add from' }}</p>
+              <div class="mt-4 flex justify-center gap-8">
+                <button
+                  v-for="s in SOURCES"
+                  :key="s.label"
+                  type="button"
+                  class="group flex flex-col items-center gap-1.5 text-sm text-ink-gray-7"
+                  :disabled="isUploading"
+                  @click="s.go"
+                >
+                  <span class="inline-flex size-10 items-center justify-center rounded-full bg-surface-gray-2 group-hover:bg-surface-gray-3">
+                    <span :class="s.icon" class="size-5 text-ink-gray-7" aria-hidden="true" />
+                  </span>
+                  {{ s.label }}
+                </button>
+              </div>
+            </template>
+            <input ref="picker" type="file" multiple class="hidden" @change="uploadFiles(picker?.files)" />
           </div>
         </div>
         <div>
-          <Switch v-model="restricted" label="Only some places and designations" description="Off: every member can see it" />
-          <GeoPicker v-if="restricted" v-model="form" class="mt-3" />
+          <div class="flex items-center gap-3">
+            <div class="shrink-0 text-xs text-ink-gray-6">Who can see this</div>
+            <TabButtons v-model="audience" class="ml-auto" :options="AUDIENCES" />
+          </div>
+          <p class="mt-1.5 text-p-xs text-ink-gray-5">Files are private: only members who can see this resource can open them.</p>
+          <GeoPicker v-if="audience === 'places'" v-model="form" class="mt-3" />
         </div>
         <div class="flex justify-end gap-2 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />
