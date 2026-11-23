@@ -3,15 +3,17 @@ import { computed, onMounted, watch } from 'vue'
 import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { useTitle } from '@vueuse/core'
-import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme } from 'frappe-ui'
+import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme, toast } from 'frappe-ui'
 import StatusPage from './components/StatusPage.vue'
-import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile } from './lib/store'
+import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile, errorText } from './lib/store'
+import { pushSupported, pushOn, checkPush, enablePush, disablePush } from './lib/push'
 
 const me = useMe()
 onMounted(() => {
   loadBoot()
   loadCounts().catch(() => {})
   listenForActivity()
+  checkPush()
 })
 const online = useOnline()
 const offline = { icon: 'lucide-wifi-off', title: "You're offline", text: "Check your mobile data or Wi-Fi. CrecheConnect will carry on from here once you're back online." }
@@ -39,7 +41,16 @@ const mainNav = computed(() => [
   ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const { resolvedColorScheme, toggleColorScheme } = useColorScheme()
+async function togglePush() {
+  try {
+    await (pushOn.value ? disablePush() : enablePush())
+    toast.success(pushOn.value ? 'Notifications are on for this device' : 'Notifications are off for this device')
+  } catch (e) {
+    toast.error(errorText(e, e?.message || 'Could not change notifications'))
+  }
+}
 const userMenu = computed(() => [
+  ...(pushSupported ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
   resolvedColorScheme.value === 'dark'
     ? { label: 'Light mode', icon: 'lucide-sun', onClick: toggleColorScheme }
     : { label: 'Dark mode', icon: 'lucide-moon', onClick: toggleColorScheme },

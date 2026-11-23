@@ -7,6 +7,7 @@ from frappe.model.document import Document
 from frappe.utils import get_datetime, now_datetime
 from frappe.query_builder import DocType
 
+from creche_connect import push
 from creche_connect.api import (
 	MEMBER_FIELDS,
 	attach_media,
@@ -71,6 +72,9 @@ class CrecheConnectThread(Document):
 			frappe.throw(_("Each poll option must be different"))
 		if self.is_new() and self.poll_closes_at and get_datetime(self.poll_closes_at) <= now_datetime():
 			frappe.throw(_("Pick a deadline in the future"))
+
+	def after_insert(self):
+		push.queue("thread_created", self.name)
 
 	def on_update(self):
 		attach_media(self.name, self.content)

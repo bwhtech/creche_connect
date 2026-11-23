@@ -6,6 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime, strip_html
 
+from creche_connect import push
 from creche_connect.api import attach_media, check_content_length, check_only_author_edits, delete_media, notify_audience
 
 
@@ -37,6 +38,7 @@ class CrecheConnectReply(Document):
 
 	def after_insert(self):
 		self.update_thread_stats()
+		push.queue("reply_created", self.name)
 
 	def on_update(self):
 		attach_media(self.thread, self.content)
