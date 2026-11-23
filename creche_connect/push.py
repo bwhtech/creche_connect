@@ -5,7 +5,7 @@ import frappe
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from frappe import _
 from frappe.desk.notifications import extract_mentions
-from frappe.utils import get_fullname, strip_html
+from frappe.utils import get_fullname, get_url, strip_html
 from frappe.utils.password import get_decrypted_password, set_encrypted_password
 from py_vapid import Vapid
 from py_vapid.utils import b64urlencode
@@ -60,14 +60,15 @@ def push(bodies: dict, title: str, url: str):
 	]
 	if not subscriptions:
 		return
-	key = vapid()
+	key, site = vapid(), get_url()
+	contact = site if site.startswith("https://") else "mailto:noreply@example.com"
 	for s in subscriptions:
 		try:
 			webpush(
 				json.loads(s.subscription),
 				json.dumps({"title": title, "body": bodies[s.user], "url": url}),
 				vapid_private_key=key,
-				vapid_claims={"sub": f"mailto:noreply@{frappe.local.site}"},
+				vapid_claims={"sub": contact},
 				ttl=86400,
 				timeout=10,
 			)
