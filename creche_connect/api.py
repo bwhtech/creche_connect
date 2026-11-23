@@ -352,6 +352,10 @@ def audience_users(places: list, designations: list) -> list[str]:
 	return frappe.get_all("CrecheConnect Member", filters=filters, or_filters=or_filters, pluck="user")
 
 
+def thread_audience(thread) -> set[str]:
+	return set(audience_users([p.place for p in thread.places], [d.designation for d in thread.designations]))
+
+
 def notify_audience(thread: str, event: str = "crecheconnect_activity"):
 	frappe.enqueue(
 		"creche_connect.api.send_activity",
@@ -365,8 +369,7 @@ def notify_audience(thread: str, event: str = "crecheconnect_activity"):
 
 def send_activity(thread: str, sender: str, event: str = "crecheconnect_activity"):
 	doc = frappe.get_doc("CrecheConnect Thread", thread)
-	users = set(audience_users([p.place for p in doc.places], [d.designation for d in doc.designations]))
-	for user in (users | {doc.owner}) - {sender}:
+	for user in (thread_audience(doc) | {doc.owner}) - {sender}:
 		frappe.publish_realtime(event, {"thread": thread}, user=user)
 
 

@@ -28,3 +28,4 @@ website_redirects = [{"source": "/", "target": "/c"}]
 sqlite_search = ["creche_connect.search.CrecheConnectSearch"]
 
 doc_events = {"File": {"before_insert": "creche_connect.files.check_audio_size"}}
+after_migrate = ["creche_connect.push.ensure_vapid_key"]

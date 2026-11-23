@@ -4,6 +4,7 @@ import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { RichTextKit } from 'frappe-ui/editor'
 import { Audio } from './audio'
+import { disablePush } from './push'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -215,6 +216,7 @@ export function listenForActivity() {
 
 export const fetchThread = latest((id: string) => get('creche_connect.api.get_thread', { name: id }))
 export async function logout() {
+  await disablePush().catch(() => {})
   await call('logout')
   window.location.href = '/login?redirect-to=/c'
 }
