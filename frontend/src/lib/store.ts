@@ -363,18 +363,27 @@ export const RESOURCE_KINDS = {
   Link: { label: 'Link', icon: 'lucide-link', color: 'green' },
 }
 
-export async function addResource({ title, kind, files, description }) {
+const audienceRows = (places: string[], designations: string[]) => ({
+  places: places.map((place) => ({ place })),
+  designations: designations.map((designation) => ({ designation })),
+})
+
+export async function addResource({ title, kind, files, description, places, designations }) {
   const doc: any = await post('frappe.client.insert', {
-    doc: { doctype: 'CrecheConnect Resource', title, kind, files, description },
+    doc: { doctype: 'CrecheConnect Resource', title, kind, files, description, ...audienceRows(places, designations) },
   })
-  const r = { ...doc, id: doc.name, pinned: !!doc.pinned }
+  const r = { ...doc, id: doc.name, pinned: !!doc.pinned, places, designations }
   state.resources.push(r)
   return r
 }
 
-export async function updateResource(r, { title, kind, files, description }) {
-  await post('frappe.client.set_value', { doctype: 'CrecheConnect Resource', name: r.id, fieldname: { title, kind, files, description } })
-  Object.assign(r, { title, kind, files, description })
+export async function updateResource(r, { title, kind, files, description, places, designations }) {
+  await post('frappe.client.set_value', {
+    doctype: 'CrecheConnect Resource',
+    name: r.id,
+    fieldname: { title, kind, files, description, ...audienceRows(places, designations) },
+  })
+  Object.assign(r, { title, kind, files, description, places, designations })
 }
 
 export async function deleteResource(r) {
