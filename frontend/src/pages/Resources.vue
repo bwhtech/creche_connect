@@ -188,7 +188,7 @@ function togglePin(r, pinned: boolean) {
     </div>
 
     <Dialog v-model:open="showNew" :title="editing ? 'Edit resource' : 'Add resource'">
-      <div class="space-y-4">
+      <div class="-mx-4 max-h-[70dvh] space-y-4 overflow-y-auto overscroll-contain px-4 sm:-mx-6 sm:px-6">
         <FormControl v-model="form.title" label="Title" required />
         <FormControl v-model="form.description" label="Short description" placeholder="Optional" />
         <div>
@@ -235,7 +235,7 @@ function togglePin(r, pinned: boolean) {
           <Switch v-model="restricted" label="Only some places and designations" description="Leave off to show it to every member" />
           <GeoPicker v-if="restricted" v-model="form" class="mt-3" />
         </div>
-        <div class="flex justify-end gap-2 pt-2">
+        <div class="sticky bottom-0 flex justify-end gap-2 bg-surface-elevation-1 pt-2">
           <Button v-if="editing" class="mr-auto" theme="red" icon-left="lucide-trash-2" label="Delete" @click="confirmingDelete = true" />
           <Button label="Cancel" @click="showNew = false" />
           <Button variant="solid" theme="gray" :label="editing ? 'Save' : 'Add'" :loading="saving" @click="save" />
