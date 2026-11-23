@@ -84,7 +84,13 @@ class IntegrationTestCrecheConnectPush(IntegrationTestCase):
 
 	def test_only_real_push_services_are_accepted(self):
 		frappe.set_user(self.volunteer)
-		for endpoint in ("https://example.com/x", "http://fcm.googleapis.com/x", "https://fcm.googleapis.com.evil.io/x"):
+		for endpoint in (
+			"https://example.com/x",
+			"http://fcm.googleapis.com/x",
+			"https://fcm.googleapis.com.evil.io/x",
+			"https://evil.io\\@fcm.googleapis.com/x",
+			"https://fcm.googleapis.com:8443/x",
+		):
 			with self.assertRaises(frappe.ValidationError):
 				push.subscribe({"endpoint": endpoint, "keys": {}})
 

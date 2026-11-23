@@ -40,7 +40,8 @@ def subscribe(subscription: dict):
 	endpoint = subscription.get("endpoint") or ""
 	url = urlparse(endpoint)
 	host = (url.hostname or "").rstrip(".").lower()
-	if url.scheme != "https" or not any(host == h or host.endswith(f".{h}") for h in PUSH_HOSTS):
+	odd = url.port or url.username or "\\" in endpoint
+	if odd or url.scheme != "https" or not any(host == h or host.endswith(f".{h}") for h in PUSH_HOSTS):
 		frappe.throw(_("This device can't receive notifications"))
 	frappe.db.delete(SUBSCRIPTION, {"endpoint": endpoint})
 	frappe.get_doc(
