@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import now_datetime, strip_html
 
-from creche_connect.api import check_content_length, check_only_author_edits, notify_audience
+from creche_connect.api import attach_media, check_content_length, check_only_author_edits, delete_media, notify_audience
 
 
 class CrecheConnectReply(Document):
@@ -39,10 +39,12 @@ class CrecheConnectReply(Document):
 		self.update_thread_stats()
 
 	def on_update(self):
+		attach_media(self.thread, self.content)
 		notify_audience(self.thread)
 
 	def on_trash(self):
 		self.update_thread_stats(exclude=self.name)
+		delete_media(self.thread, self.content)
 		frappe.db.delete("CrecheConnect Reaction", {"reference_doctype": self.doctype, "reference_name": str(self.name)})
 		notify_audience(self.thread)
 

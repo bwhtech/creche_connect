@@ -474,6 +474,22 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		with self.assertRaisesRegex(frappe.ValidationError, "Write a reply"):
 			api.add_reply(name, "<p> </p>")
 
+	def test_reply_media_is_private_to_the_thread_audience(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		file = insert({"doctype": "File", "file_name": "note.mp3", "content": b"voice", "is_private": 1})
+		reply = api.add_reply(name, f'<audio src="{file.file_url}" controls=""></audio>')
+		file.reload()
+		self.assertEqual((file.attached_to_doctype, file.attached_to_name), ("CrecheConnect Thread", name))
+		frappe.set_user(self.coordinator)
+		self.assertTrue(file.is_downloadable())
+		frappe.set_user(self.outsider)
+		self.assertFalse(file.is_downloadable())
+		self.assertEqual(frappe.get_list("CrecheConnect Thread"), [])
+		frappe.set_user("Administrator")
+		frappe.delete_doc("CrecheConnect Reply", reply["id"])
+		self.assertFalse(frappe.db.exists("File", file.name))
+
 	def test_audio_uploads_are_capped_at_10_mb(self):
 		big = b"0" * (10 * 1024 * 1024 + 1)
 		with self.assertRaisesRegex(frappe.ValidationError, "Audio can be up to 10 MB"):

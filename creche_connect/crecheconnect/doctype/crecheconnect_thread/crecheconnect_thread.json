@@ -144,7 +144,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-05 12:00:00.000000",
+ "modified": "2026-11-23 17:00:00.000000",
  "modified_by": "Administrator",
  "module": "CrecheConnect",
  "name": "CrecheConnect Thread",
@@ -173,6 +173,10 @@
    "role": "CrecheConnect Admin",
    "share": 1,
    "write": 1
+  },
+  {
+   "read": 1,
+   "role": "All"
   }
  ],
  "row_format": "Dynamic",

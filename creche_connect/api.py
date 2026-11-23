@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 import frappe
@@ -276,6 +277,28 @@ def serialize_reply(r, reactions=None) -> dict:
 		"body": r.content,
 		"reactions": reactions or {},
 	}
+
+
+PRIVATE_MEDIA = re.compile(r'src="(/private/files/[^"]+)"')
+
+
+def attach_media(thread: str, content: str | None):
+	if urls := PRIVATE_MEDIA.findall(content or ""):
+		frappe.db.set_value(
+			"File",
+			{"file_url": ["in", urls], "owner": frappe.session.user, "attached_to_name": ["is", "not set"]},
+			{"attached_to_doctype": "CrecheConnect Thread", "attached_to_name": thread},
+		)
+
+
+def delete_media(thread: str, content: str | None):
+	if urls := PRIVATE_MEDIA.findall(content or ""):
+		for name in frappe.get_all(
+			"File",
+			filters={"attached_to_doctype": "CrecheConnect Thread", "attached_to_name": thread, "file_url": ["in", urls]},
+			pluck="name",
+		):
+			frappe.delete_doc("File", name, ignore_permissions=True)
 
 
 def check_content_length(content: str | None):

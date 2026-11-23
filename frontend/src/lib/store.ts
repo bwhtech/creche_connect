@@ -16,7 +16,7 @@ const MAX_AUDIO_MB = 10
 export const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) =>
   file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024
     ? Promise.reject(new Error(`Audio can be up to ${MAX_AUDIO_MB} MB`))
-    : upload(file, { ...o, private: false, optimize: true })
+    : upload(file, { ...o, private: !file.type.startsWith('image/'), optimize: true })
 export const editorKit = (people: () => any[]) => [
   RichTextKit.configure({
     textAlign: false,

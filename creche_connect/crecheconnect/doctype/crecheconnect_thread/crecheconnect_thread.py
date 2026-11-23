@@ -7,7 +7,16 @@ from frappe.model.document import Document
 from frappe.utils import get_datetime, now_datetime
 from frappe.query_builder import DocType
 
-from creche_connect.api import check_content_length, check_only_author_edits, notify_audience
+from creche_connect.api import (
+	MEMBER_FIELDS,
+	attach_media,
+	can_see,
+	check_content_length,
+	check_only_author_edits,
+	is_admin,
+	load_threads,
+	notify_audience,
+)
 
 MAX_POLL_OPTIONS = 10
 
@@ -64,6 +73,7 @@ class CrecheConnectThread(Document):
 			frappe.throw(_("Pick a deadline in the future"))
 
 	def on_update(self):
+		attach_media(self.name, self.content)
 		notify_audience(self.name)
 
 	def on_trash(self):
@@ -89,3 +99,18 @@ class CrecheConnectThread(Document):
 
 def on_doctype_update():
 	frappe.db.add_index("CrecheConnect Thread", ["owner", "last_activity"])
+
+
+def has_permission(doc=None, ptype=None, user=None):
+	user = user or frappe.session.user
+	if is_admin(user):
+		return True
+	if ptype != "read" or not doc:
+		return False
+	me = frappe.db.get_value("CrecheConnect Member", user, MEMBER_FIELDS, as_dict=True) or frappe._dict(user=user)
+	threads = load_threads({"name": doc.name})
+	return bool(threads) and can_see(me, threads[0])
+
+
+def permission_query_conditions(user=None):
+	return "" if is_admin(user) else "1=0"
