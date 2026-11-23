@@ -156,7 +156,7 @@ async function save() {
     </div>
 
     <Dialog v-model:open="open" :title="form.id ? 'Edit user' : 'Add user'">
-      <div class="space-y-5">
+      <div class="-mx-4 max-h-[70dvh] space-y-5 overflow-y-auto overscroll-contain px-4 sm:-mx-6 sm:px-6">
         <FormControl v-model="form.name" label="Full name" required />
         <FormControl v-model="form.email" type="email" label="Email" required :disabled="!!form.id" />
         <FormControl v-model="form.designation" type="select" label="Designation" :options="DESIGNATIONS.map((d) => ({ label: d, value: d }))" />
@@ -184,7 +184,7 @@ async function save() {
           :description="`They can post to people in ${formPlace ? placePath(formPlace) : 'all of India'} and below.`"
         />
 
-        <div class="flex justify-end gap-2 pt-1">
+        <div class="sticky bottom-0 flex justify-end gap-2 bg-surface-elevation-1 pt-1">
           <Button label="Cancel" @click="open = false" />
           <Button variant="solid" theme="gray" :label="form.id ? 'Save' : 'Add user'" :loading="saving" @click="save" />
         </div>
