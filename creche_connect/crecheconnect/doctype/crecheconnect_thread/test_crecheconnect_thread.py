@@ -506,6 +506,15 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		frappe.delete_doc("CrecheConnect Reply", reply["id"])
 		self.assertFalse(frappe.db.exists("File", file.name))
 
+	def test_deleting_a_thread_deletes_its_media(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		file = insert({"doctype": "File", "file_name": "gone.mp4", "content": b"video", "is_private": 1})
+		api.add_reply(name, f'<video src="{file.file_url}" controls=""></video>')
+		frappe.set_user(self.lead)
+		api.delete_message("CrecheConnect Thread", name)
+		self.assertFalse(frappe.db.exists("File", file.name))
+
 	def test_audio_uploads_are_capped_at_10_mb(self):
 		big = b"0" * (10 * 1024 * 1024 + 1)
 		with self.assertRaisesRegex(frappe.ValidationError, "Audio can be up to 10 MB"):
