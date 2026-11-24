@@ -1,18 +1,31 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
-import { Avatar, Badge } from 'frappe-ui'
+import { computed, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import { useResizeObserver } from '@vueuse/core'
+import { Avatar, Badge, Button } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
-import { excerpt, userById, policyOf, threadReach, when, isAuthor } from '../lib/store'
+import { shareThread, userById, policyOf, threadReach, when, isAuthor } from '../lib/store'
 
-defineProps<{ thread: any }>()
+const props = defineProps<{ thread: any }>()
+const router = useRouter()
+const to = computed(() => `/threads/${props.thread.id}`)
+const html = computed(() => props.thread.body.replaceAll('<img ', '<img loading="lazy" ').replaceAll('<video ', '<video preload="metadata" '))
+const body = ref<HTMLElement>()
+const clipped = ref(false)
+useResizeObserver(body, () => (clipped.value = body.value!.scrollHeight > body.value!.clientHeight + 1))
+
+function open(e: MouseEvent) {
+  if ((e.target as HTMLElement).closest('a, button, input, audio, video, [role=button]') || getSelection()?.toString()) return
+  router.push(to.value)
+}
 </script>
 
 <template>
-  <RouterLink
-    :to="`/threads/${thread.id}`"
-    class="block overflow-hidden rounded-5 border border-outline-gray-1 bg-surface-base transition-shadow hover:border-outline-gray-2 hover:shadow-sm"
+  <div
+    class="cursor-pointer overflow-hidden rounded-5 border border-outline-gray-1 bg-surface-base transition-shadow hover:border-outline-gray-2 hover:shadow-sm"
+    @click="open"
   >
     <div class="flex gap-3 p-4 md:gap-4 md:p-5">
       <Avatar :label="userById(thread.authorId).name" size="lg" class="mt-0.5 max-md:hidden" />
@@ -24,12 +37,18 @@ defineProps<{ thread: any }>()
         </div>
 
         <div class="mt-2 flex items-center gap-2">
-          <span class="text-lg max-md:line-clamp-2 md:truncate" :class="thread.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'">
+          <RouterLink :to="to" class="text-lg max-md:line-clamp-2 md:truncate" :class="thread.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'">
             {{ thread.title }}
-          </span>
+          </RouterLink>
           <span v-if="thread.unread" class="size-2 shrink-0 rounded-full bg-surface-blue-7" aria-label="Unread" />
         </div>
-        <p class="mt-1.5 line-clamp-2 text-p-sm text-ink-gray-6">{{ excerpt(thread.body) }}</p>
+        <div
+          ref="body"
+          class="rich card-media mt-1.5 max-h-[44rem] text-p-sm text-ink-gray-7"
+          :class="clipped && '[mask-image:linear-gradient(to_bottom,black_70%,transparent)]'"
+          v-html="html"
+        />
+        <span v-if="clipped" class="text-sm text-ink-blue-link">Show more</span>
 
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <AudienceChips :geo="thread.geo" />
@@ -49,6 +68,7 @@ defineProps<{ thread: any }>()
     </div>
     <div class="flex items-center gap-3 border-t border-outline-gray-1 bg-surface-gray-1 py-2 pr-4 pl-2.5 md:pr-5 md:pl-[4.25rem]">
       <Reactions :target="thread" doctype="CrecheConnect Thread" />
+      <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
       <div class="ml-auto flex items-center gap-3 whitespace-nowrap text-xs text-ink-gray-5 md:gap-4">
         <span v-if="thread.poll" class="flex items-center gap-1">
           <span class="lucide-vote size-3.5" aria-hidden="true" />{{ thread.poll.voterCount }} voted
@@ -62,5 +82,5 @@ defineProps<{ thread: any }>()
         </span>
       </div>
     </div>
-  </RouterLink>
+  </div>
 </template>

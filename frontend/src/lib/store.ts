@@ -1,5 +1,5 @@
 import { reactive, computed } from 'vue'
-import { call, frappeRequest, dayjsLocal, upload } from 'frappe-ui'
+import { call, frappeRequest, dayjsLocal, upload, toast } from 'frappe-ui'
 import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { RichTextKit } from 'frappe-ui/editor'
@@ -136,6 +136,12 @@ export const POLICIES = [
 export const policyOf = (v: string) => POLICIES.find((p) => p.value === v)!
 
 export const excerpt = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+export async function shareThread(t) {
+  const url = `${location.origin}/c/threads/${t.id}`
+  if (navigator.share) return navigator.share({ title: t.title, url }).catch(() => {})
+  await navigator.clipboard.writeText(url)
+  toast.success('Link copied')
+}
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 

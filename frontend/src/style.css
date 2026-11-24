@@ -60,8 +60,21 @@
 	.rich audio {
 		@apply my-1 w-full max-w-sm;
 	}
+	.rich img {
+		@apply h-auto max-w-full rounded-4;
+	}
 	.rich video {
 		@apply my-1 max-h-96 max-w-full rounded-4;
+	}
+	.card-media img,
+	.card-media video {
+		@apply my-2 max-h-[32rem] w-full rounded-5 border border-outline-gray-1;
+	}
+	.card-media img {
+		@apply object-cover;
+	}
+	.card-media video {
+		@apply bg-black object-contain;
 	}
 	.mention {
 		@apply text-ink-blue-6;
