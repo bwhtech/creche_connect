@@ -35,16 +35,16 @@ async function save() {
   <div class="group flex gap-3 rounded-4 px-2" :class="compact ? 'py-1' : 'pt-3 pb-1'">
     <div class="w-8 shrink-0">
       <Avatar v-if="!compact" :label="author.name" size="lg" />
-      <span v-else class="invisible block pt-0.5 text-2xs text-ink-gray-4 tabular-nums group-hover:visible">
+      <span v-else class="invisible block pt-0.5 text-2xs text-ink-gray-5 tabular-nums group-hover:visible">
         {{ when(message.at).format('h:mm') }}
       </span>
     </div>
     <div class="min-w-0 flex-1">
       <div v-if="!compact" class="flex items-baseline gap-2">
         <span class="shrink-0 text-base-semibold text-ink-gray-9">{{ author.name }}</span>
-        <span class="truncate text-xs text-ink-gray-5 max-md:hidden">{{ author.title }}</span>
+        <span class="truncate text-xs text-ink-gray-6">{{ author.title }}</span>
         <Tooltip :text="when(message.at).format('DD MMM YYYY, h:mm A')">
-          <span class="ml-auto shrink-0 text-xs text-ink-gray-5">{{ when(message.at).fromNow() }}</span>
+          <span class="ml-auto shrink-0 text-xs text-ink-gray-6">{{ when(message.at).fromNow() }}</span>
         </Tooltip>
       </div>
       <div v-if="draft !== null" class="mt-1.5">
@@ -61,7 +61,7 @@ async function save() {
       <template v-else>
         <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="body" />
         <Tooltip v-if="message.editedAt" :text="`Edited ${when(message.editedAt).format('DD MMM YYYY, h:mm A')}`">
-          <span class="text-xs text-ink-gray-5">(edited)</span>
+          <span class="text-xs text-ink-gray-6">(edited)</span>
         </Tooltip>
       </template>
       <div class="mt-1.5">

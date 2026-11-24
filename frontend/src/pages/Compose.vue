@@ -112,10 +112,10 @@ async function post() {
       </template>
     </PageHeaderMobile>
     <PageHeader v-else>
-      <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: 'New thread' }]" />
+      <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: isPoll ? 'New poll' : 'New thread' }]" />
       <div v-if="canStart(me)" class="ml-auto flex items-center gap-2">
         <Button label="Cancel" route="/" />
-        <Button variant="solid" theme="gray" icon-left="lucide-send" :label="isPoll ? 'Start poll' : 'Start thread'" :loading="posting" @click="post" />
+        <Button variant="solid" theme="gray" icon-left="lucide-send" label="Post" :loading="posting" @click="post" />
       </div>
     </PageHeader>
 
@@ -152,11 +152,11 @@ async function post() {
             <div v-if="isPoll">
               <div class="mb-1.5 flex items-baseline text-xs text-ink-gray-6">
                 Options
-                <span class="ml-auto text-ink-gray-5 tabular-nums">{{ poll.options.length }} of {{ MAX_OPTIONS }}</span>
+                <span class="ml-auto text-ink-gray-6 tabular-nums">{{ poll.options.length }} of {{ MAX_OPTIONS }}</span>
               </div>
               <div class="divide-y divide-outline-gray-2 rounded-4 border border-outline-gray-2 bg-surface-base">
                 <div v-for="(o, i) in poll.options" :key="i" class="group flex items-center gap-2 pr-1.5 pl-3 focus-within:bg-surface-gray-1">
-                  <span class="size-4 shrink-0 text-ink-gray-5" :class="poll.multiple ? 'lucide-square' : 'lucide-circle'" aria-hidden="true" />
+                  <span class="size-4 shrink-0 text-ink-gray-6" :class="poll.multiple ? 'lucide-square' : 'lucide-circle'" aria-hidden="true" />
                   <TextInput
                     v-model="poll.options[i]"
                     variant="ghost"
@@ -185,7 +185,7 @@ async function post() {
                   <span class="lucide-plus size-4" aria-hidden="true" />Add option
                 </button>
               </div>
-              <p class="mt-1.5 text-xs text-ink-gray-5">Press Enter for the next option, or paste a list to fill them all.</p>
+              <p class="mt-1.5 text-xs text-ink-gray-6">Press Enter for the next option, or paste a list to fill them all.</p>
             </div>
             <div>
               <div class="mb-2 text-xs text-ink-gray-6">Tags</div>
@@ -215,7 +215,7 @@ async function post() {
 
           <section>
             <h2 class="text-xl text-ink-gray-9">Who is this for?</h2>
-            <p class="mt-1.5 mb-6 text-p-sm text-ink-gray-5">
+            <p class="mt-1.5 mb-6 text-p-sm text-ink-gray-6">
               Pick where, then optionally who. Everyone who matches sees the thread in their feed.
             </p>
             <GeoPicker v-model="draft" />
@@ -226,29 +226,29 @@ async function post() {
       <aside class="shrink-0 border-t border-outline-gray-1 lg:w-[22rem] lg:overflow-y-auto lg:border-t-0 lg:border-l">
         <div class="space-y-8 p-6">
           <section>
-            <h2 class="text-sm text-ink-gray-5">Reach</h2>
+            <h2 class="text-sm text-ink-gray-6">Reach</h2>
             <div class="mt-1.5 flex items-baseline gap-1.5">
               <span class="text-3xl font-semibold text-ink-gray-9 tabular-nums">{{ reach }}</span>
-              <span class="text-sm text-ink-gray-5">unique people</span>
+              <span class="text-sm text-ink-gray-6">unique people</span>
             </div>
             <AudienceChips v-if="geo" :geo="geo" class="mt-4" />
             <div v-else class="mt-3 flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-2.5">
               <span class="lucide-map-pin size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
               <p class="text-p-sm text-ink-gray-7">Pick a place below to see who this reaches.</p>
             </div>
-            <p v-if="draft.places.length" class="mt-4 text-p-xs text-ink-gray-5">
+            <p v-if="draft.places.length" class="mt-4 text-p-xs text-ink-gray-6">
               {{ draft.designations.length ? 'Only the ticked designations in these places.' : 'Everyone in these places, any designation.' }}
             </p>
           </section>
           <section v-if="isPoll" class="space-y-4">
-            <h2 class="text-sm text-ink-gray-5">Poll settings</h2>
+            <h2 class="text-sm text-ink-gray-6">Poll settings</h2>
             <Switch v-model="poll.multiple" label="Allow more than one answer" description="People can tick every option that works for them." />
             <Switch v-model="poll.anonymous" label="Anonymous votes" description="Show counts only. Nobody, including you, sees who voted for what." />
             <Switch :model-value="!!poll.closesAt" label="Set a deadline" description="Voting closes on its own. You can also close it any time." @update:model-value="setDeadline" />
             <DateTimePicker v-if="poll.closesAt" v-model="poll.closesAt" label="Voting closes" format="ddd D MMM YYYY, h:mm A" />
           </section>
           <section class="space-y-4">
-            <h2 class="text-sm text-ink-gray-5">Thread rules</h2>
+            <h2 class="text-sm text-ink-gray-6">Thread rules</h2>
             <FormControl v-model="policy" type="select" label="Who can reply" :options="POLICIES.map((p) => ({ label: p.label, value: p.value }))" />
             <Switch v-model="ackRequired" label="Ask for acknowledgment" description="Members confirm they have read it. You see who did." />
           </section>

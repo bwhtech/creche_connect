@@ -45,7 +45,7 @@ fetchEditHistory(props.doctype, props.name)
 <template>
   <component :is="isMobile ? BottomSheet : Dialog" v-model:open="open" title="Edit history" :size="isMobile ? undefined : '4xl'">
     <div :class="isMobile && 'px-4 pb-6'">
-      <LoadingIndicator v-if="!versions && !error" class="mx-auto my-6 size-5 text-ink-gray-5" />
+      <LoadingIndicator v-if="!versions && !error" class="mx-auto my-6 size-5 text-ink-gray-6" />
       <p v-else-if="error" class="text-p-sm text-ink-red-4">{{ error }}</p>
       <div v-else class="grid gap-6 md:grid-cols-[200px_minmax(0,1fr)]">
         <div v-if="isMobile" class="flex justify-center gap-1.5">
@@ -71,7 +71,7 @@ fetchEditHistory(props.doctype, props.name)
             @click="current = i"
           >
             <div class="text-sm font-medium">{{ label(i) }}</div>
-            <div class="mt-0.5 text-xs text-ink-gray-5">{{ when(v.at).format('DD MMM YYYY, h:mm A') }}</div>
+            <div class="mt-0.5 text-xs text-ink-gray-6">{{ when(v.at).format('DD MMM YYYY, h:mm A') }}</div>
           </button>
         </div>
         <div v-if="shown" ref="preview" class="min-w-0 md:max-h-[60vh] md:overflow-y-auto">
@@ -79,7 +79,7 @@ fetchEditHistory(props.doctype, props.name)
             <Avatar :label="userById(shown.by).name" size="md" />
             <div>
               <div class="text-sm font-medium text-ink-gray-8">{{ userById(shown.by).name }}</div>
-              <div class="text-xs text-ink-gray-5">{{ label(current) }} · {{ when(shown.at).format('DD MMM YYYY, h:mm A') }}</div>
+              <div class="text-xs text-ink-gray-6">{{ label(current) }} · {{ when(shown.at).format('DD MMM YYYY, h:mm A') }}</div>
             </div>
           </div>
           <p v-if="shown.title" class="diff text-base-semibold text-ink-gray-9" v-html="shown.title" />

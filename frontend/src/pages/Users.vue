@@ -85,7 +85,7 @@ async function save() {
         </div>
         <div class="w-56">
           <TextInput v-model="query" placeholder="Search users" aria-label="Search users">
-            <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
+            <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
           </TextInput>
         </div>
         <Button v-if="me.admin" variant="solid" theme="gray" icon-left="lucide-user-plus" label="Add user" @click="add" />
@@ -100,11 +100,11 @@ async function save() {
           </div>
           <div class="min-w-0 flex-1">
             <TextInput v-model="query" placeholder="Search users" aria-label="Search users">
-              <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
+              <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
             </TextInput>
           </div>
         </div>
-        <p class="mb-5 text-p-sm text-ink-gray-5 max-md:hidden">
+        <p class="mb-5 text-p-sm text-ink-gray-6 max-md:hidden">
           Each user has a state, district, block and designation. Threads reach people by these four fields.
           <span class="tabular-nums">{{ rows.length }} of {{ state.users.length }}</span> shown.
         </p>
@@ -125,22 +125,22 @@ async function save() {
                   <div class="min-w-0">
                     <div class="truncate text-base text-ink-gray-8">
                       {{ item.name }}
-                      <span v-if="item.admin" class="ml-1 text-xs text-ink-gray-5">Admin</span>
+                      <span v-if="item.admin" class="ml-1 text-xs text-ink-gray-6">Admin</span>
                     </div>
-                    <div class="truncate text-xs text-ink-gray-5">
+                    <div class="truncate text-xs text-ink-gray-6">
                       {{ item.designation }}<span class="md:hidden"> · {{ item.where }}</span>
                     </div>
                   </div>
                 </div>
               </ListCell>
               <ListCell class="max-md:hidden">
-                <span class="truncate text-sm" :class="item.place ? 'text-ink-gray-7' : 'text-ink-gray-5'">{{ item.levels[0] || 'National' }}</span>
+                <span class="truncate text-sm" :class="item.place ? 'text-ink-gray-7' : 'text-ink-gray-6'">{{ item.levels[0] || 'National' }}</span>
               </ListCell>
               <ListCell class="max-md:hidden"><span class="truncate text-sm text-ink-gray-7">{{ item.levels[1] || '—' }}</span></ListCell>
               <ListCell class="max-md:hidden"><span class="truncate text-sm text-ink-gray-7">{{ item.levels[2] || '—' }}</span></ListCell>
               <ListCell class="max-md:hidden">
                 <Badge v-if="item.canPost" label="Can start threads" theme="green" variant="subtle" size="sm" />
-                <span v-else class="text-sm text-ink-gray-4">Read and reply</span>
+                <span v-else class="text-sm text-ink-gray-6">Read and reply</span>
               </ListCell>
               <ListCell class="justify-end">
                 <Button v-if="me.admin" size="sm" variant="ghost" icon="lucide-pencil" :aria-label="`Edit ${item.name}`" @click="edit(item)" />
@@ -149,8 +149,8 @@ async function save() {
           </ListRows>
         </List>
         <div v-if="!rows.length" class="flex flex-col items-center gap-2 py-16 text-center">
-          <span class="lucide-users size-6 text-ink-gray-4" aria-hidden="true" />
-          <p class="text-sm text-ink-gray-5">No users match.</p>
+          <span class="lucide-users size-6 text-ink-gray-5" aria-hidden="true" />
+          <p class="text-sm text-ink-gray-6">No users match.</p>
         </div>
       </div>
     </div>
@@ -175,7 +175,7 @@ async function save() {
             <FormControl v-model="form.district" type="select" label="District" :options="districtOptions" :disabled="!form.state" />
             <FormControl v-model="form.block" type="select" label="Block" :options="blockOptions" :disabled="!form.district" />
           </div>
-          <p class="mt-3 text-p-xs text-ink-gray-5">{{ placePath(formPlace) }}</p>
+          <p class="mt-3 text-p-xs text-ink-gray-6">{{ placePath(formPlace) }}</p>
         </div>
 
         <Switch

@@ -11,7 +11,7 @@ const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.th
 <template>
   <div class="space-y-8 p-6">
     <section>
-      <h2 class="text-sm text-ink-gray-5">Audience</h2>
+      <h2 class="text-sm text-ink-gray-6">Audience</h2>
       <div class="mt-3 space-y-2">
         <div v-for="p in geoPlaces" :key="p.id" class="flex items-center gap-2.5 py-1">
           <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-4" :class="[colorOf(p.color).soft, colorOf(p.color).ink]">
@@ -19,10 +19,10 @@ const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.th
           </span>
           <div class="min-w-0">
             <div class="truncate text-sm text-ink-gray-8">{{ p.name }}</div>
-            <div class="truncate text-xs text-ink-gray-5">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</div>
+            <div class="truncate text-xs text-ink-gray-6">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</div>
           </div>
         </div>
-        <div v-if="thread.geo" class="pt-1 text-xs text-ink-gray-5">
+        <div v-if="thread.geo" class="pt-1 text-xs text-ink-gray-6">
           {{ thread.geo.designations.length ? thread.geo.designations.join(', ') : 'Every designation' }}
         </div>
       </div>
@@ -33,16 +33,16 @@ const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.th
     </section>
 
     <section>
-      <h2 class="text-sm text-ink-gray-5">Seen</h2>
+      <h2 class="text-sm text-ink-gray-6">Seen</h2>
       <div class="mt-2 flex items-baseline justify-between">
         <span class="text-xl text-ink-gray-9 tabular-nums">{{ seenPct }}%</span>
-        <span class="text-xs text-ink-gray-5 tabular-nums">{{ thread.seenBy.length }} of {{ reach }}</span>
+        <span class="text-xs text-ink-gray-6 tabular-nums">{{ thread.seenBy.length }} of {{ reach }}</span>
       </div>
       <Progress class="mt-2" :value="seenPct" />
     </section>
 
     <section v-if="thread.ackRequired">
-      <h2 class="text-sm text-ink-gray-5">Acknowledged</h2>
+      <h2 class="text-sm text-ink-gray-6">Acknowledged</h2>
       <div class="mt-2.5 flex items-center gap-2">
         <div class="flex -space-x-1.5">
           <Tooltip v-for="uid in thread.acks.slice(0, 6)" :key="uid" :text="userById(uid).name">

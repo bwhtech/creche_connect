@@ -94,7 +94,7 @@ function pick(emoji: string) {
             :key="id"
             type="button"
             class="shrink-0 border-b-2 px-4 py-3 text-base tabular-nums"
-            :class="tab === id ? 'border-current font-medium text-ink-gray-9' : 'border-transparent text-ink-gray-5'"
+            :class="tab === id ? 'border-current font-medium text-ink-gray-9' : 'border-transparent text-ink-gray-6'"
             @click="tab = id"
           >
             {{ label }}
@@ -108,7 +108,7 @@ function pick(emoji: string) {
             </span>
             <span class="min-w-0">
               <span class="block truncate text-base font-medium text-ink-gray-9">{{ p.uid === me.id ? 'You' : userById(p.uid).name }}</span>
-              <span class="block truncate text-sm text-ink-gray-5">{{ userById(p.uid).designation }}</span>
+              <span class="block truncate text-sm text-ink-gray-6">{{ userById(p.uid).designation }}</span>
             </span>
           </li>
         </ul>

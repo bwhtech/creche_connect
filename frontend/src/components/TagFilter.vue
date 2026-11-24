@@ -24,7 +24,7 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
       @click="setTag(undefined)"
     >
       All tags
-      <span class="text-ink-gray-5 tabular-nums">{{ state.counts.total }}</span>
+      <span class="text-ink-gray-6 tabular-nums">{{ state.counts.total }}</span>
     </button>
     <button
       v-for="t in options"
@@ -37,7 +37,7 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
     >
       <span class="size-2 rounded-full" :class="colorOf(t.color).dot" aria-hidden="true" />
       {{ t.name }}
-      <span class="text-ink-gray-5 tabular-nums">{{ t.count }}</span>
+      <span v-if="t.count > 1" class="text-ink-gray-6 tabular-nums">{{ t.count }}</span>
     </button>
   </div>
 </template>

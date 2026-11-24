@@ -148,10 +148,10 @@ function togglePin(r, pinned: boolean) {
           </span>
           <div class="min-w-0 flex-1">
             <div class="truncate text-base text-ink-gray-8">{{ r.title }}</div>
-            <div class="truncate text-xs text-ink-gray-5">{{ filesCount(r) }}</div>
+            <div class="truncate text-xs text-ink-gray-6">{{ filesCount(r) }}</div>
           </div>
         </button>
-        <p v-if="!state.resources.length" class="px-2 py-10 text-center text-p-sm text-ink-gray-5">No resources yet.</p>
+        <p v-if="!state.resources.length" class="px-2 py-10 text-center text-p-sm text-ink-gray-6">No resources yet.</p>
       </aside>
 
       <div v-if="selected" class="min-w-0 flex-1 overflow-y-auto">
@@ -165,7 +165,7 @@ function togglePin(r, pinned: boolean) {
                 <h2 class="text-xl text-ink-gray-9">{{ selected.title }}</h2>
                 <Badge class="max-md:hidden" :label="kindOf(selected).label" :theme="kindOf(selected).color" variant="subtle" size="sm" />
               </div>
-              <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-5">{{ selected.description }}</p>
+              <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-6">{{ selected.description }}</p>
               <AudienceChips v-if="me.admin && selected.places.length" :geo="selected" class="mt-2" />
             </div>
             <template v-if="me.admin && !isMobile">
@@ -173,7 +173,7 @@ function togglePin(r, pinned: boolean) {
               <Button icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
             </template>
           </div>
-          <div class="mt-6 text-sm text-ink-gray-5">{{ filesCount(selected) }}</div>
+          <div class="mt-6 text-sm text-ink-gray-6">{{ filesCount(selected) }}</div>
           <div class="mt-2 divide-y divide-outline-gray-1 rounded-5 border border-outline-gray-1 p-1">
             <a
               v-for="(f, i) in selected.files"
@@ -184,10 +184,10 @@ function togglePin(r, pinned: boolean) {
               class="flex items-center gap-3 rounded-4 px-3 py-2.5 hover:bg-surface-gray-1"
               @click.exact="viewable(f) && ($event.preventDefault(), view(f))"
             >
-              <span class="w-4 shrink-0 text-right text-xs text-ink-gray-4 tabular-nums">{{ i + 1 }}</span>
+              <span class="w-4 shrink-0 text-right text-xs text-ink-gray-5 tabular-nums">{{ i + 1 }}</span>
               <span :class="fileIcon(f)" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
               <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8" :title="fileLabel(f)">{{ fileLabel(f) }}</span>
-              <span :class="viewable(f) ? 'lucide-eye' : 'lucide-arrow-up-right'" class="size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+              <span :class="viewable(f) ? 'lucide-eye' : 'lucide-arrow-up-right'" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
             </a>
           </div>
         </div>

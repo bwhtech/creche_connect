@@ -215,7 +215,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
     </PageHeader>
 
     <div v-if="loading" class="flex flex-1 items-center justify-center">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-gray-6" />
     </div>
 
     <StatusPage v-else-if="!visible" v-bind="unavailable">
@@ -232,9 +232,10 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <div class="mt-4 flex items-center gap-2.5">
               <Avatar :label="author.name" size="md" />
               <span class="shrink-0 text-sm text-ink-gray-8">{{ author.name }}</span>
-              <span class="truncate text-sm text-ink-gray-5"><span class="max-md:hidden">{{ author.title }} · </span>{{ when(thread.createdAt).fromNow() }}</span>
+              <span class="truncate text-sm text-ink-gray-6">{{ author.title }}</span>
+              <span class="shrink-0 text-sm text-ink-gray-6">· {{ when(thread.createdAt).fromNow() }}</span>
               <Tooltip v-if="thread.editedAt" :text="`Edited ${when(thread.editedAt).format('DD MMM YYYY, h:mm A')}`">
-                <span class="text-sm text-ink-gray-5">(edited)</span>
+                <span class="text-sm text-ink-gray-6">(edited)</span>
               </Tooltip>
               <Dropdown
                 v-if="threadMenu.length && !editing"
@@ -252,6 +253,9 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               </p>
               <Button variant="solid" theme="gray" label="Acknowledge" :loading="acking" @click="ack" />
             </div>
+            <p v-else-if="thread.ackRequired && thread.acks.includes(me.id)" class="mt-6 flex items-center gap-2 text-sm text-ink-gray-6 md:mt-8">
+              <span class="lucide-badge-check size-4 shrink-0 text-ink-green-6" aria-hidden="true" />You acknowledged this thread
+            </p>
 
             <div v-if="editing" class="mt-6 md:mt-8">
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
@@ -270,7 +274,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
               <div class="flex items-center gap-2"><Reactions :target="thread" doctype="CrecheConnect Thread" /><ReshareButton :thread="thread" /></div>
               <div v-for="r in thread.reshareNotes" :key="r.user" class="flex gap-2.5">
-                <span class="lucide-repeat-2 mt-0.5 size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+                <span class="lucide-repeat-2 mt-0.5 size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
                 <p class="text-p-sm text-ink-gray-8">
                   <span class="font-medium text-ink-gray-9">{{ userById(r.user).name }}</span> reshared:
                   <span class="whitespace-pre-line">{{ r.note }}</span>
@@ -302,7 +306,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                   @delete="confirmDelete(thread, m)"
                 />
               </template>
-              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
+              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-6">No replies yet.</p>
             </div>
           </div>
         </div>

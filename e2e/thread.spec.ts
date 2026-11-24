@@ -13,7 +13,7 @@ test.describe.serial('a thread reaches its audience', () => {
       await page.locator('.ProseMirror').first().fill('Please share the attendance register before Friday.')
       await page.getByLabel('Search places').fill('Bodh Gaya')
       await page.getByLabel('Send to Bodh Gaya').click()
-      await page.getByRole('button', { name: 'Start thread' }).click()
+      await page.getByRole('button', { name: 'Post', exact: true }).click()
       await page.waitForURL(/\/c\/threads\//)
       threadUrl = page.url()
       await expect(page.getByRole('heading', { name: topic })).toBeVisible()

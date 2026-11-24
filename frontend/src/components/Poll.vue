@@ -14,7 +14,7 @@ const pct = (o) => (poll.value.voterCount ? Math.round((o.count / poll.value.vot
 const icon = (o) =>
   o.mine
     ? [poll.value.multiple ? 'lucide-square-check' : 'lucide-circle-check', 'text-ink-violet-7']
-    : [poll.value.multiple ? 'lucide-square' : 'lucide-circle', 'text-ink-gray-5']
+    : [poll.value.multiple ? 'lucide-square' : 'lucide-circle', 'text-ink-gray-6']
 const closes = computed(() => poll.value.closesAt && when(poll.value.closesAt))
 const ends = computed(() => !poll.value.closed && closes.value && `Closes ${closes.value.fromNow()} (${closes.value.format('ddd D MMM, h:mm A')})`)
 const result = computed(() => {
@@ -55,7 +55,7 @@ async function remind() {
           <template #prefix><span class="lucide-lock size-3" aria-hidden="true" /></template>
         </Badge>
       </div>
-      <p v-if="ends" class="text-p-xs text-ink-gray-5">{{ ends }}</p>
+      <p v-if="ends" class="text-p-xs text-ink-gray-6">{{ ends }}</p>
       <p v-if="result" class="flex items-center gap-1.5 text-p-sm text-ink-gray-8">
         <span class="lucide-trophy size-3.5 shrink-0 text-ink-green-6" aria-hidden="true" />{{ result }}
       </p>

@@ -38,7 +38,7 @@ const mainNav = computed(() => [
   { label: 'Unread', icon: 'lucide-circle-dot', to: '/?filter=unread', count: unreadCount.value },
   { label: 'To acknowledge', icon: 'lucide-badge-check', to: '/?filter=ack', count: ackCount.value },
   { label: 'Mentions', icon: 'lucide-at-sign', to: '/?filter=mentions' },
-  ...(canStart(me.value) ? [{ label: 'Started by me', icon: 'lucide-send', to: '/?filter=mine' }] : []),
+  ...(canStart(me.value) ? [{ label: 'My posts', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const { resolvedColorScheme, toggleColorScheme } = useColorScheme()
 const isIOS = /iPhone|iPad/.test(navigator.userAgent)
@@ -73,10 +73,10 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
     </StatusPage>
     <div v-else-if="!state.ready" class="flex h-full flex-col items-center justify-center gap-3 text-center">
       <template v-if="state.error">
-        <span class="lucide-lock size-6 text-ink-gray-5" aria-hidden="true" />
+        <span class="lucide-lock size-6 text-ink-gray-6" aria-hidden="true" />
         <p class="max-w-sm text-p-sm text-ink-gray-7">{{ state.error }}</p>
       </template>
-      <LoadingIndicator v-else class="size-5 text-ink-gray-5" />
+      <LoadingIndicator v-else class="size-5 text-ink-gray-6" />
     </div>
     <MobileShell v-else-if="isMobile">
       <StatusPage v-if="!online" v-bind="offline" />
@@ -86,7 +86,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
           <MobileNavItem label="Feed" route="/" :active="route.path === '/'">
             <template #default="{ active }">
               <span class="relative">
-                <span class="lucide-rss block size-6" :class="active ? 'text-ink-gray-8' : 'text-ink-gray-5'" aria-hidden="true" />
+                <span class="lucide-rss block size-6" :class="active ? 'text-ink-gray-8' : 'text-ink-gray-6'" aria-hidden="true" />
                 <Badge v-if="unreadCount" class="absolute -top-1.5 left-4" :label="String(unreadCount)" theme="red" variant="solid" size="sm" />
               </span>
             </template>
@@ -111,14 +111,14 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
               <SidebarItem label="Search" icon="lucide-search" route="/search" :active="route.path === '/search'" />
               <SidebarItem v-for="n in mainNav" :key="n.to" :label="n.label" :icon="n.icon" :route="n.to" :active="isActive(n.to)">
                 <template v-if="n.count" #suffix>
-                  <span class="text-xs text-ink-gray-5 tabular-nums">{{ n.count }}</span>
+                  <span class="text-xs text-ink-gray-6 tabular-nums">{{ n.count }}</span>
                 </template>
               </SidebarItem>
             </div>
 
             <template v-if="pinned.length">
               <div class="flex items-center px-2 pt-6 pb-1.5">
-                <span class="text-sm text-ink-gray-5">Program resources</span>
+                <span class="text-sm text-ink-gray-6">Program resources</span>
                 <Button class="ml-auto" size="sm" variant="ghost" icon="lucide-ellipsis" aria-label="All resources" route="/resources" />
               </div>
               <div class="space-y-0.5">
@@ -131,13 +131,13 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
                   :active="route.path === '/resources' && route.query.r === r.id"
                 >
                   <template #suffix>
-                    <span class="text-xs text-ink-gray-5 tabular-nums">{{ r.files.length }}</span>
+                    <span class="text-xs text-ink-gray-6 tabular-nums">{{ r.files.length }}</span>
                   </template>
                 </SidebarItem>
               </div>
             </template>
 
-            <div class="px-2 pt-6 pb-1.5 text-sm text-ink-gray-5">Directory</div>
+            <div class="px-2 pt-6 pb-1.5 text-sm text-ink-gray-6">Directory</div>
             <div class="space-y-0.5">
               <SidebarItem v-if="me.admin" label="Insights" icon="lucide-chart-column" route="/insights" />
               <SidebarItem label="Users" icon="lucide-users" route="/users" />
@@ -149,9 +149,9 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
               <Avatar :label="me.name" size="md" />
               <div class="min-w-0 flex-1">
                 <div class="truncate text-sm text-ink-gray-8">{{ me.name }}</div>
-                <div class="truncate text-xs text-ink-gray-5">{{ [me.admin && 'Admin', me.title].filter(Boolean).join(' · ') }}</div>
+                <div class="truncate text-xs text-ink-gray-6">{{ [me.admin && 'Admin', me.title].filter(Boolean).join(' · ') }}</div>
               </div>
-              <span class="lucide-chevrons-up-down size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+              <span class="lucide-chevrons-up-down size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
             </button>
           </Dropdown>
         </Sidebar>
