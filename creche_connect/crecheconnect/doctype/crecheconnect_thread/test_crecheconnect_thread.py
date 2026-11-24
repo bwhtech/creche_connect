@@ -117,6 +117,29 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		api.add_reply(leads_only, "<p>hi</p>")
 		self.assertRaises(frappe.PermissionError, api.add_reply, announcement, "<p>hi</p>")
 
+	def test_reshare_reaches_the_resharers_area_until_undone(self):
+		name = self.post(self.lead, [self.state], designations=["Test coordinator"])
+		self.assertNotIn(name, self.visible_to(self.volunteer))
+		frappe.set_user(self.coordinator)
+		self.assertTrue(api.get_thread(name)["canReshare"])
+		api.toggle_reshare(name)
+
+		self.assertIn(name, self.visible_to(self.volunteer))
+		thread = api.get_thread(name)
+		self.assertEqual(thread["resharedBy"], self.coordinator)
+		self.assertFalse(thread["canReshare"])
+		self.assertTrue(frappe.has_permission("CrecheConnect Thread", "read", name))
+		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
+		self.assertNotIn(name, self.visible_to(self.outsider))
+
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(name)
+		self.assertNotIn(name, self.visible_to(self.volunteer))
+
+	def test_author_cannot_reshare_own_thread(self):
+		name = self.post(self.lead, [self.state])
+		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
+
 	def test_acknowledgement_is_recorded_once(self):
 		name = self.post(self.lead, [self.state], ack_required=True)
 		frappe.set_user(self.volunteer)

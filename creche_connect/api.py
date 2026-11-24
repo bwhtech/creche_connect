@@ -16,6 +16,7 @@ ThreadTag = DocType("CrecheConnect Thread Tag")
 Visit = DocType("CrecheConnect Thread Visit")
 Acknowledgement = DocType("CrecheConnect Acknowledgement")
 Reply = DocType("CrecheConnect Reply")
+Reshare = DocType("CrecheConnect Reshare")
 
 FeedFilter = Literal["unread", "ack", "mine", "mentions"]
 PAGE_SIZE = 30
@@ -83,8 +84,16 @@ def matches(member, thread) -> bool:
 	)
 
 
+def reshared_to(member, thread) -> str | None:
+	return next((user for user, place in thread.reshares.items() if in_place(member.place, place)), None)
+
+
 def can_see(me, thread) -> bool:
-	return thread.owner == me.user or matches(me, thread)
+	return thread.owner == me.user or matches(me, thread) or bool(reshared_to(me, thread))
+
+
+def can_reshare(me, thread) -> bool:
+	return bool(me.can_post) and bool(me.place) and thread.owner != me.user
 
 
 def can_see_resource(me, resource) -> bool:
@@ -198,7 +207,16 @@ def load_threads(filters) -> list:
 			order_by="idx asc",
 		)
 		child[field] = group_by(rows, "parent", field)
+	reshares = {}
+	for r in frappe.get_all(
+		"CrecheConnect Reshare",
+		filters={"thread": ["in", names]},
+		fields=["thread", "user", "place"],
+		order_by="creation asc",
+	):
+		reshares.setdefault(r.thread, {})[r.user] = r.place
 	for t in threads:
+		t.reshares = reshares.get(t.name, {})
 		t.places = child["place"].get(t.name, [])
 		t.designations = child["designation"].get(t.name, [])
 		t.tags = child["tag"].get(t.name, [])
@@ -251,7 +269,10 @@ def serialize(threads, me) -> list:
 			"title": t.title,
 			"body": t.content or "",
 			"authorId": t.owner,
-			"geo": {"places": t.places, "designations": t.designations},
+			"geo": {"places": t.places, "designations": t.designations, "reshared": list(set(t.reshares.values()))},
+			"reshares": list(t.reshares),
+			"resharedBy": None if t.owner == me.user or matches(me, t) else reshared_to(me, t),
+			"canReshare": can_reshare(me, t),
 			"tags": t.tags,
 			"policy": t.reply_policy,
 			"ackRequired": bool(t.ack_required),
@@ -353,7 +374,10 @@ def audience_users(places: list, designations: list) -> list[str]:
 
 
 def thread_audience(thread) -> set[str]:
-	return set(audience_users([p.place for p in thread.places], [d.designation for d in thread.designations]))
+	audience = set(audience_users([p.place for p in thread.places], [d.designation for d in thread.designations]))
+	if reshared := frappe.get_all("CrecheConnect Reshare", filters={"thread": thread.name}, pluck="place"):
+		audience |= set(audience_users(reshared, []))
+	return audience
 
 
 def notify_audience(thread: str, event: str = "crecheconnect_activity"):
@@ -450,8 +474,10 @@ def in_audience(me):
 	if me.designation:
 		designation_ok |= Thread.name.isin(designated.where(ThreadDesignation.designation == me.designation))
 	places = thread_ids(ThreadPlace)
-	return (
-		Thread.name.isin(places.where(ThreadPlace.place.isin(ancestors(me.place) or [""]))) & designation_ok
+	mine = ancestors(me.place) or [""]
+	reshared = thread_ids(Reshare, "thread").where(Reshare.place.isin(mine))
+	return (Thread.name.isin(places.where(ThreadPlace.place.isin(mine))) & designation_ok) | Thread.name.isin(
+		reshared
 	)
 
 
@@ -660,6 +686,25 @@ def acknowledge(thread: str):
 	frappe.get_doc({"doctype": "CrecheConnect Acknowledgement", "thread": thread, "user": me.user}).insert(
 		ignore_permissions=True, ignore_if_duplicate=True
 	)
+
+
+@frappe.whitelist(methods=["POST"])
+def toggle_reshare(thread: str) -> dict:
+	me = get_me()
+	doc = get_visible_thread(thread, me)
+	if doc.reshares.pop(me.user, None):
+		frappe.db.delete("CrecheConnect Reshare", f"{thread}-{me.user}")
+	elif not can_reshare(me, doc):
+		frappe.throw(_("You can't reshare this thread"), frappe.PermissionError)
+	else:
+		frappe.get_doc(
+			{"doctype": "CrecheConnect Reshare", "thread": thread, "user": me.user, "place": me.place}
+		).insert(ignore_permissions=True)
+		doc.reshares[me.user] = me.place
+		doc.last_activity = now_datetime()
+		frappe.db.set_value("CrecheConnect Thread", thread, "last_activity", doc.last_activity, update_modified=False)
+		notify_audience(thread)
+	return serialize([doc], me)[0]
 
 
 def get_open_poll(thread: str, me, option: str | None = None, manage: bool = False):
