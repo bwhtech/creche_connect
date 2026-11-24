@@ -3,6 +3,7 @@ import { call, frappeRequest, dayjsLocal, upload, toast, dialog } from 'frappe-u
 import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core'
 import { disablePush, enablePush, pushOn, pushSupported } from './push'
+import { __, translateHtml } from './translate'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -14,7 +15,7 @@ const COLORS = {
 const MAX_AUDIO_MB = 10
 export const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) =>
   file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024
-    ? Promise.reject(new Error(`Audio can be up to ${MAX_AUDIO_MB} MB`))
+    ? Promise.reject(new Error(__('Audio can be up to {0} MB', MAX_AUDIO_MB)))
     : upload(file, { ...o, private: !file.type.startsWith('image/'), optimize: true })
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 const PLACE_COLORS = { Country: 'gray', State: 'green', District: 'blue', Block: 'violet' }
@@ -48,6 +49,7 @@ export const state = reactive({
   tags: [] as any[],
   resources: [] as any[],
   emojis: [] as string[],
+  languages: [] as { name: string; language_name: string }[],
   threads: [] as any[],
   threadsLoaded: false,
   cursor: null as string | null,
@@ -69,7 +71,7 @@ export function chain(id: string) {
   for (let p = placeById(id); p && p.kind !== 'Country'; p = placeById(p.parentId)) out.push(p)
   return out
 }
-export const placePath = (id: string) => (id ? chain(id).map((p) => p.name).join(', ') : 'National')
+export const placePath = (id: string) => (id ? chain(id).map((p) => p.name).join(', ') : __('National'))
 
 export const peopleByPlace = computed(() => {
   const counts = {}
@@ -86,7 +88,7 @@ const shapeUser = (m) => ({
   name: m.full_name,
   designation: m.designation,
   place: m.place ?? '',
-  title: m.place && placeById(m.place) ? `${m.designation}, ${placeById(m.place).name}` : m.designation ?? '',
+  title: m.place && placeById(m.place) ? `${__(m.designation)}, ${placeById(m.place).name}` : __(m.designation ?? ''),
   admin: !!m.is_admin,
   canPost: !!m.can_post,
   image: m.image ?? '',
@@ -94,7 +96,7 @@ const shapeUser = (m) => ({
 const userMap = computed(() => Object.fromEntries(state.users.map((u) => [u.id, u])))
 export const userById = (id: string) => userMap.value[id] ?? { id, name: id, designation: '', place: '', title: '' }
 export const useMe = () => computed(() => state.me)
-export const namesOf = (uids: string[]) => uids.map((id) => (id === state.me.id ? 'You' : userById(id).name)).join(', ')
+export const namesOf = (uids: string[]) => uids.map((id) => (id === state.me.id ? __('You') : userById(id).name)).join(', ')
 
 export const matchesGeo = (u, geo) =>
   !!geo?.places.length &&
@@ -109,7 +111,7 @@ export const allowedPlaces = (u) =>
 
 const tagMap = computed(() => Object.fromEntries(state.tags.map((t) => [t.id, t])))
 export const tagById = (id: string) => tagMap.value[id]
-const shapeTag = (t) => ({ id: t.name, name: t.name, color: t.color })
+const shapeTag = (t) => ({ id: t.name, name: __(t.name), color: t.color })
 
 export function toggleIn(list: string[], v: string) {
   return list.includes(v) ? list.filter((x) => x !== v) : [...list, v]
@@ -118,9 +120,9 @@ export function toggleIn(list: string[], v: string) {
 export const canStart = (u) => !!u?.canPost
 
 export const POLICIES = [
-  { value: 'everyone', label: 'Everyone', short: 'Open replies', icon: 'lucide-messages-square', theme: 'green' },
-  { value: 'posters', label: 'Only people who can start threads can reply', short: 'Leads reply', icon: 'lucide-shield', theme: 'blue' },
-  { value: 'none', label: 'Announcement, replies off', short: 'Announcement', icon: 'lucide-megaphone', theme: 'violet' },
+  { value: 'everyone', label: __('Everyone'), short: __('Open replies'), icon: 'lucide-messages-square', theme: 'green' },
+  { value: 'posters', label: __('Only people who can start threads can reply'), short: __('Leads reply'), icon: 'lucide-shield', theme: 'blue' },
+  { value: 'none', label: __('Announcement, replies off'), short: __('Announcement'), icon: 'lucide-megaphone', theme: 'violet' },
 ]
 export const policyOf = (v: string) => POLICIES.find((p) => p.value === v)!
 
@@ -129,11 +131,11 @@ export async function shareThread(t) {
   const url = `${location.origin}/c/threads/${t.id}`
   if (navigator.share) return navigator.share({ title: t.title, url }).catch(() => {})
   await navigator.clipboard.writeText(url)
-  toast.success('Link copied')
+  toast.success(__('Link copied'))
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
 export const withPreviews = (html: string) =>
-  html.replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
+  translateHtml(html).replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 
@@ -143,18 +145,19 @@ export async function loadBoot() {
       state.unreachable = e instanceof TypeError
       throw e
     })
-    const places = b.places.map((r) => ({ id: r.name, name: r.place_name, kind: r.kind, parentId: r.parent_place, color: PLACE_COLORS[r.kind] }))
+    const places = b.places.map((r) => ({ id: r.name, name: __(r.place_name), kind: r.kind, parentId: r.parent_place, color: PLACE_COLORS[r.kind] }))
     state.places = places
     for (const p of state.places) p.parent = chain(p.parentId).map((x) => x.name).join(', ')
     state.designations = b.designations
     state.tags = b.tags.map(shapeTag)
     state.resources = b.resources.map((r) => ({ ...r, id: r.name, pinned: !!r.pinned }))
     state.emojis = b.emojis
+    state.languages = b.languages
     state.users = b.members.map(shapeUser)
     state.me = shapeUser(b.me)
     state.ready = true
   } catch (e) {
-    state.error = errorText(e, e?.message ?? 'Could not load CrecheConnect')
+    state.error = errorText(e, e?.message ?? __('Could not load CrecheConnect'))
   }
 }
 
@@ -269,6 +272,15 @@ export async function updateMessage(target, doctype: 'CrecheConnect Thread' | 'C
   if (doctype === 'CrecheConnect Thread') for (const x of copies(target)) Object.assign(x, res)
 }
 
+export async function changeLanguage(language: string) {
+  try {
+    await post('creche_connect.api.set_language', { language })
+    location.reload()
+  } catch (e) {
+    toast.error(errorText(e, __('Could not change the language')))
+  }
+}
+
 export const fetchEditHistory = (doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', name: string) =>
   get('creche_connect.api.get_edit_history', { doctype, name })
 
@@ -280,18 +292,18 @@ export async function deleteReply(t, reply) {
 
 export function confirmDelete(t, reply = null, onDone?: () => void) {
   dialog.confirm({
-    title: reply ? 'Delete this reply?' : 'Delete this thread?',
-    message: reply ? 'The reply and its reactions will be removed.' : 'All replies, reactions and acknowledgements in it will be removed too.',
+    title: reply ? __('Delete this reply?') : __('Delete this thread?'),
+    message: reply ? __('The reply and its reactions will be removed.') : __('All replies, reactions and acknowledgements in it will be removed too.'),
     icon: 'lucide-trash-2',
     theme: 'red',
-    confirmLabel: 'Delete',
+    confirmLabel: __('Delete'),
     onConfirm: async () => {
       try {
         await (reply ? deleteReply(t, reply) : deleteThread(t))
       } catch (e) {
-        throw new Error(errorText(e, 'Could not delete'))
+        throw new Error(errorText(e, __('Could not delete')))
       }
-      toast.success(reply ? 'Reply deleted' : 'Thread deleted')
+      toast.success(reply ? __('Reply deleted') : __('Thread deleted'))
       onDone?.()
     },
   })
@@ -369,9 +381,9 @@ export async function closePoll(t) {
 }
 
 const NOTIFY_TOASTS = {
-  Follow: "You'll get a notification for every reply",
-  Mute: "You won't get notifications from this thread unless someone mentions you",
-  '': 'Notifications for this thread are back to normal',
+  Follow: __("You'll get a notification for every reply"),
+  Mute: __("You won't get notifications from this thread unless someone mentions you"),
+  '': __('Notifications for this thread are back to normal'),
 }
 export async function setNotify(t, notify: '' | 'Follow' | 'Mute') {
   await post('creche_connect.api.set_notify', { name: t.id, notify })
@@ -406,10 +418,10 @@ export async function saveUser(form) {
 }
 
 export const RESOURCE_KINDS = {
-  Video: { label: 'Video', icon: 'lucide-circle-play', color: 'red' },
-  Course: { label: 'Course', icon: 'lucide-graduation-cap', color: 'violet' },
-  Document: { label: 'Document', icon: 'lucide-file-text', color: 'blue' },
-  Link: { label: 'Link', icon: 'lucide-link', color: 'green' },
+  Video: { label: __('Video'), icon: 'lucide-circle-play', color: 'red' },
+  Course: { label: __('Course'), icon: 'lucide-graduation-cap', color: 'violet' },
+  Document: { label: __('Document'), icon: 'lucide-file-text', color: 'blue' },
+  Link: { label: __('Link'), icon: 'lucide-link', color: 'green' },
 }
 
 const audienceRows = (places: string[], designations: string[]) => ({
@@ -446,11 +458,11 @@ export async function setPinned(r, pinned: boolean) {
 }
 
 export async function togglePush() {
-  if (!pushSupported) return toast.info('On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on.', { duration: 10000 })
+  if (!pushSupported) return toast.info(__('On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on.'), { duration: 10000 })
   try {
     await (pushOn.value ? disablePush() : enablePush())
-    toast.success(pushOn.value ? 'Notifications are on for this device' : 'Notifications are off for this device')
+    toast.success(pushOn.value ? __('Notifications are on for this device') : __('Notifications are off for this device'))
   } catch (e) {
-    toast.error(errorText(e, e?.message || 'Could not change notifications'))
+    toast.error(errorText(e, e?.message || __('Could not change notifications')))
   }
 }

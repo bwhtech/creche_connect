@@ -2,15 +2,16 @@
 import { Button, Skeleton } from 'frappe-ui'
 import ThreadCard from './ThreadCard.vue'
 import StatusPage from './StatusPage.vue'
+import { __ } from '../lib/translate'
 
 defineProps<{ rows: any[]; loading: boolean }>()
 const EMPTY = {
-  unread: { icon: 'lucide-check-check', title: "You're all caught up", text: 'No unread threads.' },
-  ack: { icon: 'lucide-badge-check', title: 'Nothing to acknowledge', text: "You've acknowledged everything sent to you." },
-  mentions: { icon: 'lucide-at-sign', title: 'No mentions yet', text: 'When someone @mentions you, it shows here.' },
-  mine: { icon: 'lucide-send', title: 'No posts yet', text: 'Threads you post show here.' },
+  unread: { icon: 'lucide-check-check', title: __("You're all caught up"), text: __('No unread threads.') },
+  ack: { icon: 'lucide-badge-check', title: __('Nothing to acknowledge'), text: __("You've acknowledged everything sent to you.") },
+  mentions: { icon: 'lucide-at-sign', title: __('No mentions yet'), text: __('When someone @mentions you, it shows here.') },
+  mine: { icon: 'lucide-send', title: __('No posts yet'), text: __('Threads you post show here.') },
 }
-const NOTHING = { icon: 'lucide-inbox', title: 'Nothing here', text: 'No threads match this view yet.' }
+const NOTHING = { icon: 'lucide-inbox', title: __('Nothing here'), text: __('No threads match this view yet.') }
 </script>
 
 <template>
@@ -31,7 +32,7 @@ const NOTHING = { icon: 'lucide-inbox', title: 'Nothing here', text: 'No threads
 
   <div v-else class="rounded-5 border border-dashed border-outline-gray-2 py-20">
     <StatusPage v-bind="EMPTY[$route.query.filter as string] ?? NOTHING">
-      <Button v-if="Object.keys($route.query).length" label="Back to feed" route="/" class="mt-2" />
+      <Button v-if="Object.keys($route.query).length" :label="__('Back to feed')" route="/" class="mt-2" />
     </StatusPage>
   </div>
 </template>

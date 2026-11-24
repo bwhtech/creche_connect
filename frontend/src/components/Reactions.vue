@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { Avatar, BottomSheet, Button, Popover, Tooltip, toast } from 'frappe-ui'
+import { __ } from '../lib/translate'
 import { state, useMe, toggleReaction, namesOf as names, isMobile, userById } from '../lib/store'
 
 const props = defineProps<{ target: any; doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply' }>()
@@ -11,7 +12,7 @@ const entries = computed(() => Object.entries(props.target.reactions))
 const total = computed(() => entries.value.reduce((n, [, uids]) => n + uids.length, 0))
 const reactedByMe = computed(() => entries.value.some(([, uids]) => uids.includes(me.value.id)))
 const tab = ref('all')
-const tabs = computed(() => [['all', `All ${total.value}`], ...entries.value.map(([emoji, uids]) => [emoji, `${emoji} ${uids.length}`])])
+const tabs = computed(() => [['all', __('All {0}', total.value)], ...entries.value.map(([emoji, uids]) => [emoji, `${emoji} ${uids.length}`])])
 const people = computed(() =>
   entries.value.flatMap(([emoji, uids]) => (tab.value === 'all' || tab.value === emoji ? uids.map((uid) => ({ uid, emoji })) : [])),
 )
@@ -22,7 +23,7 @@ const pillClass = (mine: boolean) => [
 ]
 
 function toggle(emoji: string) {
-  toggleReaction(props.target, emoji, props.doctype).catch(() => toast.error('Could not save your reaction'))
+  toggleReaction(props.target, emoji, props.doctype).catch(() => toast.error(__('Could not save your reaction')))
 }
 function pick(emoji: string) {
   toggle(emoji)
@@ -53,10 +54,10 @@ function pick(emoji: string) {
         <span>{{ uids.length }}</span>
       </button>
     </Tooltip>
-    <Button v-if="isMobile && !entries.length" size="sm" variant="ghost" icon="lucide-smile-plus" aria-label="Add reaction" @click="open = true" />
+    <Button v-if="isMobile && !entries.length" size="sm" variant="ghost" icon="lucide-smile-plus" :aria-label="__('Add reaction')" @click="open = true" />
     <Popover v-else-if="!isMobile" v-model:open="open">
       <template #trigger>
-        <Button size="sm" variant="ghost" icon="lucide-smile-plus" aria-label="Add reaction" />
+        <Button size="sm" variant="ghost" icon="lucide-smile-plus" :aria-label="__('Add reaction')" />
       </template>
       <template #default>
         <div class="flex gap-0.5 rounded-4 bg-surface-elevation-2 p-1 shadow-md">
@@ -65,7 +66,7 @@ function pick(emoji: string) {
             :key="e"
             type="button"
             class="flex size-8 items-center justify-center rounded-4 text-lg transition hover:scale-110 hover:bg-surface-gray-2 active:scale-95"
-            :aria-label="`React with ${e}`"
+            :aria-label="__('React with {0}', e)"
             @click="pick(e)"
           >
             {{ e }}
@@ -73,7 +74,7 @@ function pick(emoji: string) {
         </div>
       </template>
     </Popover>
-    <BottomSheet v-if="isMobile" v-model:open="open" title="Reactions">
+    <BottomSheet v-if="isMobile" v-model:open="open" :title="__('Reactions')">
       <div class="grid grid-cols-6 gap-2 px-4 pb-6">
         <button
           v-for="e in state.emojis"
@@ -81,7 +82,7 @@ function pick(emoji: string) {
           type="button"
           class="flex h-12 items-center justify-center rounded-4 text-2xl"
           :class="target.reactions[e]?.includes(me.id) ? 'bg-surface-blue-2' : 'bg-surface-gray-1'"
-          :aria-label="`React with ${e}`"
+          :aria-label="__('React with {0}', e)"
           @click="toggle(e)"
         >
           {{ e }}
@@ -107,8 +108,8 @@ function pick(emoji: string) {
               <span class="absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-surface-white text-sm leading-none">{{ p.emoji }}</span>
             </span>
             <span class="min-w-0">
-              <span class="block truncate text-base font-medium text-ink-gray-9">{{ p.uid === me.id ? 'You' : userById(p.uid).name }}</span>
-              <span class="block truncate text-sm text-ink-gray-6">{{ userById(p.uid).designation }}</span>
+              <span class="block truncate text-base font-medium text-ink-gray-9">{{ p.uid === me.id ? __('You') : userById(p.uid).name }}</span>
+              <span class="block truncate text-sm text-ink-gray-6">{{ __(userById(p.uid).designation) }}</span>
             </span>
           </li>
         </ul>

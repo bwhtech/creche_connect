@@ -14,6 +14,7 @@ import EditHistory from '../components/EditHistory.vue'
 import Poll from '../components/Poll.vue'
 import ThreadInfo from '../components/ThreadInfo.vue'
 import StatusPage from '../components/StatusPage.vue'
+import { __ } from '../lib/translate'
 import {
   useMe,
   fetchThread,
@@ -60,8 +61,8 @@ const firstNew = computed(() => {
 const removed = ref(false)
 const unavailable = computed(() =>
   removed.value
-    ? { icon: 'lucide-trash-2', title: 'This thread was removed', text: "It was deleted, so it can't be opened." }
-    : { icon: 'lucide-lock', title: "You can't see this thread", text: "It was sent to a place or designation that doesn't include you." },
+    ? { icon: 'lucide-trash-2', title: __('This thread was removed'), text: __("It was deleted, so it can't be opened.") }
+    : { icon: 'lucide-lock', title: __("You can't see this thread"), text: __("It was sent to a place or designation that doesn't include you.") },
 )
 async function load() {
   try {
@@ -96,7 +97,7 @@ async function send() {
     clearDraft(id)
     nextTick(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight, behavior: 'smooth' }))
   } catch (e) {
-    toast.error(errorText(e, 'Could not send your reply'))
+    toast.error(errorText(e, __('Could not send your reply')))
   } finally {
     sending.value = false
   }
@@ -109,9 +110,9 @@ async function ack() {
   acking.value = true
   try {
     await acknowledge(thread.value)
-    toast.success('Acknowledged')
+    toast.success(__('Acknowledged'))
   } catch (e) {
-    toast.error(errorText(e, 'Could not acknowledge'))
+    toast.error(errorText(e, __('Could not acknowledge')))
   } finally {
     acking.value = false
   }
@@ -119,8 +120,8 @@ async function ack() {
 
 const replyBlock = computed(() =>
   thread.value.policy === 'none'
-    ? { icon: 'lucide-megaphone', text: 'This is an announcement. Replies are off.' }
-    : { icon: 'lucide-shield', text: 'Only people who can start threads can reply here.' },
+    ? { icon: 'lucide-megaphone', text: __('This is an announcement. Replies are off.') }
+    : { icon: 'lucide-shield', text: __('Only people who can start threads can reply here.') },
 )
 const loadingOlder = ref(false)
 async function loadOlder() {
@@ -130,7 +131,7 @@ async function loadOlder() {
     thread.value.replies.unshift(...page.replies)
     thread.value.hasOlder = page.hasOlder
   } catch (e) {
-    toast.error(errorText(e, 'Could not load older replies'))
+    toast.error(errorText(e, __('Could not load older replies')))
   } finally {
     loadingOlder.value = false
   }
@@ -163,27 +164,27 @@ const editing = ref<{ title: string; body: string } | null>(null)
 const saving = ref(false)
 const showHistory = ref(false)
 const threadMenu = computed(() => [
-  { label: 'Share', icon: 'lucide-share-2', onClick: () => shareThread(thread.value) },
-  !isAuthor(thread.value.authorId) && thread.value.notify !== 'Mute' && notifyItem('Follow', 'Follow replies', 'Unfollow', 'lucide-bell-plus'),
-  thread.value.notify !== 'Follow' && notifyItem('Mute', 'Mute', 'Unmute', 'lucide-bell-off'),
-  isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
-  thread.value.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
-  thread.value.poll?.canManage && !thread.value.poll.closed && { label: 'Close poll', icon: 'lucide-lock', onClick: confirmClose },
-  canDelete(thread.value.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete(thread.value, null, () => router.push('/')) },
+  { label: __('Share'), icon: 'lucide-share-2', onClick: () => shareThread(thread.value) },
+  !isAuthor(thread.value.authorId) && thread.value.notify !== 'Mute' && notifyItem('Follow', __('Follow replies'), __('Unfollow'), 'lucide-bell-plus'),
+  thread.value.notify !== 'Follow' && notifyItem('Mute', __('Mute'), __('Unmute'), 'lucide-bell-off'),
+  isAuthor(thread.value.authorId) && { label: __('Edit'), icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
+  thread.value.editedAt && { label: __('Edit history'), icon: 'lucide-history', onClick: () => (showHistory.value = true) },
+  thread.value.poll?.canManage && !thread.value.poll.closed && { label: __('Close poll'), icon: 'lucide-lock', onClick: confirmClose },
+  canDelete(thread.value.authorId) && { label: __('Delete'), icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete(thread.value, null, () => router.push('/')) },
 ].filter(Boolean))
 function notifyItem(value: 'Follow' | 'Mute', on: string, off: string, icon: string) {
   const active = thread.value.notify === value
-  const onClick = () => setNotify(thread.value, active ? '' : value).catch((e) => toast.error(errorText(e, 'Could not change notifications')))
+  const onClick = () => setNotify(thread.value, active ? '' : value).catch((e) => toast.error(errorText(e, __('Could not change notifications'))))
   return { label: active ? off : on, icon, onClick }
 }
 function confirmClose() {
   dialog.confirm({
-    title: 'Close this poll?',
-    message: 'Nobody can vote or change their vote after this. Results stay visible.',
-    confirmLabel: 'Close poll',
+    title: __('Close this poll?'),
+    message: __('Nobody can vote or change their vote after this. Results stay visible.'),
+    confirmLabel: __('Close poll'),
     onConfirm: async () => {
       await closePoll(thread.value)
-      toast.success('Poll closed')
+      toast.success(__('Poll closed'))
     },
   })
 }
@@ -193,7 +194,7 @@ async function saveEdit() {
     await updateMessage(thread.value, 'CrecheConnect Thread', editing.value!.body, editing.value!.title)
     editing.value = null
   } catch (e) {
-    toast.error(errorText(e, 'Could not save your changes'))
+    toast.error(errorText(e, __('Could not save your changes')))
   } finally {
     saving.value = false
   }
@@ -204,14 +205,14 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeaderMobile v-if="isMobile" :title="thread?.title ?? 'Thread'">
+    <PageHeaderMobile v-if="isMobile" :title="thread ? __(thread.title) : __('Thread')">
       <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/' }" /></template>
       <template v-if="visible" #suffix>
-        <Button variant="ghost" icon="lucide-info" aria-label="Thread details" @click="showInfo = true" />
+        <Button variant="ghost" icon="lucide-info" :aria-label="__('Thread details')" @click="showInfo = true" />
       </template>
     </PageHeaderMobile>
     <PageHeader v-else>
-      <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: thread?.title ?? 'Thread' }]" />
+      <Breadcrumbs :items="[{ label: __('Feed'), route: { path: '/' } }, { label: thread ? __(thread.title) : __('Thread') }]" />
     </PageHeader>
 
     <div v-if="loading" data-testid="thread-loading-skeleton" class="min-h-0 flex-1 overflow-y-auto">
@@ -244,7 +245,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
     </div>
 
     <StatusPage v-else-if="!visible" v-bind="unavailable">
-      <Button label="Back to feed" route="/" class="mt-2" />
+      <Button :label="__('Back to feed')" route="/" class="mt-2" />
     </StatusPage>
 
     <div v-else class="flex min-h-0 flex-1">
@@ -252,31 +253,31 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
         <div ref="scroller" class="min-h-0 flex-1 overflow-y-auto">
           <div class="mx-auto max-w-[770px] px-4 pt-5 pb-12 sm:px-6 md:pt-10">
             <AudienceChips :geo="thread.geo" />
-            <TextInput v-if="editing" v-model="editing.title" class="mt-4" size="lg" aria-label="Topic" />
-            <h1 v-else class="mt-4 text-2xl font-semibold text-ink-gray-9 md:text-3xl">{{ thread.title }}</h1>
+            <TextInput v-if="editing" v-model="editing.title" class="mt-4" size="lg" :aria-label="__('Topic')" />
+            <h1 v-else class="mt-4 text-2xl font-semibold text-ink-gray-9 md:text-3xl">{{ __(thread.title) }}</h1>
             <div class="mt-4 flex items-center gap-2.5">
               <Avatar :label="author.name" :image="author.image" size="md" />
               <span class="shrink-0 text-sm text-ink-gray-8">{{ author.name }}</span>
               <span class="truncate text-sm text-ink-gray-6">{{ author.title }}</span>
               <span class="shrink-0 text-sm text-ink-gray-6">· {{ when(thread.createdAt).fromNow() }}</span>
-              <Tooltip v-if="thread.editedAt" :text="`Edited ${when(thread.editedAt).format('DD MMM YYYY, h:mm A')}`">
-                <span class="text-sm text-ink-gray-6">(edited)</span>
+              <Tooltip v-if="thread.editedAt" :text="__('Edited {0}', when(thread.editedAt).format('DD MMM YYYY, h:mm A'))">
+                <span class="text-sm text-ink-gray-6">{{ __('(edited)') }}</span>
               </Tooltip>
               <Dropdown
                 v-if="threadMenu.length && !editing"
                 class="ml-auto"
                 align="end"
                 :options="threadMenu"
-                :button="{ icon: 'lucide-ellipsis', variant: 'ghost', 'aria-label': 'Thread actions' }"
+                :button="{ icon: 'lucide-ellipsis', variant: 'ghost', 'aria-label': __('Thread actions') }"
               />
             </div>
 
             <div v-if="thread.needsAck" class="mt-6 flex md:mt-8 items-center gap-3 rounded-5 bg-surface-blue-2 px-4 py-3.5">
               <span class="lucide-badge-check size-5 shrink-0 text-ink-blue-6" aria-hidden="true" />
               <p class="flex-1 text-p-sm text-ink-gray-8">
-                {{ author.name.split(' ')[0] }} asked everyone in the audience to acknowledge this thread.
+                {{ __('{0} asked everyone in the audience to acknowledge this thread.', author.name.split(' ')[0]) }}
               </p>
-              <Button variant="solid" theme="gray" label="Acknowledge" :loading="acking" @click="ack" />
+              <Button variant="solid" theme="gray" :label="__('Acknowledge')" :loading="acking" @click="ack" />
             </div>
             <p v-else-if="thread.ackRequired && thread.acks.includes(me.id)" class="mt-6 flex items-center gap-2 text-sm text-ink-gray-6 md:mt-8">
               <span class="lucide-badge-check size-4 shrink-0 text-ink-green-6" aria-hidden="true" />You acknowledged this thread
@@ -289,8 +290,8 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 </Editor>
               </div>
               <div class="mt-2 flex justify-end gap-2">
-                <Button label="Cancel" @click="editing = null" />
-                <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || isBlank(editing.body)" :loading="saving" @click="saveEdit" />
+                <Button :label="__('Cancel')" @click="editing = null" />
+                <Button variant="solid" theme="gray" :label="__('Save')" :disabled="!editing.title.trim() || isBlank(editing.body)" :loading="saving" @click="saveEdit" />
               </div>
             </div>
             <div v-else class="rich mt-6 text-p-md md:mt-8 text-ink-gray-8" v-html="withPreviews(thread.body)" />
@@ -309,17 +310,17 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
             <div class="mt-8 flex items-center gap-2 border-b md:mt-12 border-outline-gray-1 pb-3">
               <span class="text-lg-semibold text-ink-gray-8">
-                {{ thread.replyCount }} {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
+                {{ thread.replyCount === 1 ? __('1 reply') : __('{0} replies', thread.replyCount) }}
               </span>
               <Badge v-if="thread.policy !== 'everyone'" :label="policyOf(thread.policy).short" :theme="policyOf(thread.policy).theme" variant="subtle" size="sm" class="ml-auto">
                 <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
               </Badge>
             </div>
             <div class="-mx-2 space-y-1 pt-3">
-              <Button v-if="thread.hasOlder" class="mx-2 mb-2" variant="ghost" label="Load older replies" :loading="loadingOlder" @click="loadOlder" />
+              <Button v-if="thread.hasOlder" class="mx-2 mb-2" variant="ghost" :label="__('Load older replies')" :loading="loadingOlder" @click="loadOlder" />
               <template v-for="(m, i) in thread.replies" :key="m.id">
                 <div v-if="i === firstNew" id="new-replies" class="flex items-center gap-2 px-2 py-1 text-xs font-medium text-ink-red-4">
-                  <span class="h-px flex-1 bg-surface-red-4" aria-hidden="true" />New
+                  <span class="h-px flex-1 bg-surface-red-4" aria-hidden="true" />{{ __('New') }}
                 </div>
                 <MessageItem
                   :id="`reply-${m.id}`"
@@ -331,7 +332,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                   @delete="confirmDelete(thread, m)"
                 />
               </template>
-              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-6">No replies yet.</p>
+              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-6">{{ __('No replies yet.') }}</p>
             </div>
           </div>
         </div>
@@ -340,11 +341,11 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
           <div class="mx-auto max-w-[770px] px-3 py-2 sm:px-6 sm:py-4">
             <template v-if="thread.canReply">
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base" @keydown="onKey">
-                <Editor v-slot="{ editor }" v-model="reply" :extensions="kit" :placeholder="isMobile ? 'Write a reply…' : 'Write a reply…  (Ctrl + Enter to send)'">
+                <Editor v-slot="{ editor }" v-model="reply" :extensions="kit" :placeholder="isMobile ? __('Write a reply…') : __('Write a reply…  (Ctrl + Enter to send)')">
                   <EditorContent class="rich max-h-60 min-h-[2.5rem] overflow-y-auto px-3 py-2 text-p-base text-ink-gray-8 sm:min-h-[3.5rem]" />
                   <div class="flex items-center px-1 pb-1">
                     <MediaButtons :editor="editor" />
-                    <Button class="ml-auto" variant="solid" theme="gray" icon="lucide-send-horizontal" aria-label="Send reply" :disabled="replyEmpty" :loading="sending" @click="send" />
+                    <Button class="ml-auto" variant="solid" theme="gray" icon="lucide-send-horizontal" :aria-label="__('Send reply')" :disabled="replyEmpty" :loading="sending" @click="send" />
                   </div>
                 </Editor>
               </div>
@@ -362,7 +363,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       </aside>
     </div>
 
-    <BottomSheet v-if="visible" v-model:open="showInfo" title="Thread details">
+    <BottomSheet v-if="visible" v-model:open="showInfo" :title="__('Thread details')">
       <ThreadInfo :thread="thread" :reach="reach" class="pb-[env(safe-area-inset-bottom)]" />
     </BottomSheet>
     <EditHistory v-if="showHistory" v-model:open="showHistory" doctype="CrecheConnect Thread" :name="thread.id" />

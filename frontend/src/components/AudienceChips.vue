@@ -2,15 +2,16 @@
 import { computed } from 'vue'
 import { Badge } from 'frappe-ui'
 import { placeById, DESIGNATIONS, NATIONAL_DESIGNATIONS } from '../lib/store'
+import { __, lang } from '../lib/translate'
 
 const props = defineProps<{ geo?: any }>()
 const chip = computed(() => {
   const g = props.geo
   if (!g?.places?.length) return null
   const places = g.places.map((id) => placeById(id)?.name).join(', ')
-  const plural = (d: string) => (d === 'Head of operations' ? 'Heads of operations' : `${d}s`)
+  const plural = (d: string) => (lang !== 'en' ? __(d) : d === 'Head of operations' ? 'Heads of operations' : `${d}s`)
   const all = DESIGNATIONS.value.filter((d) => !NATIONAL_DESIGNATIONS.value.includes(d)).every((d) => g.designations.includes(d))
-  const who = g.designations.length && !all ? g.designations.map(plural).join(', ') : 'Everyone'
+  const who = g.designations.length && !all ? g.designations.map(plural).join(', ') : __('Everyone')
   return `${places} · ${who}`
 })
 </script>

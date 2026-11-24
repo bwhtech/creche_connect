@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useStorage, watchDebounced } from '@vueuse/core'
 import { Avatar, MultiSelect, PageHeader, Select, TextInput } from 'frappe-ui'
+import { __ } from '../lib/translate'
 import { searchThreads, state, useMe, userById, when, isMobile } from '../lib/store'
 
 const route = useRoute()
@@ -21,13 +22,13 @@ function remember() {
 
 const tagOptions = computed(() => state.tags.map((t) => ({ label: t.name, value: t.id })))
 const authorOptions = computed(() => state.users.map((u) => ({ label: u.name, value: u.id })))
-const placeOptions = computed(() => state.places.filter((p) => p.kind !== 'Country').map((p) => ({ label: `${p.name} · ${p.kind}`, value: p.id })))
+const placeOptions = computed(() => state.places.filter((p) => p.kind !== 'Country').map((p) => ({ label: `${p.name} · ${__(p.kind)}`, value: p.id })))
 const dayOptions = [
-  { label: 'All time', value: '' },
-  { label: 'Past week', value: '7' },
-  { label: 'Past month', value: '30' },
-  { label: 'Past 3 months', value: '90' },
-  { label: 'Past year', value: '365' },
+  { label: __('All time'), value: '' },
+  { label: __('Past week'), value: '7' },
+  { label: __('Past month'), value: '30' },
+  { label: __('Past 3 months'), value: '90' },
+  { label: __('Past year'), value: '365' },
 ]
 
 watchDebounced(
@@ -50,33 +51,33 @@ watchDebounced(
 <template>
   <div class="flex h-full flex-col">
     <PageHeader>
-      <h1 class="text-2xl text-ink-gray-9">Search</h1>
+      <h1 class="text-2xl text-ink-gray-9">{{ __('Search') }}</h1>
     </PageHeader>
 
     <div class="min-h-0 flex-1 overflow-y-auto">
       <div class="mx-auto max-w-[860px] px-3 pt-8 pb-20 sm:px-6">
-        <TextInput v-model="query" size="lg" :autofocus="!isMobile" placeholder="Search threads and replies" aria-label="Search" @keydown.enter="remember">
+        <TextInput v-model="query" size="lg" :autofocus="!isMobile" :placeholder="__('Search threads and replies')" :aria-label="__('Search')" @keydown.enter="remember">
           <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
         </TextInput>
         <div class="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-          <MultiSelect v-model="filters.tags" :options="tagOptions" variant="outline" placeholder="Tag" class="w-full sm:w-40" />
-          <MultiSelect v-model="filters.authors" :options="authorOptions" variant="outline" placeholder="Author" class="w-full sm:w-48" />
-          <MultiSelect v-model="filters.places" :options="placeOptions" variant="outline" placeholder="Place" class="w-full sm:w-48" />
+          <MultiSelect v-model="filters.tags" :options="tagOptions" variant="outline" :placeholder="__('Tag')" class="w-full sm:w-40" />
+          <MultiSelect v-model="filters.authors" :options="authorOptions" variant="outline" :placeholder="__('Author')" class="w-full sm:w-48" />
+          <MultiSelect v-model="filters.places" :options="placeOptions" variant="outline" :placeholder="__('Place')" class="w-full sm:w-48" />
           <Select v-model="filters.days" :options="dayOptions" variant="outline" class="w-full sm:w-40" />
         </div>
 
         <p class="mt-3 min-h-5 text-sm text-ink-gray-6">
-          <template v-if="query.trim().length < 2">Type at least two letters.</template>
-          <template v-else-if="loading && !found">Searching…</template>
+          <template v-if="query.trim().length < 2">{{ __('Type at least two letters.') }}</template>
+          <template v-else-if="loading && !found">{{ __('Searching…') }}</template>
           <template v-else-if="found">
-            {{ found.results.length }} {{ found.results.length === 1 ? 'match' : 'matches' }}
+            {{ found.results.length === 1 ? __('{0} match', found.results.length) : __('{0} matches', found.results.length) }}
           </template>
         </p>
 
         <div v-if="query.trim().length < 2 && recent.length" class="mt-4">
           <div class="flex items-center px-2 pb-1 text-sm text-ink-gray-6">
-            Recent searches
-            <button type="button" class="ml-auto hover:text-ink-gray-8" @click="recent = []">Clear</button>
+            {{ __('Recent searches') }}
+            <button type="button" class="ml-auto hover:text-ink-gray-8" @click="recent = []">{{ __('Clear') }}</button>
           </div>
           <button
             v-for="r in recent"
@@ -102,7 +103,7 @@ watchDebounced(
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 text-sm text-ink-gray-6">
                 <span class="text-ink-gray-7">{{ userById(r.authorId).name }}</span>
-                <span>· {{ r.reply ? 'Reply' : 'Thread' }}</span>
+                <span>· {{ r.reply ? __('Reply') : __('Thread') }}</span>
                 <span class="ml-auto shrink-0 text-xs">{{ when(r.at * 1000).fromNow() }}</span>
               </div>
               <div class="mt-1 truncate text-base text-ink-gray-9" v-html="r.title" />

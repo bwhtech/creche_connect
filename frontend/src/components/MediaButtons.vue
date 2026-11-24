@@ -2,6 +2,7 @@
 import { ref, onBeforeUnmount } from 'vue'
 import { Button, Tooltip, toast } from 'frappe-ui'
 import { uploadFunction, errorText } from '../lib/store'
+import { __ } from '../lib/translate'
 
 const props = defineProps<{ editor: any }>()
 const MAX_SECONDS = 600
@@ -18,7 +19,7 @@ async function addAudio(file: File) {
     const { file_url } = await uploadFunction(file)
     props.editor.chain().focus().insertContent([{ type: 'audio', attrs: { src: file_url } }, { type: 'paragraph' }]).run()
   } catch (e) {
-    toast.error(errorText(e, e?.message || 'Could not upload the audio'))
+    toast.error(errorText(e, e?.message || __('Could not upload the audio')))
   } finally {
     uploading.value = false
   }
@@ -27,7 +28,7 @@ function attach(file?: File) {
   if (!file) return
   if (file.type.startsWith('video/')) props.editor.chain().focus().uploadVideo(file).run()
   else if (file.type.startsWith('audio/')) addAudio(file)
-  else toast.error('Pick an audio or video file')
+  else toast.error(__('Pick an audio or video file'))
 }
 function onPick(e: Event) {
   const input = e.target as HTMLInputElement
@@ -40,7 +41,7 @@ async function record() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch {
-    return toast.error('Allow microphone access to record a voice note')
+    return toast.error(__('Allow microphone access to record a voice note'))
   }
   const chunks: Blob[] = []
   const r = new MediaRecorder(stream, { audioBitsPerSecond: 32000 })
@@ -73,19 +74,19 @@ const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2,
       <span class="flex items-center gap-1.5 px-1 text-sm text-ink-red-4 tabular-nums">
         <span class="size-2 animate-pulse rounded-full bg-surface-red-5" aria-hidden="true" />{{ clock(seconds) }}
       </span>
-      <Tooltip text="Discard">
-        <Button variant="ghost" icon="lucide-x" aria-label="Discard recording" @click="stop(false)" />
+      <Tooltip :text="__('Discard')">
+        <Button variant="ghost" icon="lucide-x" :aria-label="__('Discard recording')" @click="stop(false)" />
       </Tooltip>
-      <Tooltip text="Add voice note">
-        <Button variant="ghost" icon="lucide-check" aria-label="Add voice note" @click="stop(true)" />
+      <Tooltip :text="__('Add voice note')">
+        <Button variant="ghost" icon="lucide-check" :aria-label="__('Add voice note')" @click="stop(true)" />
       </Tooltip>
     </template>
     <template v-else>
-      <Tooltip text="Attach audio or video">
-        <Button variant="ghost" icon="lucide-paperclip" aria-label="Attach audio or video" :loading="uploading" @click="picker?.click()" />
+      <Tooltip :text="__('Attach audio or video')">
+        <Button variant="ghost" icon="lucide-paperclip" :aria-label="__('Attach audio or video')" :loading="uploading" @click="picker?.click()" />
       </Tooltip>
-      <Tooltip text="Record a voice note">
-        <Button variant="ghost" icon="lucide-mic" aria-label="Record a voice note" @click="record" />
+      <Tooltip :text="__('Record a voice note')">
+        <Button variant="ghost" icon="lucide-mic" :aria-label="__('Record a voice note')" @click="record" />
       </Tooltip>
     </template>
     <input ref="picker" type="file" accept="audio/*,video/*" class="hidden" @change="onPick" />

@@ -2,18 +2,19 @@
 import { computed, ref, watch } from 'vue'
 import { Avatar, Badge, Button, Dialog, FormControl, PageHeader, Switch, TextInput, toast } from 'frappe-ui'
 import { List, ListHeader, ListHeaderCell, ListRows, ListRow, ListCell } from 'frappe-ui/list'
+import { __ } from '../lib/translate'
 import { state, useMe, STATES, DESIGNATIONS, districtsOf, blocksOf, placeById, placePath, placeFrom, saveUser, chain, inPlace, errorText, isMobile } from '../lib/store'
 
 const me = useMe()
 const query = ref('')
 const stateFilter = ref('')
 const stateChoices = computed(() => STATES.value.map((s) => ({ label: s.name, value: s.id })))
-const stateOptions = computed(() => [{ label: 'All states', value: '' }, { label: 'National', value: 'national' }, ...stateChoices.value])
+const stateOptions = computed(() => [{ label: __('All states'), value: '' }, { label: __('National'), value: 'national' }, ...stateChoices.value])
 
 const people = computed(() =>
   state.users.map((u) => {
     const levels = chain(u.place).reverse().map((p) => p.name)
-    return { ...u, levels, where: levels.join(', ') || 'National', search: `${u.name} ${u.designation} ${levels.join(' ')}`.toLowerCase() }
+    return { ...u, levels, where: levels.join(', ') || __('National'), search: `${u.name} ${u.designation} ${levels.join(' ')}`.toLowerCase() }
   }),
 )
 const rows = computed(() => {
@@ -77,14 +78,14 @@ async function save() {
 <template>
   <div class="flex h-full flex-col">
     <PageHeader>
-      <h1 class="text-2xl text-ink-gray-9">Users</h1>
+      <h1 class="text-2xl text-ink-gray-9">{{ __('Users') }}</h1>
       <Button v-if="me.admin && isMobile" class="ml-auto" variant="solid" theme="gray" icon-left="lucide-user-plus" label="Add" @click="add" />
       <div v-if="!isMobile" class="ml-auto flex items-center gap-2">
         <div class="w-40">
-          <FormControl v-model="stateFilter" type="select" :options="stateOptions" aria-label="Filter by state" />
+          <FormControl v-model="stateFilter" type="select" :options="stateOptions" :aria-label="__('Filter by state')" />
         </div>
         <div class="w-56">
-          <TextInput v-model="query" placeholder="Search users" aria-label="Search users">
+          <TextInput v-model="query" :placeholder="__('Search users')" :aria-label="__('Search users')">
             <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
           </TextInput>
         </div>
@@ -96,25 +97,25 @@ async function save() {
       <div class="px-3 pt-6 pb-20 sm:px-5">
         <div v-if="isMobile" class="mb-4 flex gap-2">
           <div class="w-32 shrink-0">
-            <FormControl v-model="stateFilter" type="select" :options="stateOptions" aria-label="Filter by state" />
+            <FormControl v-model="stateFilter" type="select" :options="stateOptions" :aria-label="__('Filter by state')" />
           </div>
           <div class="min-w-0 flex-1">
-            <TextInput v-model="query" placeholder="Search users" aria-label="Search users">
+            <TextInput v-model="query" :placeholder="__('Search users')" :aria-label="__('Search users')">
               <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
             </TextInput>
           </div>
         </div>
         <p class="mb-5 text-p-sm text-ink-gray-6 max-md:hidden">
-          Each user has a state, district, block and designation. Threads reach people by these four fields.
-          <span class="tabular-nums">{{ rows.length }} of {{ state.users.length }}</span> shown.
+          {{ __('Each user has a state, district, block and designation. Threads reach people by these four fields.') }}
+          <span class="tabular-nums">{{ __('{0} of {1} shown.', rows.length, state.users.length) }}</span>
         </p>
         <List :columns="{ base: ['minmax(0,1fr)', '3rem'], md: ['minmax(0,1.4fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', '8rem', '4rem'] }" :row-height="56">
           <ListHeader v-if="!isMobile">
-            <ListHeaderCell>Name</ListHeaderCell>
-            <ListHeaderCell class="max-md:hidden">State</ListHeaderCell>
-            <ListHeaderCell class="max-md:hidden">District</ListHeaderCell>
-            <ListHeaderCell class="max-md:hidden">Block</ListHeaderCell>
-            <ListHeaderCell class="max-md:hidden">Posting</ListHeaderCell>
+            <ListHeaderCell>{{ __('Name') }}</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">{{ __('State') }}</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">{{ __('District') }}</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">{{ __('Block') }}</ListHeaderCell>
+            <ListHeaderCell class="max-md:hidden">{{ __('Posting') }}</ListHeaderCell>
             <ListHeaderCell />
           </ListHeader>
           <ListRows :items="rows" v-slot="{ item }">
@@ -125,22 +126,22 @@ async function save() {
                   <div class="min-w-0">
                     <div class="truncate text-base text-ink-gray-8">
                       {{ item.name }}
-                      <span v-if="item.admin" class="ml-1 text-xs text-ink-gray-6">Admin</span>
+                      <span v-if="item.admin" class="ml-1 text-xs text-ink-gray-6">{{ __('Admin') }}</span>
                     </div>
                     <div class="truncate text-xs text-ink-gray-6">
-                      {{ item.designation }}<span class="md:hidden"> · {{ item.where }}</span>
+                      {{ __(item.designation) }}<span class="md:hidden"> · {{ item.where }}</span>
                     </div>
                   </div>
                 </div>
               </ListCell>
               <ListCell class="max-md:hidden">
-                <span class="truncate text-sm" :class="item.place ? 'text-ink-gray-7' : 'text-ink-gray-6'">{{ item.levels[0] || 'National' }}</span>
+                <span class="truncate text-sm" :class="item.place ? 'text-ink-gray-7' : 'text-ink-gray-6'">{{ item.levels[0] || __('National') }}</span>
               </ListCell>
               <ListCell class="max-md:hidden"><span class="truncate text-sm text-ink-gray-7">{{ item.levels[1] || '—' }}</span></ListCell>
               <ListCell class="max-md:hidden"><span class="truncate text-sm text-ink-gray-7">{{ item.levels[2] || '—' }}</span></ListCell>
               <ListCell class="max-md:hidden">
-                <Badge v-if="item.canPost" label="Can start threads" theme="green" variant="subtle" size="sm" />
-                <span v-else class="text-sm text-ink-gray-6">Read and reply</span>
+                <Badge v-if="item.canPost" :label="__('Can start threads')" theme="green" variant="subtle" size="sm" />
+                <span v-else class="text-sm text-ink-gray-6">{{ __('Read and reply') }}</span>
               </ListCell>
               <ListCell class="justify-end">
                 <Button v-if="me.admin" size="sm" variant="ghost" icon="lucide-pencil" :aria-label="`Edit ${item.name}`" @click="edit(item)" />
@@ -150,7 +151,7 @@ async function save() {
         </List>
         <div v-if="!rows.length" class="flex flex-col items-center gap-2 py-16 text-center">
           <span class="lucide-users size-6 text-ink-gray-5" aria-hidden="true" />
-          <p class="text-sm text-ink-gray-6">No users match.</p>
+          <p class="text-sm text-ink-gray-6">{{ __('No users match.') }}</p>
         </div>
       </div>
     </div>

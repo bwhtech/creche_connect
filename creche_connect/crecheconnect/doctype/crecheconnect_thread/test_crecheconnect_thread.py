@@ -667,3 +667,14 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		link = insert({"doctype": "File", "file_url": "https://example.com/me.png"}).file_url
 		for image in [theirs, link, "https://example.com/x.png", "/assets/frappe/x.svg"]:
 			self.assertRaises(frappe.ValidationError, api.set_avatar, image)
+
+	def test_member_picks_their_own_language(self):
+		frappe.set_user(self.volunteer)
+		frappe.call(api.set_language, language="hi")
+		self.assertEqual(frappe.db.get_value("User", self.volunteer, "language"), "hi")
+		self.assertIsNone(frappe.db.get_value("User", self.coordinator, "language"))
+		self.assertEqual([lang.name for lang in api.get_boot()["languages"]], ["en", "hi"])
+		self.assertRaises(frappe.ValidationError, api.set_language, "fr")
+		insert({"doctype": "Translation", "language": "fr", "source_text": "Feed", "translated_text": "Fil"})
+		api.set_language("fr")
+		self.assertEqual(frappe.db.get_value("User", self.volunteer, "language"), "fr")
