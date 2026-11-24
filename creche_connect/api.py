@@ -93,7 +93,7 @@ def can_see(me, thread) -> bool:
 
 
 def can_reshare(me, thread) -> bool:
-	return bool(me.can_post) and bool(me.place) and thread.owner != me.user
+	return bool(me.can_post) and bool(me.place) and me.place not in root_places() and thread.owner != me.user
 
 
 def can_see_resource(me, resource) -> bool:
