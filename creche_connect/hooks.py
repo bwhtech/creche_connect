@@ -9,8 +9,11 @@ use_json_request_body = True
 export_python_type_annotations = True
 require_type_annotated_api_methods = True
 
+app_logo_url = "/assets/creche_connect/logo.png"
+website_context = {"favicon": "/assets/creche_connect/logo.png", "splash_image": "/assets/creche_connect/logo.png"}
+
 add_to_apps_screen = [
-	{"name": "creche_connect", "logo": "/assets/creche_connect/logo.svg", "title": "CrecheConnect", "route": "/c"}
+	{"name": "creche_connect", "logo": "/assets/creche_connect/logo.png", "title": "CrecheConnect", "route": "/c"}
 ]
 
 website_route_rules = [{"from_route": "/c/<path:app_path>", "to_route": "c"}]
