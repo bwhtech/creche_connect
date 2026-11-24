@@ -57,7 +57,7 @@ async function toggle() {
       class="[&_textarea]:resize-none"
       :rows="4"
       :maxlength="MAX_NOTE"
-      placeholder="Why should people see this?"
+      placeholder="Add your thoughts…"
       aria-label="Your thoughts"
       autofocus
     />
