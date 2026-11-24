@@ -815,12 +815,11 @@ def toggle_reaction(doctype: Literal["CrecheConnect Thread", "CrecheConnect Repl
 	me = get_me()
 	thread = name if doctype == "CrecheConnect Thread" else frappe.db.get_value("CrecheConnect Reply", name, "thread")
 	get_visible_thread(thread, me)
-	key = {"reference_doctype": doctype, "reference_name": name, "emoji": emoji, "user": me.user}
-	existing = frappe.db.get_value("CrecheConnect Reaction", key)
-	if existing:
-		frappe.delete_doc("CrecheConnect Reaction", existing, ignore_permissions=True)
-	else:
-		frappe.get_doc({"doctype": "CrecheConnect Reaction", **key}).insert(ignore_permissions=True)
+	mine = {"reference_doctype": doctype, "reference_name": name, "user": me.user}
+	had = frappe.db.exists("CrecheConnect Reaction", {**mine, "emoji": emoji})
+	frappe.db.delete("CrecheConnect Reaction", mine)
+	if not had:
+		frappe.get_doc({"doctype": "CrecheConnect Reaction", **mine, "emoji": emoji}).insert(ignore_permissions=True)
 
 
 @frappe.whitelist(methods=["POST"])
