@@ -185,6 +185,15 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		frappe.set_user(self.outsider)
 		self.assertEqual(api.get_thread(name)["resharedBy"], national)
 
+	def test_one_reaction_per_person(self):
+		name = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		api.toggle_reaction("CrecheConnect Thread", name, "👍")
+		api.toggle_reaction("CrecheConnect Thread", name, "❤️")
+		self.assertEqual(api.get_thread(name)["reactions"], {"❤️": [self.volunteer]})
+		api.toggle_reaction("CrecheConnect Thread", name, "❤️")
+		self.assertEqual(api.get_thread(name)["reactions"], {})
+
 	def test_acknowledgement_is_recorded_once(self):
 		name = self.post(self.lead, [self.state], ack_required=True)
 		frappe.set_user(self.volunteer)

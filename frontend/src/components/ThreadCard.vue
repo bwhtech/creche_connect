@@ -10,7 +10,7 @@ import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
-import { shareThread, userById, policyOf, threadReach, when, isAuthor, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft } from '../lib/store'
+import { shareThread, userById, policyOf, when, isAuthor, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
 const router = useRouter()
@@ -124,11 +124,6 @@ function onKey(e: KeyboardEvent) {
       </Button>
       <ReshareButton :thread="thread" />
       <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
-      <div class="ml-auto flex items-center gap-3 whitespace-nowrap text-xs text-ink-gray-5 md:gap-4">
-        <span class="flex items-center gap-1">
-          <span class="lucide-eye size-3.5" aria-hidden="true" />{{ thread.seenCount }} of {{ threadReach(thread) }} seen
-        </span>
-      </div>
     </div>
     <div v-if="expanded" class="cursor-auto bg-surface-gray-1 px-2 pt-1 pb-3 reply-preview md:pr-5 md:pl-[3.75rem]" @click.stop>
       <LoadingIndicator v-if="!latest" class="mx-auto my-4 size-5 text-ink-gray-5" />

@@ -331,16 +331,17 @@ export async function toggleReshare(t, note = '', geo?: { places: string[]; desi
 }
 
 export async function toggleReaction(target, emoji: string, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply') {
-  const flip = () => {
-    const next = toggleIn(target.reactions[emoji] ?? [], state.me.id)
-    if (next.length) target.reactions[emoji] = next
-    else delete target.reactions[emoji]
-  }
-  flip()
+  const before = target.reactions
+  const others = Object.entries(before as Record<string, string[]>)
+    .map(([e, uids]) => [e, uids.filter((id) => id !== state.me.id)] as const)
+    .filter(([, uids]) => uids.length)
+  const next = Object.fromEntries(others)
+  if (!before[emoji]?.includes(state.me.id)) next[emoji] = [...(next[emoji] ?? []), state.me.id]
+  target.reactions = next
   try {
     await post('creche_connect.api.toggle_reaction', { doctype, name: target.id, emoji })
   } catch (e) {
-    flip()
+    target.reactions = before
     throw e
   }
 }
