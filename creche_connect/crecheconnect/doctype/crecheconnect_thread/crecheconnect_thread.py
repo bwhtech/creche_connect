@@ -97,6 +97,7 @@ class CrecheConnectThread(Document):
 			"CrecheConnect Thread Visit",
 			"CrecheConnect Acknowledgement",
 			"CrecheConnect Poll Vote",
+			"CrecheConnect Reshare",
 		):
 			frappe.db.delete(doctype, {"thread": self.name})
 

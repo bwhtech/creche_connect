@@ -106,6 +106,7 @@ const shapeUser = (m) => ({
 const userMap = computed(() => Object.fromEntries(state.users.map((u) => [u.id, u])))
 export const userById = (id: string) => userMap.value[id] ?? { id, name: id, designation: '', place: '', title: '' }
 export const useMe = () => computed(() => state.me)
+export const namesOf = (uids: string[]) => uids.map((id) => (id === state.me.id ? 'You' : userById(id).name)).join(', ')
 
 export const matchesGeo = (u, geo) =>
   !!geo?.places.length &&
@@ -294,6 +295,11 @@ export async function acknowledge(t) {
   await post('creche_connect.api.acknowledge', { thread: t.id })
   loadCounts()
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
+}
+
+export async function toggleReshare(t, note = '') {
+  const fresh: any = await post('creche_connect.api.toggle_reshare', { thread: t.id, note })
+  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, fresh)
 }
 
 export async function toggleReaction(target, emoji: string, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply') {

@@ -9,6 +9,7 @@ import MessageItem from '../components/MessageItem.vue'
 import MediaButtons from '../components/MediaButtons.vue'
 import TagChips from '../components/TagChips.vue'
 import Reactions from '../components/Reactions.vue'
+import ReshareButton from '../components/ReshareButton.vue'
 import EditHistory from '../components/EditHistory.vue'
 import Poll from '../components/Poll.vue'
 import ThreadInfo from '../components/ThreadInfo.vue'
@@ -278,7 +279,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <Poll v-if="thread.poll" :thread="thread" class="mt-8" />
             <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
-              <div><Reactions :target="thread" doctype="CrecheConnect Thread" /></div>
+              <div class="flex items-center gap-2"><Reactions :target="thread" doctype="CrecheConnect Thread" /><ReshareButton :thread="thread" /></div>
             </div>
 
             <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">

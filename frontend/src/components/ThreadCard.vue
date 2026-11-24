@@ -6,6 +6,7 @@ import { Avatar, Badge, Button } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
+import ReshareButton from './ReshareButton.vue'
 import { shareThread, userById, policyOf, threadReach, when, isAuthor } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
@@ -17,7 +18,8 @@ const clipped = ref(false)
 useResizeObserver(body, () => (clipped.value = body.value!.scrollHeight > body.value!.clientHeight + 1))
 
 function open(e: MouseEvent) {
-  if ((e.target as HTMLElement).closest('a, button, input, audio, video, [role=button]') || getSelection()?.toString()) return
+  const controls = 'a, button, input, audio, video, [role=button]'
+  if (e.composedPath().some((el) => el instanceof Element && el.matches(controls)) || getSelection()?.toString()) return
   router.push(to.value)
 }
 </script>
@@ -30,6 +32,12 @@ function open(e: MouseEvent) {
     <div class="flex gap-3 p-4 md:gap-4 md:p-5">
       <Avatar :label="userById(thread.authorId).name" size="lg" class="mt-0.5 max-md:hidden" />
       <div class="min-w-0 flex-1">
+        <div v-if="thread.resharedBy" class="mb-3 border-b border-outline-gray-1 pb-3">
+          <p class="flex items-center gap-1.5 text-xs text-ink-gray-5">
+            <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared this
+          </p>
+          <p v-if="thread.reshareNote" class="mt-1.5 whitespace-pre-line text-p-sm text-ink-gray-8">{{ thread.reshareNote }}</p>
+        </div>
         <div class="flex items-center gap-2 text-sm">
           <span class="shrink-0 text-ink-gray-8">{{ userById(thread.authorId).name }}</span>
           <span class="truncate text-ink-gray-5 max-md:hidden">{{ userById(thread.authorId).designation }}</span>
@@ -68,9 +76,10 @@ function open(e: MouseEvent) {
     </div>
     <div class="flex items-center gap-3 border-t border-outline-gray-1 bg-surface-gray-1 py-2 pr-4 pl-2.5 md:pr-5 md:pl-[4.25rem]">
       <Reactions :target="thread" doctype="CrecheConnect Thread" />
+      <ReshareButton :thread="thread" />
       <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
       <div class="ml-auto flex items-center gap-3 whitespace-nowrap text-xs text-ink-gray-5 md:gap-4">
-        <span v-if="thread.poll" class="flex items-center gap-1">
+        <span v-if="thread.poll" class="flex items-center gap-1 max-md:hidden">
           <span class="lucide-vote size-3.5" aria-hidden="true" />{{ thread.poll.voterCount }} voted
         </span>
         <span class="flex items-center gap-1">

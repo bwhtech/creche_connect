@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { BottomSheet, Button, Popover, Tooltip, toast } from 'frappe-ui'
-import { state, useMe, toggleReaction, userById, isMobile } from '../lib/store'
+import { state, useMe, toggleReaction, namesOf as names, isMobile } from '../lib/store'
 
 const props = defineProps<{ target: any; doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply' }>()
 const me = useMe()
 const open = ref(false)
 
 const entries = computed(() => Object.entries(props.target.reactions))
-const names = (uids: string[]) => uids.map((id) => (id === me.value.id ? 'You' : userById(id)?.name)).join(', ')
 
 function toggle(emoji: string) {
   toggleReaction(props.target, emoji, props.doctype).catch(() => toast.error('Could not save your reaction'))

@@ -117,6 +117,50 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		api.add_reply(leads_only, "<p>hi</p>")
 		self.assertRaises(frappe.PermissionError, api.add_reply, announcement, "<p>hi</p>")
 
+	def test_reshare_boosts_the_thread_in_the_resharers_area_only(self):
+		name = self.post(self.lead, [self.state])
+		before = frappe.db.get_value("CrecheConnect Thread", name, "last_activity")
+		frappe.set_user(self.coordinator)
+		self.assertTrue(api.get_thread(name)["canReshare"])
+		api.toggle_reshare(name, "  Please read this before Monday  ")
+		self.assertGreater(frappe.db.get_value("CrecheConnect Thread", name, "last_activity"), before)
+		self.assertIsNone(api.get_thread(name)["resharedBy"])
+
+		frappe.set_user(self.volunteer)
+		thread = api.get_thread(name)
+		self.assertEqual(thread["resharedBy"], self.coordinator)
+		self.assertEqual(thread["reshareNote"], "Please read this before Monday")
+		self.assertIn("Test thread", thread["title"])
+		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
+		frappe.set_user(self.lead)
+		self.assertIsNone(api.get_thread(name)["resharedBy"])
+
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(name)
+		frappe.set_user(self.volunteer)
+		self.assertIsNone(api.get_thread(name)["resharedBy"])
+
+	def test_reshare_keeps_the_thread_audience(self):
+		name = self.post(self.lead, [self.state], designations=["Test coordinator"])
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(name)
+		self.assertNotIn(name, self.visible_to(self.volunteer))
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.PermissionError, api.get_thread, name)
+
+	def test_author_cannot_reshare_own_thread(self):
+		name = self.post(self.lead, [self.state])
+		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
+
+	def test_national_reshare_shows_to_everyone(self):
+		national = member("national", "Test lead", self.root, can_post=True)
+		name = self.post("Administrator", [self.root])
+		frappe.set_user(national)
+		self.assertTrue(api.get_thread(name)["canReshare"])
+		api.toggle_reshare(name)
+		frappe.set_user(self.outsider)
+		self.assertEqual(api.get_thread(name)["resharedBy"], national)
+
 	def test_acknowledgement_is_recorded_once(self):
 		name = self.post(self.lead, [self.state], ack_required=True)
 		frappe.set_user(self.volunteer)
