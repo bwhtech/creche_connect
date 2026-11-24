@@ -31,7 +31,7 @@ self.addEventListener('fetch', (event) => {
 
 self.addEventListener('push', (event) => {
 	const { title, body, url } = event.data.json()
-	event.waitUntil(self.registration.showNotification(title, { body, data: url, tag: url, icon: '/assets/creche_connect/pwa/icon-192.png' }))
+	event.waitUntil(self.registration.showNotification(title, { body, data: url, tag: url, icon: '/assets/creche_connect/pwa/icon-192.png?v=2' }))
 })
 
 self.addEventListener('notificationclick', (event) => {
