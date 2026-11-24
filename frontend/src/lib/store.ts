@@ -134,7 +134,7 @@ export function toggleIn(list: string[], v: string) {
 export const canStart = (u) => !!u?.canPost
 
 export const POLICIES = [
-  { value: 'everyone', label: 'Anyone in the audience can reply', short: 'Open replies', icon: 'lucide-messages-square', theme: 'green' },
+  { value: 'everyone', label: 'Everyone', short: 'Open replies', icon: 'lucide-messages-square', theme: 'green' },
   { value: 'posters', label: 'Only people who can start threads can reply', short: 'Leads reply', icon: 'lucide-shield', theme: 'blue' },
   { value: 'none', label: 'Announcement, replies off', short: 'Announcement', icon: 'lucide-megaphone', theme: 'violet' },
 ]
