@@ -1,7 +1,7 @@
-import { reactive, computed } from 'vue'
-import { call, frappeRequest, dayjsLocal, upload, toast } from 'frappe-ui'
+import { reactive, computed, type Ref } from 'vue'
+import { call, frappeRequest, dayjsLocal, upload, toast, dialog } from 'frappe-ui'
 import { io } from 'socket.io-client'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core'
 import { RichTextKit } from 'frappe-ui/editor'
 import { Audio } from './audio'
 import { disablePush } from './push'
@@ -222,8 +222,8 @@ export function listenForActivity() {
   })
 }
 
-export const getThread = (id: string) => get('creche_connect.api.get_thread', { name: id })
-export const fetchThread = latest(getThread)
+export const fetchLatestReplies = (id: string, limit: number) => get('creche_connect.api.get_replies', { thread: id, limit })
+export const fetchThread = latest((id: string) => get('creche_connect.api.get_thread', { name: id }))
 export async function logout() {
   await disablePush().catch(() => {})
   await call('logout')
@@ -287,6 +287,32 @@ export async function deleteReply(t, reply) {
   t.replies = t.replies.filter((r) => r.id !== reply.id)
   for (const x of copies(t)) x.replyCount -= 1
 }
+
+export function confirmDelete(t, reply = null, onDone?: () => void) {
+  dialog.confirm({
+    title: reply ? 'Delete this reply?' : 'Delete this thread?',
+    message: reply ? 'The reply and its reactions will be removed.' : 'All replies, reactions and acknowledgements in it will be removed too.',
+    icon: 'lucide-trash-2',
+    theme: 'red',
+    confirmLabel: 'Delete',
+    onConfirm: async () => {
+      try {
+        await (reply ? deleteReply(t, reply) : deleteThread(t))
+      } catch (e) {
+        throw new Error(errorText(e, 'Could not delete'))
+      }
+      toast.success(reply ? 'Reply deleted' : 'Thread deleted')
+      onDone?.()
+    },
+  })
+}
+
+let drafts: Ref<Record<string, string>>
+export function replyDraft(id: () => string) {
+  drafts ??= useStorage(`crecheconnect:reply-drafts:${state.me.id}`, {})
+  return computed({ get: () => drafts.value[id()] ?? '', set: (v) => (drafts.value[id()] = v) })
+}
+export const clearDraft = (id: string) => delete drafts.value[id]
 
 export async function deleteThread(t) {
   await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Thread', name: t.id })

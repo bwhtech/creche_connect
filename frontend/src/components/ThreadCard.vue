@@ -2,7 +2,7 @@
 import { computed, ref, shallowRef } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useResizeObserver } from '@vueuse/core'
-import { Avatar, Badge, Button, LoadingIndicator, dialog, toast } from 'frappe-ui'
+import { Avatar, Badge, Button, LoadingIndicator, toast } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
 import MessageItem from './MessageItem.vue'
 import Poll from './Poll.vue'
@@ -10,7 +10,7 @@ import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
-import { shareThread, userById, policyOf, threadReach, when, isAuthor, getThread, editorKit, audienceOf, deleteReply, errorText, addReply, isBlank, state } from '../lib/store'
+import { shareThread, userById, policyOf, threadReach, when, isAuthor, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
 const router = useRouter()
@@ -27,28 +27,29 @@ function open(e: MouseEvent) {
 }
 
 const expanded = ref(false)
-const full = ref<any>(null)
+const latest = ref<any>(null)
 const kit = shallowRef<any[]>()
 async function toggle() {
   expanded.value = !expanded.value
   if (!expanded.value) return
   kit.value ??= editorKit(() => audienceOf(props.thread.geo, props.thread.authorId))
   try {
-    full.value = await getThread(props.thread.id)
+    const page: any = await fetchLatestReplies(props.thread.id, 3)
+    latest.value = { id: props.thread.id, replyCount: props.thread.replyCount, replies: page.replies }
   } catch (e) {
     expanded.value = false
-    toast.error(errorText(e, 'Could not load the thread'))
+    toast.error(errorText(e, 'Could not load replies'))
   }
 }
-const shown = computed(() => full.value?.replies.slice(-3) ?? [])
-const draft = ref('')
+const shown = computed(() => latest.value.replies.slice(-3))
+const draft = replyDraft(() => props.thread.id)
 const sending = ref(false)
 async function send() {
   if (isBlank(draft.value) || sending.value) return
   sending.value = true
   try {
-    await addReply(full.value, draft.value)
-    draft.value = ''
+    await addReply(latest.value, draft.value)
+    clearDraft(props.thread.id)
   } catch (e) {
     toast.error(errorText(e, 'Could not send your reply'))
   } finally {
@@ -57,14 +58,6 @@ async function send() {
 }
 function onKey(e: KeyboardEvent) {
   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send()
-}
-function confirmDelete(reply) {
-  dialog.confirm({
-    title: 'Delete this reply?',
-    message: 'The reply and its reactions will be removed.',
-    confirmLabel: 'Delete',
-    onConfirm: () => deleteReply(full.value, reply),
-  })
 }
 </script>
 
@@ -138,17 +131,17 @@ function confirmDelete(reply) {
       </div>
     </div>
     <div v-if="expanded" class="cursor-auto bg-surface-gray-1 px-2 pt-1 pb-3 reply-preview md:pr-5 md:pl-[3.75rem]" @click.stop>
-      <LoadingIndicator v-if="!full" class="mx-auto my-4 size-5 text-ink-gray-5" />
+      <LoadingIndicator v-if="!latest" class="mx-auto my-4 size-5 text-ink-gray-5" />
       <template v-else>
-        <RouterLink v-if="full.replyCount > shown.length" :to="to" class="mx-2 block py-1 text-sm font-medium text-ink-gray-6 hover:text-ink-gray-8">
-          View all {{ full.replyCount }} replies
+        <RouterLink v-if="thread.replyCount > shown.length" :to="to" class="mx-2 block py-1 text-sm font-medium text-ink-gray-6 hover:text-ink-gray-8">
+          View all {{ thread.replyCount }} replies
         </RouterLink>
-        <MessageItem v-for="m in shown" :key="m.id" :message="m" :kit="kit" @delete="confirmDelete(m)" />
-        <p v-if="!full.replies.length && !full.canReply" class="px-2 py-2 text-sm text-ink-gray-5">No replies yet.</p>
-        <div v-if="full.canReply" class="mt-2 flex items-end gap-3 px-2" @keydown="onKey">
+        <MessageItem v-for="m in shown" :key="m.id" :message="m" :kit="kit" @delete="confirmDelete(latest, m)" />
+        <p v-if="!shown.length && !thread.canReply" class="px-2 py-2 text-sm text-ink-gray-5">No replies yet.</p>
+        <div v-if="thread.canReply" class="mt-2 flex items-end gap-3 px-2" @keydown="onKey">
           <Avatar :label="state.me.name" size="lg" class="mb-0.5 max-md:hidden" />
           <div class="min-w-0 flex-1 rounded-4 border border-outline-gray-2 bg-surface-base">
-            <Editor v-model="draft" :extensions="kit" :placeholder="full.replies.length ? 'Write a reply…' : 'Be the first to reply…'">
+            <Editor v-model="draft" :extensions="kit" :placeholder="shown.length ? 'Write a reply…' : 'Be the first to reply…'">
               <div class="flex items-end">
                 <EditorContent class="rich max-h-40 min-h-[2.25rem] flex-1 overflow-y-auto px-3 py-1.5 text-p-base text-ink-gray-8" />
                 <Button class="m-1" variant="ghost" icon="lucide-send-horizontal" aria-label="Send reply" :disabled="isBlank(draft)" :loading="sending" @click="send" />
