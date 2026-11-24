@@ -125,7 +125,7 @@ async function post() {
 
     <div v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
       <div class="min-w-0 flex-1 lg:overflow-y-auto">
-        <div class="mx-auto max-w-[770px] space-y-12 px-3 pt-10 pb-20 sm:px-6">
+        <div class="mx-auto max-w-[770px] space-y-12 px-3 pt-6 pb-20 sm:px-6 md:pt-10">
           <section class="space-y-5">
             <div class="flex items-center gap-3">
               <h2 class="text-xl text-ink-gray-9">What's it about?</h2>
@@ -136,7 +136,7 @@ async function post() {
                 :options="KINDS"
               />
             </div>
-            <FormControl v-model="text.title" :label="isPoll ? 'Question' : 'Topic'" required />
+            <FormControl v-model="text.title" variant="outline" :label="isPoll ? 'Question' : 'Topic'" required />
             <div>
               <div class="mb-1.5 text-xs text-ink-gray-6">Message</div>
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Avatar, Badge, Progress, Tooltip } from 'frappe-ui'
-import { useMe, userById, matchesGeo, placeById, placePath, colorOf } from '../lib/store'
+import { Avatar, Progress, Tooltip } from 'frappe-ui'
+import { userById, placeById, colorOf } from '../lib/store'
 
 const props = defineProps<{ thread: any; reach: number }>()
-const me = useMe()
 const geoPlaces = computed(() => (props.thread.geo?.places ?? []).map(placeById).filter(Boolean))
-const viaGeo = computed(() => props.thread.geo && matchesGeo(me.value, props.thread.geo))
 const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.thread.seenBy.length / props.reach) * 100)) : 0))
 </script>
 
@@ -48,18 +46,12 @@ const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.th
       <div class="mt-2.5 flex items-center gap-2">
         <div class="flex -space-x-1.5">
           <Tooltip v-for="uid in thread.acks.slice(0, 6)" :key="uid" :text="userById(uid).name">
-            <Avatar :label="userById(uid).name" size="sm" class="ring-2 ring-surface-base" />
+            <Avatar :label="userById(uid).name" size="sm" class="ring-2 ring-[color:var(--surface-base)]" />
           </Tooltip>
         </div>
         <span class="text-sm text-ink-gray-7 tabular-nums">{{ thread.acks.length }} of {{ reach }}</span>
       </div>
     </section>
 
-    <section>
-      <div class="flex flex-wrap gap-1">
-        <Badge v-if="thread.authorId === me.id" label="You started this" theme="blue" variant="subtle" size="sm" />
-        <Badge v-if="viaGeo" :label="`via ${placePath(me.place)}`" :theme="geoPlaces[0]?.color ?? 'blue'" variant="subtle" size="sm" />
-      </div>
-    </section>
   </div>
 </template>

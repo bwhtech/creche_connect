@@ -25,6 +25,16 @@
 		[contenteditable='true'] {
 			font-size: 16px !important;
 		}
+		:is(button, a, [role='button']):is(.h-6, .h-7),
+		[role='switch'] {
+			position: relative;
+		}
+		:is(button, a, [role='button']):is(.h-6, .h-7)::after,
+		[role='switch']::after {
+			content: '';
+			position: absolute;
+			inset: -8px;
+		}
 	}
 }
 

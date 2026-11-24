@@ -91,9 +91,9 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
               </span>
             </template>
           </MobileNavItem>
-          <MobileNavItem label="Search" icon="lucide-search" route="/search" />
+          <MobileNavItem label="Search" icon="lucide-search" route="/search" :active="route.path === '/search'" />
           <MobileNavItem v-if="canStart(me)" label="New" icon="lucide-square-pen" route="/new" />
-          <MobileNavItem label="Resources" icon="lucide-library" route="/resources" />
+          <MobileNavItem label="Resources" icon="lucide-library" route="/resources" :active="route.path === '/resources'" />
           <Dropdown :options="mobileMenu" side="top" align="end">
             <MobileNavItem label="You" :active="['/users', '/insights'].includes(route.path)">
               <Avatar :label="me.name" size="md" />

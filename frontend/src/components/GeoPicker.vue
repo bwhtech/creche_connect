@@ -80,7 +80,7 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
 
       <div class="mt-3 rounded-5 border border-outline-gray-1">
         <div class="border-b border-outline-gray-1 p-2">
-          <TextInput v-model="query" placeholder="Search a state, district or block, e.g. Jashpur" aria-label="Search places">
+          <TextInput v-model="query" placeholder="Search places…" aria-label="Search places">
             <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
           </TextInput>
         </div>

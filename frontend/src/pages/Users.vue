@@ -104,12 +104,12 @@ async function save() {
             </TextInput>
           </div>
         </div>
-        <p class="mb-5 text-p-sm text-ink-gray-5">
+        <p class="mb-5 text-p-sm text-ink-gray-5 max-md:hidden">
           Each user has a state, district, block and designation. Threads reach people by these four fields.
           <span class="tabular-nums">{{ rows.length }} of {{ state.users.length }}</span> shown.
         </p>
         <List :columns="{ base: ['minmax(0,1fr)', '3rem'], md: ['minmax(0,1.4fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', 'minmax(0,1fr)', '8rem', '4rem'] }" :row-height="56">
-          <ListHeader>
+          <ListHeader v-if="!isMobile">
             <ListHeaderCell>Name</ListHeaderCell>
             <ListHeaderCell class="max-md:hidden">State</ListHeaderCell>
             <ListHeaderCell class="max-md:hidden">District</ListHeaderCell>

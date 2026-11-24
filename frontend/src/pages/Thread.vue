@@ -39,6 +39,7 @@ import {
   replyDraft,
   clearDraft,
   setNotify,
+  withPreviews,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -244,7 +245,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               />
             </div>
 
-            <div v-if="thread.needsAck" class="mt-8 flex items-center gap-3 rounded-5 bg-surface-blue-2 px-4 py-3.5">
+            <div v-if="thread.needsAck" class="mt-6 flex md:mt-8 items-center gap-3 rounded-5 bg-surface-blue-2 px-4 py-3.5">
               <span class="lucide-badge-check size-5 shrink-0 text-ink-blue-6" aria-hidden="true" />
               <p class="flex-1 text-p-sm text-ink-gray-8">
                 {{ author.name.split(' ')[0] }} asked everyone in the audience to acknowledge this thread.
@@ -252,7 +253,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               <Button variant="solid" theme="gray" label="Acknowledge" :loading="acking" @click="ack" />
             </div>
 
-            <div v-if="editing" class="mt-8">
+            <div v-if="editing" class="mt-6 md:mt-8">
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
                 <Editor v-model="editing.body" :extensions="kit">
                   <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-md text-ink-gray-8" />
@@ -263,9 +264,9 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || isBlank(editing.body)" :loading="saving" @click="saveEdit" />
               </div>
             </div>
-            <div v-else class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
-            <Poll v-if="thread.poll" :thread="thread" class="mt-8" />
-            <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
+            <div v-else class="rich mt-6 text-p-md md:mt-8 text-ink-gray-8" v-html="withPreviews(thread.body)" />
+            <Poll v-if="thread.poll" :thread="thread" class="mt-6 md:mt-8" />
+            <div class="mt-6 space-y-4 border-t border-outline-gray-1 pt-4 md:mt-10 md:space-y-6 md:pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
               <div class="flex items-center gap-2"><Reactions :target="thread" doctype="CrecheConnect Thread" /><ReshareButton :thread="thread" /></div>
               <div v-for="r in thread.reshareNotes" :key="r.user" class="flex gap-2.5">
@@ -277,7 +278,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               </div>
             </div>
 
-            <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">
+            <div class="mt-8 flex items-center gap-2 border-b md:mt-12 border-outline-gray-1 pb-3">
               <span class="text-lg-semibold text-ink-gray-8">
                 {{ thread.replyCount }} {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
               </span>

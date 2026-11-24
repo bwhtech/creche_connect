@@ -117,11 +117,10 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
               {{ k.delta >= 0 ? '+' : '' }}{{ Math.round(k.delta * 100) }}%
               <span class="text-ink-gray-5">vs previous</span>
             </div>
-            <div v-else class="mt-1 text-xs text-ink-gray-4">No earlier data</div>
           </div>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <section class="rounded-5 border border-outline-gray-1 p-5">
             <div class="flex flex-wrap items-start gap-3">
               <div>
@@ -209,7 +208,7 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
           </div>
         </section>
 
-        <div class="grid gap-6 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section class="rounded-5 border border-outline-gray-1 p-5">
             <h2 class="text-lg-semibold text-ink-gray-9">Reactions by topic</h2>
             <p class="mt-0.5 text-sm text-ink-gray-5">Which tags people respond to most</p>

@@ -4,11 +4,12 @@ import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
 import EditHistory from './EditHistory.vue'
-import { canDelete, isAuthor, errorText, isBlank, updateMessage, userById, when } from '../lib/store'
+import { canDelete, isAuthor, errorText, isBlank, updateMessage, userById, when, withPreviews } from '../lib/store'
 
 const props = defineProps<{ message: any; kit: any[]; compact?: boolean }>()
 const emit = defineEmits<{ delete: [] }>()
 const author = computed(() => userById(props.message.authorId))
+const body = computed(() => withPreviews(props.message.body))
 const draft = ref<string | null>(null)
 const saving = ref(false)
 const showHistory = ref(false)
@@ -58,7 +59,7 @@ async function save() {
         </div>
       </div>
       <template v-else>
-        <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="message.body" />
+        <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="body" />
         <Tooltip v-if="message.editedAt" :text="`Edited ${when(message.editedAt).format('DD MMM YYYY, h:mm A')}`">
           <span class="text-xs text-ink-gray-5">(edited)</span>
         </Tooltip>

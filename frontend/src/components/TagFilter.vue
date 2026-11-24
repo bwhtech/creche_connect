@@ -23,7 +23,7 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
       :class="!active ? 'border-transparent bg-surface-gray-3 text-ink-gray-9' : 'border-outline-gray-2 text-ink-gray-7 hover:bg-surface-gray-1'"
       @click="setTag(undefined)"
     >
-      All topics
+      All tags
       <span class="text-ink-gray-5 tabular-nums">{{ state.counts.total }}</span>
     </button>
     <button

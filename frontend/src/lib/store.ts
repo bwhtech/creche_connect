@@ -148,6 +148,8 @@ export async function shareThread(t) {
   toast.success('Link copied')
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
+export const withPreviews = (html: string) =>
+  html.replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 

@@ -10,12 +10,12 @@ import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
-import { shareThread, userById, policyOf, when, isAuthor, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft } from '../lib/store'
+import { shareThread, userById, policyOf, when, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft, withPreviews } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
 const router = useRouter()
 const to = computed(() => `/threads/${props.thread.id}`)
-const html = computed(() => props.thread.body.replaceAll('<img ', '<img loading="lazy" ').replaceAll('<video ', '<video preload="metadata" '))
+const html = computed(() => withPreviews(props.thread.body))
 const body = ref<HTMLElement>()
 const clipped = ref(false)
 useResizeObserver(body, () => (clipped.value = body.value!.scrollHeight > body.value!.clientHeight + 1))
@@ -99,12 +99,6 @@ function onKey(e: KeyboardEvent) {
             <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
           </Badge>
           <Badge v-if="thread.needsAck" label="Needs your acknowledgment" theme="blue" variant="solid" size="sm" />
-          <template v-if="thread.poll">
-            <Badge :label="thread.poll.closed ? 'Poll closed' : 'Poll'" theme="violet" variant="outline" size="sm" class="!rounded-md">
-              <template #prefix><span :class="thread.poll.closed ? 'lucide-lock' : 'lucide-chart-bar-big'" class="size-3" aria-hidden="true" /></template>
-            </Badge>
-            <Badge v-if="!thread.poll.closed && !thread.poll.voted && !isAuthor(thread.authorId)" label="Waiting for your vote" theme="violet" variant="solid" size="sm" />
-          </template>
           <TagChips v-if="thread.tags.length" :tags="thread.tags" />
         </div>
       </div>

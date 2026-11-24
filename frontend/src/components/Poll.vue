@@ -74,7 +74,7 @@ async function remind() {
       >
         <span
           v-if="showResults"
-          class="absolute inset-y-0 left-0 transition-all duration-300"
+          class="absolute inset-y-0 left-0 transition-[width] duration-300"
           :class="o.mine ? 'bg-surface-violet-4' : 'bg-surface-gray-4'"
           :style="{ width: `${pct(o)}%` }"
         />
@@ -87,8 +87,8 @@ async function remind() {
             {{ o.count }} {{ o.count === 1 ? 'vote' : 'votes' }}<span class="max-sm:hidden"> • {{ pct(o) }}%</span>
           </span>
           <Tooltip v-if="o.voters.length" :text="names(o.voters).join(', ')">
-            <span class="relative -mr-1.5 flex shrink-0 items-center -space-x-1">
-              <Avatar v-for="(id, k) in o.voters.slice(0, 4)" :key="id" :label="userById(id).name" size="xs" class="ring-2 ring-surface-base" :class="k === 3 && 'max-sm:hidden'" />
+            <span class="relative -mr-1.5 flex shrink-0 items-center -space-x-1 max-sm:hidden">
+              <Avatar v-for="id in o.voters.slice(0, 4)" :key="id" :label="userById(id).name" size="xs" class="ring-2 ring-[color:var(--surface-base)]" />
             </span>
           </Tooltip>
         </template>
