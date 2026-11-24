@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useResizeObserver } from '@vueuse/core'
-import { Avatar, Badge, Button } from 'frappe-ui'
+import { Avatar, Badge, Button, LoadingIndicator, toast } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
+import MessageItem from './MessageItem.vue'
+import Poll from './Poll.vue'
+import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
-import { shareThread, userById, policyOf, threadReach, when, isAuthor } from '../lib/store'
+import { shareThread, userById, policyOf, threadReach, when, isAuthor, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
 const router = useRouter()
@@ -21,6 +24,40 @@ function open(e: MouseEvent) {
   const controls = 'a, button, input, audio, video, [role=button]'
   if (e.composedPath().some((el) => el instanceof Element && el.matches(controls)) || getSelection()?.toString()) return
   router.push(to.value)
+}
+
+const expanded = ref(false)
+const latest = ref<any>(null)
+const kit = shallowRef<any[]>()
+async function toggle() {
+  expanded.value = !expanded.value
+  if (!expanded.value) return
+  kit.value ??= editorKit(() => audienceOf(props.thread.geo, props.thread.authorId))
+  try {
+    const page: any = await fetchLatestReplies(props.thread.id, 3)
+    latest.value = { id: props.thread.id, replyCount: props.thread.replyCount, replies: page.replies }
+  } catch (e) {
+    expanded.value = false
+    toast.error(errorText(e, 'Could not load replies'))
+  }
+}
+const shown = computed(() => latest.value.replies.slice(-3))
+const draft = replyDraft(() => props.thread.id)
+const sending = ref(false)
+async function send() {
+  if (isBlank(draft.value) || sending.value) return
+  sending.value = true
+  try {
+    await addReply(latest.value, draft.value)
+    clearDraft(props.thread.id)
+  } catch (e) {
+    toast.error(errorText(e, 'Could not send your reply'))
+  } finally {
+    sending.value = false
+  }
+}
+function onKey(e: KeyboardEvent) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send()
 }
 </script>
 
@@ -54,6 +91,7 @@ function open(e: MouseEvent) {
           v-html="html"
         />
         <span v-if="clipped" class="text-sm text-ink-blue-link">Show more</span>
+        <Poll v-if="thread.poll" :thread="thread" class="mt-3 cursor-auto" @click.stop />
 
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <AudienceChips :geo="thread.geo" />
@@ -73,20 +111,45 @@ function open(e: MouseEvent) {
     </div>
     <div class="flex items-center gap-3 border-t border-outline-gray-1 bg-surface-gray-1 py-2 pr-4 pl-2.5 md:pr-5 md:pl-[4.25rem]">
       <Reactions :target="thread" doctype="CrecheConnect Thread" />
+      <Button
+        variant="ghost"
+        size="sm"
+        icon-left="lucide-message-square"
+        :class="expanded && '!bg-surface-gray-3'"
+        :aria-label="expanded ? 'Hide replies' : 'Show replies'"
+        :aria-expanded="expanded"
+        @click="toggle"
+      >
+        {{ thread.replyCount }}
+      </Button>
       <ReshareButton :thread="thread" />
       <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
       <div class="ml-auto flex items-center gap-3 whitespace-nowrap text-xs text-ink-gray-5 md:gap-4">
-        <span v-if="thread.poll" class="flex items-center gap-1 max-md:hidden">
-          <span class="lucide-vote size-3.5" aria-hidden="true" />{{ thread.poll.voterCount }} voted
-        </span>
-        <span class="flex items-center gap-1">
-          <span class="lucide-message-square size-3.5" aria-hidden="true" />{{ thread.replyCount }}
-          {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
-        </span>
         <span class="flex items-center gap-1">
           <span class="lucide-eye size-3.5" aria-hidden="true" />{{ thread.seenCount }} of {{ threadReach(thread) }} seen
         </span>
       </div>
+    </div>
+    <div v-if="expanded" class="cursor-auto bg-surface-gray-1 px-2 pt-1 pb-3 reply-preview md:pr-5 md:pl-[3.75rem]" @click.stop>
+      <LoadingIndicator v-if="!latest" class="mx-auto my-4 size-5 text-ink-gray-5" />
+      <template v-else>
+        <RouterLink v-if="thread.replyCount > shown.length" :to="to" class="mx-2 block py-1 text-sm font-medium text-ink-gray-6 hover:text-ink-gray-8">
+          View all {{ thread.replyCount }} replies
+        </RouterLink>
+        <MessageItem v-for="m in shown" :key="m.id" :message="m" :kit="kit" @delete="confirmDelete(latest, m)" />
+        <p v-if="!shown.length && !thread.canReply" class="px-2 py-2 text-sm text-ink-gray-5">No replies yet.</p>
+        <div v-if="thread.canReply" class="mt-2 flex items-end gap-3 px-2" @keydown="onKey">
+          <Avatar :label="state.me.name" size="lg" class="mb-0.5 max-md:hidden" />
+          <div class="min-w-0 flex-1 rounded-4 border border-outline-gray-2 bg-surface-base">
+            <Editor v-model="draft" :extensions="kit" :placeholder="shown.length ? 'Write a reply…' : 'Be the first to reply…'">
+              <div class="flex items-end">
+                <EditorContent class="rich max-h-40 min-h-[2.25rem] flex-1 overflow-y-auto px-3 py-1.5 text-p-base text-ink-gray-8" />
+                <Button class="m-1" variant="ghost" icon="lucide-send-horizontal" aria-label="Send reply" :disabled="isBlank(draft)" :loading="sending" @click="send" />
+              </div>
+            </Editor>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 </template>

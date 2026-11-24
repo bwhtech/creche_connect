@@ -585,7 +585,7 @@ def get_counts(filter: FeedFilter | None = None) -> dict:
 	return {**counts, "total": counts.get(filter) or count(feed_query(me, filter)), "tags": dict(tags)}
 
 
-def load_replies(thread: str, before: int | None = None) -> dict:
+def load_replies(thread: str, before: int | None = None, limit: int = REPLY_PAGE_SIZE) -> dict:
 	filters = {"thread": thread}
 	if before:
 		filters["name"] = ["<", before]
@@ -594,13 +594,13 @@ def load_replies(thread: str, before: int | None = None) -> dict:
 		filters=filters,
 		fields=["name", "owner", "content", "creation", "edited_at"],
 		order_by="name desc",
-		limit=REPLY_PAGE_SIZE + 1,
+		limit=limit + 1,
 	)
-	page = replies[:REPLY_PAGE_SIZE][::-1]
+	page = replies[:limit][::-1]
 	reactions = reactions_for("CrecheConnect Reply", [str(r.name) for r in page]) if page else {}
 	return {
 		"replies": [serialize_reply(r, reactions.get(str(r.name))) for r in page],
-		"hasOlder": len(replies) > REPLY_PAGE_SIZE,
+		"hasOlder": len(replies) > limit,
 	}
 
 
@@ -617,9 +617,9 @@ def get_thread(name: str) -> dict:
 
 
 @frappe.whitelist(methods=["GET"])
-def get_replies(thread: str, before: int) -> dict:
+def get_replies(thread: str, before: int | None = None, limit: int = REPLY_PAGE_SIZE) -> dict:
 	get_visible_thread(thread, get_me())
-	return load_replies(thread, before)
+	return load_replies(thread, before, min(max(cint(limit), 1), REPLY_PAGE_SIZE))
 
 
 @frappe.whitelist(methods=["POST"])

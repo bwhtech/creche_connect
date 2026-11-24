@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useStorage } from '@vueuse/core'
-import { Avatar, Badge, BottomSheet, Breadcrumbs, Button, Dialog, Dropdown, LoadingIndicator, PageHeader, PageHeaderBackButton, PageHeaderMobile, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
+import { Avatar, Badge, BottomSheet, Breadcrumbs, Button, Dropdown, LoadingIndicator, PageHeader, PageHeaderBackButton, PageHeaderMobile, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
@@ -31,13 +30,14 @@ import {
   canDelete,
   isAuthor,
   updateMessage,
-  deleteThread,
-  deleteReply,
   editorKit,
   audienceOf,
   closePoll,
   isMobile,
   shareThread,
+  confirmDelete,
+  replyDraft,
+  clearDraft,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -81,8 +81,7 @@ watch(
   (a) => a?.thread === props.id && load(),
 )
 
-const drafts = useStorage<Record<string, string>>(`crecheconnect:reply-drafts:${me.value.id}`, {})
-const reply = computed({ get: () => drafts.value[props.id] ?? '', set: (v) => (drafts.value[props.id] = v) })
+const reply = replyDraft(() => props.id)
 const replyEmpty = computed(() => isBlank(reply.value))
 const sending = ref(false)
 const scroller = ref<HTMLElement>()
@@ -92,7 +91,7 @@ async function send() {
   const id = props.id
   try {
     await addReply(thread.value, reply.value)
-    delete drafts.value[id]
+    clearDraft(id)
     nextTick(() => scroller.value?.scrollTo({ top: scroller.value.scrollHeight, behavior: 'smooth' }))
   } catch (e) {
     toast.error(errorText(e, 'Could not send your reply'))
@@ -166,7 +165,7 @@ const threadMenu = computed(() => [
   isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
   thread.value.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
   thread.value.poll?.canManage && !thread.value.poll.closed && { label: 'Close poll', icon: 'lucide-lock', onClick: confirmClose },
-  canDelete(thread.value.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete() },
+  canDelete(thread.value.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete(thread.value, null, () => router.push('/')) },
 ].filter(Boolean))
 function confirmClose() {
   dialog.confirm({
@@ -188,25 +187,6 @@ async function saveEdit() {
     toast.error(errorText(e, 'Could not save your changes'))
   } finally {
     saving.value = false
-  }
-}
-
-const deleting = ref({ open: false, reply: null as any })
-const confirmDelete = (reply = null) => (deleting.value = { open: true, reply })
-const deleteActions = [
-  { label: 'Cancel', onClick: ({ close }) => close() },
-  { label: 'Delete', variant: 'solid', theme: 'red', onClick: remove },
-]
-async function remove({ close }) {
-  const { reply } = deleting.value
-  try {
-    if (reply) await deleteReply(thread.value, reply)
-    else await deleteThread(thread.value)
-    close()
-    toast.success(reply ? 'Reply deleted' : 'Thread deleted')
-    if (!reply) router.push('/')
-  } catch (e) {
-    toast.error(errorText(e, 'Could not delete'))
   }
 }
 
@@ -310,7 +290,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                   :compact="sameAuthor(i) && i !== firstNew"
                   class="transition-colors duration-700"
                   :class="{ 'bg-surface-gray-2': highlighted === m.id }"
-                  @delete="confirmDelete(m)"
+                  @delete="confirmDelete(thread, m)"
                 />
               </template>
               <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
@@ -344,14 +324,6 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       </aside>
     </div>
 
-    <Dialog
-      v-model:open="deleting.open"
-      :title="deleting.reply ? 'Delete this reply?' : 'Delete this thread?'"
-      :message="deleting.reply ? 'The reply and its reactions will be removed.' : 'All replies, reactions and acknowledgements in it will be removed too.'"
-      icon="lucide-trash-2"
-      theme="red"
-      :actions="deleteActions"
-    />
     <BottomSheet v-if="visible" v-model:open="showInfo" title="Thread details">
       <ThreadInfo :thread="thread" :reach="reach" class="pb-[env(safe-area-inset-bottom)]" />
     </BottomSheet>

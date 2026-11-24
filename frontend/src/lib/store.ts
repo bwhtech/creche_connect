@@ -1,7 +1,7 @@
-import { reactive, computed } from 'vue'
-import { call, frappeRequest, dayjsLocal, upload, toast } from 'frappe-ui'
+import { reactive, computed, type Ref } from 'vue'
+import { call, frappeRequest, dayjsLocal, upload, toast, dialog } from 'frappe-ui'
 import { io } from 'socket.io-client'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core'
 import { RichTextKit } from 'frappe-ui/editor'
 import { Audio } from './audio'
 import { disablePush } from './push'
@@ -145,6 +145,7 @@ export async function shareThread(t) {
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
+const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 
 export async function loadBoot() {
   try {
@@ -221,6 +222,7 @@ export function listenForActivity() {
   })
 }
 
+export const fetchLatestReplies = (id: string, limit: number) => get('creche_connect.api.get_replies', { thread: id, limit })
 export const fetchThread = latest((id: string) => get('creche_connect.api.get_thread', { name: id }))
 export async function logout() {
   await disablePush().catch(() => {})
@@ -265,7 +267,7 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
 export async function addReply(t, body: string) {
   const reply: any = await post('creche_connect.api.add_reply', { thread: t.id, content: body })
   t.replies.push(reply)
-  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
+  for (const x of copies(t)) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
 
 export const isAuthor = (authorId: string) => authorId === state.me.id
@@ -274,7 +276,7 @@ export const canDelete = (authorId: string) => isAuthor(authorId) || state.me.ad
 export async function updateMessage(target, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', body: string, title?: string) {
   const res: any = await post('creche_connect.api.update_message', { doctype, name: target.id, content: body, title })
   Object.assign(target, { body: res.body, editedAt: res.editedAt })
-  if (doctype === 'CrecheConnect Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
+  if (doctype === 'CrecheConnect Thread') for (const x of copies(target)) Object.assign(x, res)
 }
 
 export const fetchEditHistory = (doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', name: string) =>
@@ -283,8 +285,34 @@ export const fetchEditHistory = (doctype: 'CrecheConnect Thread' | 'CrecheConnec
 export async function deleteReply(t, reply) {
   await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Reply', name: reply.id })
   t.replies = t.replies.filter((r) => r.id !== reply.id)
-  for (const x of [t, feedRow(t.id)]) if (x) x.replyCount -= 1
+  for (const x of copies(t)) x.replyCount -= 1
 }
+
+export function confirmDelete(t, reply = null, onDone?: () => void) {
+  dialog.confirm({
+    title: reply ? 'Delete this reply?' : 'Delete this thread?',
+    message: reply ? 'The reply and its reactions will be removed.' : 'All replies, reactions and acknowledgements in it will be removed too.',
+    icon: 'lucide-trash-2',
+    theme: 'red',
+    confirmLabel: 'Delete',
+    onConfirm: async () => {
+      try {
+        await (reply ? deleteReply(t, reply) : deleteThread(t))
+      } catch (e) {
+        throw new Error(errorText(e, 'Could not delete'))
+      }
+      toast.success(reply ? 'Reply deleted' : 'Thread deleted')
+      onDone?.()
+    },
+  })
+}
+
+let drafts: Ref<Record<string, string>>
+export function replyDraft(id: () => string) {
+  drafts ??= useStorage(`crecheconnect:reply-drafts:${state.me.id}`, {})
+  return computed({ get: () => drafts.value[id()] ?? '', set: (v) => (drafts.value[id()] = v) })
+}
+export const clearDraft = (id: string) => delete drafts.value[id]
 
 export async function deleteThread(t) {
   await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Thread', name: t.id })
@@ -294,12 +322,12 @@ export async function deleteThread(t) {
 export async function acknowledge(t) {
   await post('creche_connect.api.acknowledge', { thread: t.id })
   loadCounts()
-  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
+  for (const x of copies(t)) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
 
 export async function toggleReshare(t, note = '', geo?: { places: string[]; designations: string[] }) {
   const fresh: any = await post('creche_connect.api.toggle_reshare', { thread: t.id, note, ...geo })
-  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, fresh)
+  for (const x of copies(t)) Object.assign(x, fresh)
 }
 
 export async function toggleReaction(target, emoji: string, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply') {
@@ -333,7 +361,7 @@ function applyVote(poll, optionId: string) {
 }
 
 export async function vote(t, optionId: string) {
-  const targets = [t, feedRow(t.id)].filter((x) => x?.poll)
+  const targets = copies(t).filter((x) => x.poll)
   const before = targets.map((x) => JSON.parse(JSON.stringify(x.poll)))
   for (const x of targets) applyVote(x.poll, optionId)
   try {
@@ -346,7 +374,7 @@ export async function vote(t, optionId: string) {
 
 export async function closePoll(t) {
   const res: any = await post('creche_connect.api.close_poll', { thread: t.id })
-  for (const x of [t, feedRow(t.id)]) if (x?.poll) Object.assign(x.poll, { closed: true, closesAt: res.closesAt })
+  for (const x of copies(t)) if (x.poll) Object.assign(x.poll, { closed: true, closesAt: res.closesAt })
 }
 
 export const remindPoll = (t) => post('creche_connect.api.remind_poll', { thread: t.id })
