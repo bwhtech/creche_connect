@@ -16,6 +16,7 @@ ThreadTag = DocType("CrecheConnect Thread Tag")
 Visit = DocType("CrecheConnect Thread Visit")
 Acknowledgement = DocType("CrecheConnect Acknowledgement")
 Reply = DocType("CrecheConnect Reply")
+Reshare = DocType("CrecheConnect Reshare")
 
 FeedFilter = Literal["unread", "ack", "mine", "mentions"]
 PAGE_SIZE = 30
@@ -93,7 +94,7 @@ def reshared_to(member, thread) -> str | None:
 
 
 def can_see(me, thread) -> bool:
-	return thread.owner == me.user or matches(me, thread)
+	return thread.owner == me.user or any(matches(me, x) for x in (thread, *thread.reshares.values()))
 
 
 def can_reshare(me, thread) -> bool:
@@ -215,9 +216,11 @@ def load_threads(filters) -> list:
 	for r in frappe.get_all(
 		"CrecheConnect Reshare",
 		filters={"thread": ["in", names]},
-		fields=["thread", "user", "place", "note"],
+		fields=["name", "thread", "user", "place", "note", {"places": ["place"]}, {"designations": ["designation"]}],
 		order_by="creation asc",
 	):
+		r.places = [p.place for p in r.places]
+		r.designations = [d.designation for d in r.designations]
 		reshares.setdefault(r.thread, {})[r.user] = r
 	for t in threads:
 		t.reshares = reshares.get(t.name, {})
@@ -336,6 +339,14 @@ def delete_media(thread: str, content: str | None, owner: str):
 			frappe.delete_doc("File", name, ignore_permissions=True)
 
 
+def check_in_area(me, places: list):
+	if me.place and any(p in root_places() or not in_place(p, me.place) for p in places):
+		frappe.throw(
+			_("You can only post to {0} and places below it").format(frappe.bold(me.place)),
+			frappe.PermissionError,
+		)
+
+
 def check_content_length(content: str | None):
 	if len(content or "") > MAX_CONTENT_LENGTH:
 		frappe.throw(
@@ -378,8 +389,13 @@ def audience_users(places: list, designations: list) -> list[str]:
 	return frappe.get_all("CrecheConnect Member", filters=filters, or_filters=or_filters, pluck="user")
 
 
-def thread_audience(thread) -> set[str]:
-	return set(audience_users([p.place for p in thread.places], [d.designation for d in thread.designations]))
+def doc_audience(doc) -> set[str]:
+	return set(audience_users(doc.places, doc.designations)) if doc.places else set()
+
+
+def thread_audience(name: str) -> set[str]:
+	thread = load_threads({"name": name})[0]
+	return set().union(*(doc_audience(d) for d in (thread, *thread.reshares.values())))
 
 
 def notify_audience(thread: str, event: str = "crecheconnect_activity"):
@@ -394,8 +410,8 @@ def notify_audience(thread: str, event: str = "crecheconnect_activity"):
 
 
 def send_activity(thread: str, sender: str, event: str = "crecheconnect_activity"):
-	doc = frappe.get_doc("CrecheConnect Thread", thread)
-	for user in (thread_audience(doc) | {doc.owner}) - {sender}:
+	owner = frappe.db.get_value("CrecheConnect Thread", thread, "owner")
+	for user in (thread_audience(thread) | {owner}) - {sender}:
 		frappe.publish_realtime(event, {"thread": thread}, user=user)
 
 
@@ -470,15 +486,26 @@ def thread_key():
 	return Cast_(Thread.name, "varchar")
 
 
-def in_audience(me):
-	designated = thread_ids(ThreadDesignation)
-	designation_ok = Thread.name.notin(designated)
+def reshare_ids(table):
+	return frappe.qb.from_(table).select(table.parent).where(table.parenttype == "CrecheConnect Reshare")
+
+
+def audience_filter(me, key, parents):
+	designated = parents(ThreadDesignation)
+	designation_ok = key.notin(designated)
 	if me.designation:
-		designation_ok |= Thread.name.isin(designated.where(ThreadDesignation.designation == me.designation))
-	places = thread_ids(ThreadPlace)
-	return (
-		Thread.name.isin(places.where(ThreadPlace.place.isin(ancestors(me.place) or [""]))) & designation_ok
+		designation_ok |= key.isin(designated.where(ThreadDesignation.designation == me.designation))
+	places = parents(ThreadPlace)
+	return key.isin(places.where(ThreadPlace.place.isin(ancestors(me.place) or [""]))) & designation_ok
+
+
+def in_audience(me):
+	reached = (
+		frappe.qb.from_(Reshare)
+		.select(Cast_(Reshare.thread, "unsigned"))
+		.where(audience_filter(me, Reshare.name, reshare_ids))
 	)
+	return audience_filter(me, Thread.name, thread_ids) | Thread.name.isin(reached)
 
 
 def feed_query(me, filter: str | None = None, tag: str | None = None):
@@ -622,11 +649,7 @@ def create_thread(
 		frappe.throw(_("You can't start threads"), frappe.PermissionError)
 	if not places:
 		frappe.throw(_("Pick at least one place"))
-	if me.place and any(p in root_places() or not in_place(p, me.place) for p in places):
-		frappe.throw(
-			_("You can only post to {0} and places below it").format(frappe.bold(me.place)),
-			frappe.PermissionError,
-		)
+	check_in_area(me, places)
 	tag_names = list(dict.fromkeys(ensure_tag(t) for t in tags or []))
 	thread = frappe.get_doc(
 		{
@@ -689,30 +712,34 @@ def acknowledge(thread: str):
 
 
 @frappe.whitelist(methods=["POST"])
-def toggle_reshare(thread: str, note: str | None = None) -> dict:
+def toggle_reshare(
+	thread: str, note: str | None = None, places: list[str] | None = None, designations: list[str] | None = None
+) -> dict:
 	me = get_me()
 	doc = get_visible_thread(thread, me)
-	if doc.reshares.pop(me.user, None):
-		frappe.db.delete("CrecheConnect Reshare", f"{thread}-{me.user}")
+	if me.user in doc.reshares:
+		frappe.delete_doc("CrecheConnect Reshare", doc.reshares[me.user].name, ignore_permissions=True)
 	elif not can_reshare(me, doc):
 		frappe.throw(_("You can't reshare this thread"), frappe.PermissionError)
 	else:
+		check_in_area(me, places or [])
 		note = (note or "").strip()
 		if len(note) > MAX_RESHARE_NOTE:
 			frappe.throw(_("Keep your thoughts under {0} characters").format(MAX_RESHARE_NOTE))
-		doc.reshares[me.user] = frappe.get_doc(
+		frappe.get_doc(
 			{
 				"doctype": "CrecheConnect Reshare",
 				"thread": thread,
 				"user": me.user,
 				"place": me.place or next(iter(root_places())),
 				"note": note,
+				"places": [{"place": p} for p in places or []],
+				"designations": [{"designation": d} for d in designations or []],
 			}
 		).insert(ignore_permissions=True)
-		doc.last_activity = now_datetime()
-		frappe.db.set_value("CrecheConnect Thread", thread, "last_activity", doc.last_activity, update_modified=False)
+		frappe.db.set_value("CrecheConnect Thread", thread, "last_activity", now_datetime(), update_modified=False)
 		notify_audience(thread)
-	return serialize([doc], me)[0]
+	return serialize(load_threads({"name": thread}), me)[0]
 
 
 def get_open_poll(thread: str, me, option: str | None = None, manage: bool = False):

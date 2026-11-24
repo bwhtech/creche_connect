@@ -73,6 +73,14 @@ class IntegrationTestCrecheConnectPush(IntegrationTestCase):
 		self.assertIn("mentioned you", sent[self.volunteer]["body"])
 		self.assertNotIn("mentioned you", sent[self.lead]["body"])
 
+	def test_reshare_to_team_reaches_the_new_people(self):
+		thread = api.create_thread("Test thread", "<p>Hello</p>", [self.state], designations=["Test coordinator"])["name"]
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(thread, "Please read", places=[self.district])
+		sent = self.pushes(push.reshare_created, f"{thread}-{self.coordinator}")
+		self.assertEqual(set(sent), {self.volunteer})
+		self.assertIn("reshared: Please read", sent[self.volunteer]["body"])
+
 	def test_expired_device_is_forgotten(self):
 		thread = self.post(self.coordinator, [self.district])
 		gone = WebPushException("gone", response=MagicMock(status_code=410))

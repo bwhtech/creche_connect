@@ -11,7 +11,7 @@ from py_vapid import Vapid
 from py_vapid.utils import b64urlencode
 from pywebpush import WebPushException, webpush
 
-from creche_connect.api import thread_audience
+from creche_connect.api import doc_audience, load_threads, thread_audience
 
 SUBSCRIPTION = "CrecheConnect Push Subscription"
 VAPID_KEY = (SUBSCRIPTION, "vapid", "private_key")
@@ -92,7 +92,17 @@ def thread_created(name: str):
 		return
 	thread = frappe.get_doc("CrecheConnect Thread", name)
 	body = f"{get_fullname(thread.owner)}: {preview(thread.content)}"
-	push(dict.fromkeys(thread_audience(thread) - {thread.owner}, body), thread.title, f"/c/threads/{name}")
+	push(dict.fromkeys(thread_audience(name) - {thread.owner}, body), thread.title, f"/c/threads/{name}")
+
+
+def reshare_created(name: str):
+	if not frappe.db.count(SUBSCRIPTION):
+		return
+	thread_name, user = frappe.db.get_value("CrecheConnect Reshare", name, ["thread", "user"])
+	thread = load_threads({"name": thread_name})[0]
+	reshare = thread.reshares[user]
+	body = _("{0} reshared: {1}").format(get_fullname(user), reshare.note or preview(thread.content))
+	push(dict.fromkeys(doc_audience(reshare) - {user, thread.owner}, body), thread.title, f"/c/threads/{thread.name}")
 
 
 def reply_created(name: str):
@@ -104,6 +114,6 @@ def reply_created(name: str):
 	bodies = {thread.owner: f"{author}: {text}"}
 	if mentioned := set(extract_mentions(reply.content or "")):
 		mention = _("{0} mentioned you: {1}").format(author, text)
-		bodies |= dict.fromkeys(mentioned & (thread_audience(thread) | {thread.owner}), mention)
+		bodies |= dict.fromkeys(mentioned & (thread_audience(thread.name) | {thread.owner}), mention)
 	bodies.pop(reply.owner, None)
 	push(bodies, thread.title, f"/c/threads/{thread.name}?reply={name}")

@@ -26,7 +26,10 @@ const childCounts = computed(() => {
   for (const p of scope.value) counts[p.parentId] = (counts[p.parentId] ?? 0) + 1
   return counts
 })
-const childLabel = (p) => `${childCounts.value[p.id]} ${p.kind === 'State' ? 'districts' : 'blocks'}`
+const childLabel = (p) => {
+  const n = childCounts.value[p.id]
+  return `${n} ${p.kind === 'State' ? 'district' : 'block'}${n === 1 ? '' : 's'}`
+}
 const indent = (kind: string) => (query.value ? 'pl-4' : ({ Country: 'pl-4', State: 'pl-4', District: 'pl-10', Block: 'pl-16' })[kind])
 const iconFor = (kind: string) => ({ Country: 'lucide-globe', State: 'lucide-map' })[kind] ?? 'lucide-map-pin'
 const covered = (id: string) => draft.value.places.some((a) => a !== id && inPlace(id, a))

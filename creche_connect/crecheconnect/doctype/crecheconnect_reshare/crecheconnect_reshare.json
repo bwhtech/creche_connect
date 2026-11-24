@@ -10,7 +10,9 @@
   "thread",
   "user",
   "place",
-  "note"
+  "note",
+  "places",
+  "designations"
  ],
  "fields": [
   {
@@ -43,12 +45,24 @@
    "fieldname": "note",
    "fieldtype": "Small Text",
    "label": "Note"
+  },
+  {
+   "fieldname": "places",
+   "fieldtype": "Table",
+   "label": "Places",
+   "options": "CrecheConnect Thread Place"
+  },
+  {
+   "fieldname": "designations",
+   "fieldtype": "Table",
+   "label": "Designations",
+   "options": "CrecheConnect Thread Designation"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-24 18:00:00.000000",
+ "modified": "2026-11-24 19:00:00.000000",
  "modified_by": "Administrator",
  "module": "CrecheConnect",
  "name": "CrecheConnect Reshare",
