@@ -91,7 +91,7 @@ async function post() {
     ackRequired.value = false
     picked.value = []
     addedTags.value = []
-    toast.success(`${isPoll.value ? 'Poll' : 'Thread'} sent to ${sentTo} people`)
+    toast.success(`${isPoll.value ? 'Poll' : 'Thread'} sent to ${sentTo} ${sentTo === 1 ? 'person' : 'people'}`)
     kind.value = 'discussion'
     poll.value = blankPoll()
     router.push(`/threads/${id}`)
