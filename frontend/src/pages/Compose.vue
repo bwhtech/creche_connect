@@ -249,7 +249,7 @@ async function post() {
           </section>
           <section class="space-y-4">
             <h2 class="text-sm text-ink-gray-6">Thread rules</h2>
-            <FormControl v-model="policy" type="select" label="Who can reply" :options="POLICIES.map((p) => ({ label: p.label, value: p.value }))" />
+            <FormControl v-model="policy" type="select" label="Who can reply" :options="POLICIES.filter((p) => p.value !== 'posters').map((p) => ({ label: p.label, value: p.value }))" />
             <Switch v-model="ackRequired" label="Ask for acknowledgment" description="Members confirm they have read it. You see who did." />
           </section>
         </div>
