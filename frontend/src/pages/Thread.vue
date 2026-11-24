@@ -39,6 +39,7 @@ import {
   replyDraft,
   clearDraft,
   setNotify,
+  withPreviews,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -214,7 +215,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
     </PageHeader>
 
     <div v-if="loading" class="flex flex-1 items-center justify-center">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-gray-6" />
     </div>
 
     <StatusPage v-else-if="!visible" v-bind="unavailable">
@@ -231,9 +232,10 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <div class="mt-4 flex items-center gap-2.5">
               <Avatar :label="author.name" size="md" />
               <span class="shrink-0 text-sm text-ink-gray-8">{{ author.name }}</span>
-              <span class="truncate text-sm text-ink-gray-5"><span class="max-md:hidden">{{ author.title }} · </span>{{ when(thread.createdAt).fromNow() }}</span>
+              <span class="truncate text-sm text-ink-gray-6">{{ author.title }}</span>
+              <span class="shrink-0 text-sm text-ink-gray-6">· {{ when(thread.createdAt).fromNow() }}</span>
               <Tooltip v-if="thread.editedAt" :text="`Edited ${when(thread.editedAt).format('DD MMM YYYY, h:mm A')}`">
-                <span class="text-sm text-ink-gray-5">(edited)</span>
+                <span class="text-sm text-ink-gray-6">(edited)</span>
               </Tooltip>
               <Dropdown
                 v-if="threadMenu.length && !editing"
@@ -244,15 +246,18 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               />
             </div>
 
-            <div v-if="thread.needsAck" class="mt-8 flex items-center gap-3 rounded-5 bg-surface-blue-2 px-4 py-3.5">
+            <div v-if="thread.needsAck" class="mt-6 flex md:mt-8 items-center gap-3 rounded-5 bg-surface-blue-2 px-4 py-3.5">
               <span class="lucide-badge-check size-5 shrink-0 text-ink-blue-6" aria-hidden="true" />
               <p class="flex-1 text-p-sm text-ink-gray-8">
                 {{ author.name.split(' ')[0] }} asked everyone in the audience to acknowledge this thread.
               </p>
               <Button variant="solid" theme="gray" label="Acknowledge" :loading="acking" @click="ack" />
             </div>
+            <p v-else-if="thread.ackRequired && thread.acks.includes(me.id)" class="mt-6 flex items-center gap-2 text-sm text-ink-gray-6 md:mt-8">
+              <span class="lucide-badge-check size-4 shrink-0 text-ink-green-6" aria-hidden="true" />You acknowledged this thread
+            </p>
 
-            <div v-if="editing" class="mt-8">
+            <div v-if="editing" class="mt-6 md:mt-8">
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
                 <Editor v-model="editing.body" :extensions="kit">
                   <EditorContent class="rich min-h-[10rem] px-3 py-2 text-p-md text-ink-gray-8" />
@@ -263,13 +268,13 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || isBlank(editing.body)" :loading="saving" @click="saveEdit" />
               </div>
             </div>
-            <div v-else class="rich mt-8 text-p-md text-ink-gray-8" v-html="thread.body" />
-            <Poll v-if="thread.poll" :thread="thread" class="mt-8" />
-            <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
+            <div v-else class="rich mt-6 text-p-md md:mt-8 text-ink-gray-8" v-html="withPreviews(thread.body)" />
+            <Poll v-if="thread.poll" :thread="thread" class="mt-6 md:mt-8" />
+            <div class="mt-6 space-y-4 border-t border-outline-gray-1 pt-4 md:mt-10 md:space-y-6 md:pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
               <div class="flex items-center gap-2"><Reactions :target="thread" doctype="CrecheConnect Thread" /><ReshareButton :thread="thread" /></div>
               <div v-for="r in thread.reshareNotes" :key="r.user" class="flex gap-2.5">
-                <span class="lucide-repeat-2 mt-0.5 size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+                <span class="lucide-repeat-2 mt-0.5 size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
                 <p class="text-p-sm text-ink-gray-8">
                   <span class="font-medium text-ink-gray-9">{{ userById(r.user).name }}</span> reshared:
                   <span class="whitespace-pre-line">{{ r.note }}</span>
@@ -277,7 +282,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
               </div>
             </div>
 
-            <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">
+            <div class="mt-8 flex items-center gap-2 border-b md:mt-12 border-outline-gray-1 pb-3">
               <span class="text-lg-semibold text-ink-gray-8">
                 {{ thread.replyCount }} {{ thread.replyCount === 1 ? 'reply' : 'replies' }}
               </span>
@@ -301,7 +306,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                   @delete="confirmDelete(thread, m)"
                 />
               </template>
-              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-5">No replies yet.</p>
+              <p v-if="!thread.replies.length" class="px-2 py-8 text-sm text-ink-gray-6">No replies yet.</p>
             </div>
           </div>
         </div>

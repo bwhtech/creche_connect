@@ -53,7 +53,7 @@ onKeyStroke('Escape', () => props.file && emit('close'))
         <img v-else-if="kind === 'image'" :src="file.url" :alt="file.name" class="m-auto max-h-full max-w-full object-contain" />
         <video v-else-if="kind === 'video'" :src="file.url" controls class="m-auto max-h-full max-w-full" />
         <div v-else-if="kind === 'docx'" class="relative w-full">
-          <LoadingIndicator v-if="loading" class="absolute left-1/2 top-10 size-5 text-ink-gray-5" />
+          <LoadingIndicator v-if="loading" class="absolute left-1/2 top-10 size-5 text-ink-gray-6" />
           <p v-if="failed" class="p-10 text-center text-p-base text-ink-gray-6">Could not open this document. Use Download.</p>
           <div ref="docxEl" class="docx-view" />
         </div>

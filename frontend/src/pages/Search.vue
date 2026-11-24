@@ -3,7 +3,7 @@ import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useStorage, watchDebounced } from '@vueuse/core'
 import { Avatar, MultiSelect, PageHeader, Select, TextInput } from 'frappe-ui'
-import { searchThreads, state, useMe, userById, when } from '../lib/store'
+import { searchThreads, state, useMe, userById, when, isMobile } from '../lib/store'
 
 const route = useRoute()
 const router = useRouter()
@@ -55,26 +55,26 @@ watchDebounced(
 
     <div class="min-h-0 flex-1 overflow-y-auto">
       <div class="mx-auto max-w-[860px] px-3 pt-8 pb-20 sm:px-6">
-        <TextInput v-model="query" size="lg" autofocus placeholder="Search threads and replies" aria-label="Search" @keydown.enter="remember">
-          <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
+        <TextInput v-model="query" size="lg" :autofocus="!isMobile" placeholder="Search threads and replies" aria-label="Search" @keydown.enter="remember">
+          <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
         </TextInput>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <MultiSelect v-model="filters.tags" :options="tagOptions" variant="outline" placeholder="Tag" class="w-40" />
-          <MultiSelect v-model="filters.authors" :options="authorOptions" variant="outline" placeholder="Author" class="w-48" />
-          <MultiSelect v-model="filters.places" :options="placeOptions" variant="outline" placeholder="Place" class="w-48" />
-          <Select v-model="filters.days" :options="dayOptions" variant="outline" class="w-40" />
+        <div class="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <MultiSelect v-model="filters.tags" :options="tagOptions" variant="outline" placeholder="Tag" class="w-full sm:w-40" />
+          <MultiSelect v-model="filters.authors" :options="authorOptions" variant="outline" placeholder="Author" class="w-full sm:w-48" />
+          <MultiSelect v-model="filters.places" :options="placeOptions" variant="outline" placeholder="Place" class="w-full sm:w-48" />
+          <Select v-model="filters.days" :options="dayOptions" variant="outline" class="w-full sm:w-40" />
         </div>
 
-        <p class="mt-3 min-h-5 text-sm text-ink-gray-5">
+        <p class="mt-3 min-h-5 text-sm text-ink-gray-6">
           <template v-if="query.trim().length < 2">Type at least two letters.</template>
           <template v-else-if="loading && !found">Searching…</template>
           <template v-else-if="found">
-            {{ found.results.length }} {{ found.results.length === 1 ? 'match' : 'matches' }} ({{ found.duration }}s)
+            {{ found.results.length }} {{ found.results.length === 1 ? 'match' : 'matches' }}
           </template>
         </p>
 
         <div v-if="query.trim().length < 2 && recent.length" class="mt-4">
-          <div class="flex items-center px-2 pb-1 text-sm text-ink-gray-5">
+          <div class="flex items-center px-2 pb-1 text-sm text-ink-gray-6">
             Recent searches
             <button type="button" class="ml-auto hover:text-ink-gray-8" @click="recent = []">Clear</button>
           </div>
@@ -85,7 +85,7 @@ watchDebounced(
             class="flex w-full items-center gap-2 rounded-4 px-2 py-2 text-left text-base text-ink-gray-8 hover:bg-surface-gray-1"
             @click="query = r"
           >
-            <span class="lucide-history size-4 text-ink-gray-5" aria-hidden="true" />
+            <span class="lucide-history size-4 text-ink-gray-6" aria-hidden="true" />
             {{ r }}
           </button>
         </div>
@@ -100,7 +100,7 @@ watchDebounced(
           >
             <Avatar :label="userById(r.authorId).name" size="lg" class="mt-0.5" />
             <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5 text-sm text-ink-gray-5">
+              <div class="flex items-center gap-1.5 text-sm text-ink-gray-6">
                 <span class="text-ink-gray-7">{{ userById(r.authorId).name }}</span>
                 <span>· {{ r.reply ? 'Reply' : 'Thread' }}</span>
                 <span class="ml-auto shrink-0 text-xs">{{ when(r.at * 1000).fromNow() }}</span>

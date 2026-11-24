@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDropZone } from '@vueuse/core'
-import { Badge, Button, Dialog, FormControl, PageHeader, Switch, TextInput, toast, useFileUpload } from 'frappe-ui'
+import { Badge, Button, Dialog, FormControl, PageHeader, PageHeaderBackButton, PageHeaderMobile, Switch, TextInput, toast, useFileUpload } from 'frappe-ui'
 import FileViewer, { canView, fileKind } from '../components/FileViewer.vue'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
@@ -12,7 +12,7 @@ const me = useMe()
 const route = useRoute()
 const router = useRouter()
 const selected = computed(() => state.resources.find((r) => r.id === route.query.r) || (isMobile.value ? null : state.resources[0]))
-const pick = (r) => router.replace({ query: r ? { r: r.id } : {} })
+const pick = (r) => (isMobile.value && r ? router.push : router.replace)({ query: r ? { r: r.id } : {} })
 
 const isFile = (url: string) => url.startsWith('/private/files/')
 const isVideo = (url: string) => fileKind(url) === 'video'
@@ -123,7 +123,13 @@ function togglePin(r, pinned: boolean) {
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeader>
+    <PageHeaderMobile v-if="isMobile && selected" :title="selected.title">
+      <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/resources' }" /></template>
+      <template v-if="me.admin" #suffix>
+        <Button icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
+      </template>
+    </PageHeaderMobile>
+    <PageHeader v-else>
       <h1 class="text-2xl text-ink-gray-9">Program resources</h1>
       <Button v-if="me.admin" class="ml-auto" variant="solid" theme="gray" icon-left="lucide-plus" :label="isMobile ? 'Add' : 'Add resource'" @click="openNew" />
     </PageHeader>
@@ -142,15 +148,14 @@ function togglePin(r, pinned: boolean) {
           </span>
           <div class="min-w-0 flex-1">
             <div class="truncate text-base text-ink-gray-8">{{ r.title }}</div>
-            <div class="truncate text-xs text-ink-gray-5">{{ filesCount(r) }}</div>
+            <div class="truncate text-xs text-ink-gray-6">{{ filesCount(r) }}</div>
           </div>
         </button>
-        <p v-if="!state.resources.length" class="px-2 py-10 text-center text-p-sm text-ink-gray-5">No resources yet.</p>
+        <p v-if="!state.resources.length" class="px-2 py-10 text-center text-p-sm text-ink-gray-6">No resources yet.</p>
       </aside>
 
       <div v-if="selected" class="min-w-0 flex-1 overflow-y-auto">
         <div class="mx-auto max-w-[720px] px-3 pt-6 pb-20 sm:px-6 md:pt-8">
-          <Button v-if="isMobile" class="mb-4" variant="ghost" size="sm" icon-left="lucide-arrow-left" label="All resources" @click="pick(null)" />
           <div class="flex items-start gap-3">
             <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-5" :class="[kindOf(selected).soft, kindOf(selected).ink]">
               <span :class="kindOf(selected).icon" class="size-5" aria-hidden="true" />
@@ -160,13 +165,15 @@ function togglePin(r, pinned: boolean) {
                 <h2 class="text-xl text-ink-gray-9">{{ selected.title }}</h2>
                 <Badge class="max-md:hidden" :label="kindOf(selected).label" :theme="kindOf(selected).color" variant="subtle" size="sm" />
               </div>
-              <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-5">{{ selected.description }}</p>
+              <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-6">{{ selected.description }}</p>
               <AudienceChips v-if="me.admin && selected.places.length" :geo="selected" class="mt-2" />
             </div>
-            <Switch v-if="me.admin" :model-value="selected.pinned" :label="isMobile ? undefined : 'Pinned'" aria-label="Pinned" @update:model-value="togglePin(selected, $event)" />
-            <Button v-if="me.admin" icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
+            <template v-if="me.admin && !isMobile">
+              <Switch :model-value="selected.pinned" label="Pinned" @update:model-value="togglePin(selected, $event)" />
+              <Button icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
+            </template>
           </div>
-          <div class="mt-6 text-sm text-ink-gray-5">{{ filesCount(selected) }}</div>
+          <div class="mt-6 text-sm text-ink-gray-6">{{ filesCount(selected) }}</div>
           <div class="mt-2 divide-y divide-outline-gray-1 rounded-5 border border-outline-gray-1 p-1">
             <a
               v-for="(f, i) in selected.files"
@@ -177,10 +184,10 @@ function togglePin(r, pinned: boolean) {
               class="flex items-center gap-3 rounded-4 px-3 py-2.5 hover:bg-surface-gray-1"
               @click.exact="viewable(f) && ($event.preventDefault(), view(f))"
             >
-              <span class="w-4 shrink-0 text-right text-xs text-ink-gray-4 tabular-nums">{{ i + 1 }}</span>
+              <span class="w-4 shrink-0 text-right text-xs text-ink-gray-5 tabular-nums">{{ i + 1 }}</span>
               <span :class="fileIcon(f)" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
               <span class="min-w-0 flex-1 truncate text-base text-ink-gray-8" :title="fileLabel(f)">{{ fileLabel(f) }}</span>
-              <span :class="viewable(f) ? 'lucide-eye' : 'lucide-arrow-up-right'" class="size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+              <span :class="viewable(f) ? 'lucide-eye' : 'lucide-arrow-up-right'" class="size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
             </a>
           </div>
         </div>

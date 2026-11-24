@@ -103,30 +103,29 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
     </StatusPage>
 
     <div v-else-if="!data" class="flex flex-1 items-center justify-center">
-      <LoadingIndicator class="size-5 text-ink-gray-5" />
+      <LoadingIndicator class="size-5 text-ink-gray-6" />
     </div>
 
     <div v-else class="min-h-0 flex-1 overflow-y-auto">
       <div class="mx-auto max-w-6xl space-y-6 px-3 pt-6 pb-20 sm:px-6">
         <div class="grid grid-cols-2 divide-outline-gray-1 rounded-5 border border-outline-gray-1 sm:grid-cols-5 sm:divide-x">
           <div v-for="k in kpis" :key="k.label" class="px-5 py-4">
-            <div class="text-sm text-ink-gray-5">{{ k.label }}</div>
+            <div class="text-sm text-ink-gray-6">{{ k.label }}</div>
             <div class="mt-1.5 text-3xl font-semibold text-ink-gray-9 tabular-nums">{{ k.value }}</div>
             <div v-if="k.delta !== null" class="mt-1 flex items-center gap-1 text-xs tabular-nums" :class="k.delta >= 0 ? 'text-ink-green-5' : 'text-ink-red-5'">
               <span :class="k.delta >= 0 ? 'lucide-trending-up' : 'lucide-trending-down'" class="size-3.5" aria-hidden="true" />
               {{ k.delta >= 0 ? '+' : '' }}{{ Math.round(k.delta * 100) }}%
-              <span class="text-ink-gray-5">vs previous</span>
+              <span class="text-ink-gray-6">vs previous</span>
             </div>
-            <div v-else class="mt-1 text-xs text-ink-gray-4">No earlier data</div>
           </div>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           <section class="rounded-5 border border-outline-gray-1 p-5">
             <div class="flex flex-wrap items-start gap-3">
               <div>
                 <h2 class="text-lg-semibold text-ink-gray-9">Reach across India</h2>
-                <p class="mt-0.5 text-sm text-ink-gray-5">One tile per state. Pick a state to see its districts.</p>
+                <p class="mt-0.5 text-sm text-ink-gray-6">One tile per state. Pick a state to see its districts.</p>
               </div>
               <TabButtons v-model="metric" class="shrink-0 sm:ml-auto" :options="METRICS" />
             </div>
@@ -152,7 +151,7 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
                 </Tooltip>
                 <div
                   v-else
-                  class="flex aspect-square items-center justify-center rounded-4 bg-surface-gray-1 text-2xs text-ink-gray-4"
+                  class="flex aspect-square items-center justify-center rounded-4 bg-surface-gray-1 text-2xs text-ink-gray-5"
                   :style="{ gridColumnStart: col + 1, gridRowStart: row + 1 }"
                   :title="`${name}: not in the programme`"
                 >
@@ -161,7 +160,7 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
               </template>
             </div>
 
-            <div class="mt-5 flex items-center gap-2 text-xs text-ink-gray-5">
+            <div class="mt-5 flex items-center gap-2 text-xs text-ink-gray-6">
               <span class="tabular-nums">{{ legendStops[0] }}</span>
               <div class="flex overflow-hidden rounded-full">
                 <span v-for="s in STEPS" :key="s" class="h-2 w-8" :class="s" />
@@ -175,20 +174,20 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
             <h2 class="text-lg-semibold text-ink-gray-9">{{ stateName(selected) }}</h2>
             <div class="mt-4 grid grid-cols-3 divide-x divide-outline-gray-1">
               <div class="pr-4">
-                <div class="text-xs text-ink-gray-5">Reached</div>
+                <div class="text-xs text-ink-gray-6">Reached</div>
                 <div class="mt-1 text-xl text-ink-gray-9 tabular-nums">{{ nf.format(sel.reach) }}</div>
               </div>
               <div class="px-4">
-                <div class="text-xs text-ink-gray-5">Seen</div>
+                <div class="text-xs text-ink-gray-6">Seen</div>
                 <div class="mt-1 text-xl text-ink-gray-9 tabular-nums">{{ pct(sel.seenRate) }}</div>
               </div>
               <div class="pl-4">
-                <div class="text-xs text-ink-gray-5">Acknowledged</div>
+                <div class="text-xs text-ink-gray-6">Acknowledged</div>
                 <div class="mt-1 text-xl text-ink-gray-9 tabular-nums">{{ pct(sel.ackRate) }}</div>
               </div>
             </div>
 
-            <div class="mt-6 text-sm text-ink-gray-5">People reached by district</div>
+            <div class="mt-6 text-sm text-ink-gray-6">People reached by district</div>
             <div class="mt-3 space-y-3">
               <div v-for="d in districts" :key="d.id" class="grid grid-cols-[6rem_minmax(0,1fr)_7.5rem] items-center gap-3">
                 <span class="truncate text-sm text-ink-gray-8">{{ placeById(d.id)?.name ?? d.id }}</span>
@@ -203,16 +202,16 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
 
         <section class="rounded-5 border border-outline-gray-1 p-5">
           <h2 class="text-lg-semibold text-ink-gray-9">New readers</h2>
-          <p class="mt-0.5 text-sm text-ink-gray-5">{{ data.step === 'week' ? 'Per week' : 'Per day' }}, people opening a thread for the first time</p>
+          <p class="mt-0.5 text-sm text-ink-gray-6">{{ data.step === 'week' ? 'Per week' : 'Per day' }}, people opening a thread for the first time</p>
           <div class="mt-4 h-64">
             <AreaChart :data="data.engagement" x="date" y="people" />
           </div>
         </section>
 
-        <div class="grid gap-6 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section class="rounded-5 border border-outline-gray-1 p-5">
             <h2 class="text-lg-semibold text-ink-gray-9">Reactions by topic</h2>
-            <p class="mt-0.5 text-sm text-ink-gray-5">Which tags people respond to most</p>
+            <p class="mt-0.5 text-sm text-ink-gray-6">Which tags people respond to most</p>
             <div class="mt-4 h-64">
               <BarChart :data="topics" x="topic" y="Reactions" />
             </div>
@@ -220,7 +219,7 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
 
           <section class="rounded-5 border border-outline-gray-1 p-5">
             <h2 class="text-lg-semibold text-ink-gray-9">Reach by designation</h2>
-            <p class="mt-0.5 text-sm text-ink-gray-5">Unique people who received at least one thread</p>
+            <p class="mt-0.5 text-sm text-ink-gray-6">Unique people who received at least one thread</p>
             <div class="mt-5 space-y-4">
               <div v-for="d in data.designations" :key="d.name" class="grid grid-cols-[9.5rem_minmax(0,1fr)_4rem] items-center gap-3">
                 <span class="truncate text-sm text-ink-gray-8">{{ d.name }}</span>
@@ -235,7 +234,7 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
 
         <section class="rounded-5 border border-outline-gray-1 p-5">
           <h2 class="text-lg-semibold text-ink-gray-9">Reached and seen, by state</h2>
-          <p class="mt-0.5 text-sm text-ink-gray-5">The gap is people who got a thread but never opened it</p>
+          <p class="mt-0.5 text-sm text-ink-gray-6">The gap is people who got a thread but never opened it</p>
           <div class="mt-4 h-72">
             <BarChart :data="stateBars" x="state" :y="['Reached', 'Seen']" />
           </div>
@@ -245,7 +244,7 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
           <div class="px-5 pt-5 pb-3">
             <h2 class="text-lg-semibold text-ink-gray-9">Most reacted threads</h2>
           </div>
-          <p v-if="!data.topThreads.length" class="px-5 pb-5 text-sm text-ink-gray-5">No reactions in this period yet.</p>
+          <p v-if="!data.topThreads.length" class="px-5 pb-5 text-sm text-ink-gray-6">No reactions in this period yet.</p>
           <div class="divide-y divide-outline-gray-1">
             <RouterLink
               v-for="(t, i) in data.topThreads"
@@ -253,14 +252,14 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
               :to="`/threads/${t.id}`"
               class="grid grid-cols-[1.5rem_minmax(0,1fr)_7rem_6rem] items-center gap-4 px-5 py-3 hover:bg-surface-gray-1"
             >
-              <span class="text-sm text-ink-gray-4 tabular-nums">{{ i + 1 }}</span>
+              <span class="text-sm text-ink-gray-5 tabular-nums">{{ i + 1 }}</span>
               <div class="min-w-0">
                 <div class="truncate text-base text-ink-gray-8">{{ t.title }}</div>
                 <div class="mt-0.5 flex gap-1.5">
                   <span
                     v-for="tg in t.tags.map(tagById).filter(Boolean)"
                     :key="tg.id"
-                    class="inline-flex items-center gap-1 text-xs text-ink-gray-5"
+                    class="inline-flex items-center gap-1 text-xs text-ink-gray-6"
                   >
                     <span class="size-1.5 rounded-full" :class="colorOf(tg.color).dot" aria-hidden="true" />{{ tg.name }}
                   </span>

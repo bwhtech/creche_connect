@@ -134,7 +134,7 @@ export function toggleIn(list: string[], v: string) {
 export const canStart = (u) => !!u?.canPost
 
 export const POLICIES = [
-  { value: 'everyone', label: 'Anyone in the audience can reply', short: 'Open replies', icon: 'lucide-messages-square', theme: 'green' },
+  { value: 'everyone', label: 'Everyone', short: 'Open replies', icon: 'lucide-messages-square', theme: 'green' },
   { value: 'posters', label: 'Only people who can start threads can reply', short: 'Leads reply', icon: 'lucide-shield', theme: 'blue' },
   { value: 'none', label: 'Announcement, replies off', short: 'Announcement', icon: 'lucide-megaphone', theme: 'violet' },
 ]
@@ -148,6 +148,8 @@ export async function shareThread(t) {
   toast.success('Link copied')
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
+export const withPreviews = (html: string) =>
+  html.replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 

@@ -40,12 +40,12 @@ const filters = computed(() => [
   { label: `Unread${count(state.counts.unread)}`, value: 'unread' },
   { label: `To acknowledge${count(state.counts.ack)}`, value: 'ack' },
   { label: 'Mentions', value: 'mentions' },
-  ...(canStart(me.value) ? [{ label: 'Mine', value: 'mine' }] : []),
+  ...(canStart(me.value) ? [{ label: 'My posts', value: 'mine' }] : []),
 ])
 const setFilter = (f: string) => router.push({ path: '/', query: { ...route.query, filter: f || undefined } })
 
 const title = computed(
-  () => ({ unread: 'Unread', ack: 'To acknowledge', mentions: 'Mentions', mine: 'Started by me' })[filter.value ?? ''] ?? 'Feed',
+  () => ({ unread: 'Unread', ack: 'To acknowledge', mentions: 'Mentions', mine: 'My posts' })[filter.value ?? ''] ?? 'Feed',
 )
 </script>
 
@@ -59,7 +59,7 @@ const title = computed(
     <div class="min-h-0 flex-1 overflow-y-auto">
       <div class="mx-auto max-w-[860px] px-3 pt-4 pb-20 sm:px-6 md:pt-8">
         <TabButtons v-if="isMobile" class="mb-3 w-full overflow-x-auto [scrollbar-width:none] [&>*]:flex-1" :model-value="filter ?? ''" :options="filters" @update:model-value="setFilter" />
-        <TagFilter />
+        <TagFilter v-if="!isMobile || !filter || tag" />
         <div class="mt-4 md:mt-8">
           <FeedList :rows="state.threads" :loading="loading" />
           <Button v-if="state.cursor" class="mt-4 w-full" label="Load more" :loading="loadingMore" @click="more" />
