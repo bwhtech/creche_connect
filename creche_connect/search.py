@@ -1,10 +1,11 @@
-from typing import ClassVar, Literal
+from typing import ClassVar
 
 import frappe
 from frappe.search.sqlite_search import SQLiteSearch
-from frappe.utils import escape_html
+from frappe.query_builder import Criterion
+from frappe.utils import add_days, escape_html, now_datetime
 
-from creche_connect.api import Thread, ThreadTag, feed_query, get_me, thread_ids
+from creche_connect.api import Thread, ThreadPlace, ThreadTag, feed_query, get_me, thread_ids
 
 
 class CrecheConnectSearch(SQLiteSearch):
@@ -21,14 +22,21 @@ class CrecheConnectSearch(SQLiteSearch):
 		"CrecheConnect Reply": {"fields": ["name", "content", "owner", "modified", "thread"]},
 	}
 
-	def __init__(self, tags: list | None = None):
+	def __init__(self, tags: list | None = None, places: list | None = None, since=None):
 		super().__init__()
 		self.tags = tags
+		self.places = places
+		self.since = since
 
 	def get_search_filters(self):
 		query = feed_query(get_me())
 		if self.tags:
 			query = query.where(Thread.name.isin(thread_ids(ThreadTag).where(ThreadTag.tag.isin(self.tags))))
+		if self.places:
+			inside = [(ThreadPlace.place == p) | ThreadPlace.place.like(f"{p}-%") for p in self.places]
+			query = query.where(Thread.name.isin(thread_ids(ThreadPlace).where(Criterion.any(inside))))
+		if self.since:
+			query = query.where(Thread.last_activity >= self.since)
 		visible = query.select(Thread.name).run(pluck=True)
 		return {"thread": [str(name) for name in visible]}
 
@@ -48,11 +56,12 @@ def search(
 	query: str,
 	tags: list[str] | None = None,
 	authors: list[str] | None = None,
-	types: list[Literal["CrecheConnect Thread", "CrecheConnect Reply"]] | None = None,
+	places: list[str] | None = None,
+	days: int | None = None,
 ) -> dict:
-	filters = {field: values for field, values in (("owner", authors), ("doctype", types)) if values}
-	found = CrecheConnectSearch(tags).search(query.strip(), filters=filters)
-	hits = found["results"]
+	since = add_days(now_datetime(), -days) if days else None
+	found = CrecheConnectSearch(tags, places, since).search(query.strip(), filters={"owner": authors} if authors else None)
+	hits = [h for h in found["results"] if not since or h["modified"] >= since.timestamp()]
 	titles = {
 		str(name): title
 		for name, title in frappe.get_all(
