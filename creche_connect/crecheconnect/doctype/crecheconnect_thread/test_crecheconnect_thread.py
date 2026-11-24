@@ -152,6 +152,26 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		frappe.set_user(self.volunteer)
 		self.assertRaises(frappe.PermissionError, api.get_thread, name)
 
+	def test_reshare_to_team_reaches_people_below_the_resharer(self):
+		name = self.post(self.lead, [self.state], designations=["Test coordinator"])
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(name, places=[self.block], designations=["Test volunteer"])
+		self.assertIn(name, self.visible_to(self.volunteer))
+		self.assertEqual(api.get_thread(name)["resharedBy"], self.coordinator)
+		self.assertNotIn(name, self.visible_to(self.outsider))
+
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(name)
+		self.assertNotIn(name, self.visible_to(self.volunteer))
+		self.assertRaises(frappe.PermissionError, api.get_thread, name)
+
+	def test_reshare_to_team_stays_in_the_resharers_area(self):
+		name = self.post(self.lead, [self.state], designations=["Test coordinator"])
+		frappe.set_user(self.coordinator)
+		for places in ([self.state], [self.other_state]):
+			self.assertRaises(frappe.PermissionError, api.toggle_reshare, name, places=places)
+		self.assertNotIn(name, self.visible_to(self.volunteer))
+
 	def test_author_cannot_reshare_own_thread(self):
 		name = self.post(self.lead, [self.state])
 		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)

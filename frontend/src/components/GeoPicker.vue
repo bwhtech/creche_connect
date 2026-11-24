@@ -26,7 +26,14 @@ const childCounts = computed(() => {
   for (const p of scope.value) counts[p.parentId] = (counts[p.parentId] ?? 0) + 1
   return counts
 })
-const childLabel = (p) => `${childCounts.value[p.id]} ${p.kind === 'State' ? 'districts' : 'blocks'}`
+const peopleLabel = (id: string) => {
+  const n = peopleByPlace.value[id] ?? 0
+  return `${n} ${n === 1 ? 'person' : 'people'}`
+}
+const childLabel = (p) => {
+  const n = childCounts.value[p.id]
+  return `${n} ${p.kind === 'State' ? 'district' : 'block'}${n === 1 ? '' : 's'}`
+}
 const indent = (kind: string) => (query.value ? 'pl-4' : ({ Country: 'pl-4', State: 'pl-4', District: 'pl-10', Block: 'pl-16' })[kind])
 const iconFor = (kind: string) => ({ Country: 'lucide-globe', State: 'lucide-map' })[kind] ?? 'lucide-map-pin'
 const covered = (id: string) => draft.value.places.some((a) => a !== id && inPlace(id, a))
@@ -86,7 +93,7 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
             <div class="truncate text-sm-semibold text-ink-gray-9">{{ isCountry ? root.name : `All of ${root.name}` }}</div>
             <div class="truncate text-xs text-ink-gray-5">Every {{ isCountry ? 'state, district and block' : 'place below it' }}</div>
           </div>
-          <span class="ml-auto text-xs text-ink-gray-5 tabular-nums">{{ peopleByPlace[root.id] ?? 0 }} people</span>
+          <span class="ml-auto text-xs text-ink-gray-5 tabular-nums">{{ peopleLabel(root.id) }}</span>
         </label>
         <div class="divide-y divide-outline-gray-1 md:max-h-72 md:overflow-y-auto" :class="allPlaces && 'pointer-events-none opacity-50'">
           <div v-for="p in results" :key="p.id" class="flex items-center gap-3 py-2 pr-4 hover:bg-surface-gray-1" :class="indent(p.kind)">
@@ -104,7 +111,7 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
                 <span class="block truncate text-sm text-ink-gray-8">{{ p.name }}</span>
                 <span class="block truncate text-xs text-ink-gray-5">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</span>
               </span>
-              <span class="ml-auto shrink-0 text-xs text-ink-gray-5 tabular-nums">{{ peopleByPlace[p.id] ?? 0 }} people</span>
+              <span class="ml-auto shrink-0 text-xs text-ink-gray-5 tabular-nums">{{ peopleLabel(p.id) }}</span>
               <span class="flex w-28 shrink-0 items-center justify-end gap-1 text-xs text-ink-gray-6">
                 <template v-if="childCounts[p.id] && !query">
                   {{ childLabel(p) }}
