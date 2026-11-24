@@ -23,7 +23,7 @@ const tagOptions = computed(() => state.tags.map((t) => ({ label: t.name, value:
 const authorOptions = computed(() => state.users.map((u) => ({ label: u.name, value: u.id })))
 const placeOptions = computed(() => state.places.filter((p) => p.kind !== 'Country').map((p) => ({ label: `${p.name} · ${p.kind}`, value: p.id })))
 const dayOptions = [
-  { label: 'Any time', value: '' },
+  { label: 'All time', value: '' },
   { label: 'Past week', value: '7' },
   { label: 'Past month', value: '30' },
   { label: 'Past 3 months', value: '90' },
