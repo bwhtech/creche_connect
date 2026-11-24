@@ -38,6 +38,7 @@ import {
   confirmDelete,
   replyDraft,
   clearDraft,
+  setNotify,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -162,11 +163,18 @@ const saving = ref(false)
 const showHistory = ref(false)
 const threadMenu = computed(() => [
   { label: 'Share', icon: 'lucide-share-2', onClick: () => shareThread(thread.value) },
+  !isAuthor(thread.value.authorId) && thread.value.notify !== 'Mute' && notifyItem('Follow', 'Follow replies', 'Unfollow', 'lucide-bell-plus'),
+  thread.value.notify !== 'Follow' && notifyItem('Mute', 'Mute', 'Unmute', 'lucide-bell-off'),
   isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
   thread.value.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
   thread.value.poll?.canManage && !thread.value.poll.closed && { label: 'Close poll', icon: 'lucide-lock', onClick: confirmClose },
   canDelete(thread.value.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => confirmDelete(thread.value, null, () => router.push('/')) },
 ].filter(Boolean))
+function notifyItem(value: 'Follow' | 'Mute', on: string, off: string, icon: string) {
+  const active = thread.value.notify === value
+  const onClick = () => setNotify(thread.value, active ? '' : value).catch((e) => toast.error(errorText(e, 'Could not change notifications')))
+  return { label: active ? off : on, icon, onClick }
+}
 function confirmClose() {
   dialog.confirm({
     title: 'Close this poll?',

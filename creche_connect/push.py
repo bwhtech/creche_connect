@@ -87,6 +87,21 @@ def queue(job: str, name):
 	frappe.enqueue(f"creche_connect.push.{job}", enqueue_after_commit=True, name=str(name))
 
 
+def notify_settings(thread: str) -> dict:
+	return dict(
+		frappe.get_all(
+			"CrecheConnect Thread Visit",
+			filters={"thread": thread, "notify": ["is", "set"]},
+			fields=["user", "notify"],
+			as_list=True,
+		)
+	)
+
+
+def with_setting(settings: dict, value: str) -> set:
+	return {u for u, n in settings.items() if n == value}
+
+
 def thread_created(name: str):
 	if not frappe.db.count(SUBSCRIPTION):
 		return
@@ -102,7 +117,8 @@ def reshare_created(name: str):
 	thread = load_threads({"name": thread_name})[0]
 	reshare = thread.reshares[user]
 	body = _("{0} reshared: {1}").format(get_fullname(user), reshare.note or preview(thread.content))
-	push(dict.fromkeys(doc_audience(reshare) - {user, thread.owner}, body), thread.title, f"/c/threads/{thread.name}")
+	muted = with_setting(notify_settings(thread.name), "Mute")
+	push(dict.fromkeys(doc_audience(reshare) - {user, thread.owner} - muted, body), thread.title, f"/c/threads/{thread.name}")
 
 
 def reply_created(name: str):
@@ -111,9 +127,11 @@ def reply_created(name: str):
 	reply = frappe.get_doc("CrecheConnect Reply", name)
 	thread = frappe.get_doc("CrecheConnect Thread", reply.thread)
 	author, text = get_fullname(reply.owner), preview(reply.content)
-	bodies = {thread.owner: f"{author}: {text}"}
-	if mentioned := set(extract_mentions(reply.content or "")):
-		mention = _("{0} mentioned you: {1}").format(author, text)
-		bodies |= dict.fromkeys(mentioned & (thread_audience(thread.name) | {thread.owner}), mention)
+	settings = notify_settings(thread.name)
+	followers = with_setting(settings, "Follow")
+	mentioned = set(extract_mentions(reply.content or ""))
+	audience = thread_audience(thread.name) | {thread.owner} if followers or mentioned else {thread.owner}
+	bodies = dict.fromkeys(({thread.owner} | followers) & audience - with_setting(settings, "Mute"), f"{author}: {text}")
+	bodies |= dict.fromkeys(mentioned & audience, _("{0} mentioned you: {1}").format(author, text))
 	bodies.pop(reply.owner, None)
 	push(bodies, thread.title, f"/c/threads/{thread.name}?reply={name}")

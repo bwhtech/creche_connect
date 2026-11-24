@@ -241,14 +241,13 @@ def serialize(threads, me) -> list:
 		"thread",
 		"user",
 	)
-	my_visits = dict(
-		frappe.get_all(
-			"CrecheConnect Thread Visit",
-			filters={"thread": ["in", names], "user": me.user},
-			fields=["thread", "last_visit"],
-			as_list=True,
-		)
+	visits = frappe.get_all(
+		"CrecheConnect Thread Visit",
+		filters={"thread": ["in", names], "user": me.user},
+		fields=["thread", "last_visit", "notify"],
 	)
+	my_visits = {v.thread: v.last_visit for v in visits}
+	my_notify = {v.thread: v.notify for v in visits}
 	seen = dict(
 		frappe.qb.from_(Visit)
 		.join(Thread)
@@ -293,6 +292,7 @@ def serialize(threads, me) -> list:
 			"replyCount": cint(t.reply_count),
 			"unread": unread(t),
 			"lastVisit": my_visits.get(t.name),
+			"notify": my_notify.get(t.name) or "",
 			"canReply": can_reply(me, t),
 			"needsAck": needs_ack(t),
 			"poll": serialize_poll(t, polls[t.name], me) if t.name in polls else None,
@@ -627,6 +627,12 @@ def mark_read(name: str):
 	me = get_me()
 	get_visible_thread(name, me)
 	touch_visit(name, me.user)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_notify(name: str, notify: Literal["", "Follow", "Mute"]):
+	mark_read(name)
+	frappe.db.set_value("CrecheConnect Thread Visit", f"{name}-{frappe.session.user}", "notify", notify)
 
 
 @frappe.whitelist(methods=["POST"])
