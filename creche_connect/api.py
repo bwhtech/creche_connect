@@ -96,7 +96,7 @@ def can_see(me, thread) -> bool:
 
 
 def can_reshare(me, thread) -> bool:
-	return bool(me.can_post) and bool(me.place) and me.place not in root_places() and thread.owner != me.user
+	return bool(me.can_post) and thread.owner != me.user
 
 
 def can_see_resource(me, resource) -> bool:
@@ -700,7 +700,13 @@ def toggle_reshare(thread: str, note: str | None = None) -> dict:
 		if len(note) > MAX_RESHARE_NOTE:
 			frappe.throw(_("Keep your thoughts under {0} characters").format(MAX_RESHARE_NOTE))
 		doc.reshares[me.user] = frappe.get_doc(
-			{"doctype": "CrecheConnect Reshare", "thread": thread, "user": me.user, "place": me.place, "note": note}
+			{
+				"doctype": "CrecheConnect Reshare",
+				"thread": thread,
+				"user": me.user,
+				"place": me.place or next(iter(root_places())),
+				"note": note,
+			}
 		).insert(ignore_permissions=True)
 		doc.last_activity = now_datetime()
 		frappe.db.set_value("CrecheConnect Thread", thread, "last_activity", doc.last_activity, update_modified=False)

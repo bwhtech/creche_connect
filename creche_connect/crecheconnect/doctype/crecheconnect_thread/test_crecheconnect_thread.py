@@ -152,12 +152,14 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		name = self.post(self.lead, [self.state])
 		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
 
-	def test_national_member_cannot_reshare_to_the_whole_country(self):
+	def test_national_reshare_shows_to_everyone(self):
 		national = member("national", "Test lead", self.root, can_post=True)
 		name = self.post("Administrator", [self.root])
 		frappe.set_user(national)
-		self.assertFalse(api.get_thread(name)["canReshare"])
-		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
+		self.assertTrue(api.get_thread(name)["canReshare"])
+		api.toggle_reshare(name)
+		frappe.set_user(self.outsider)
+		self.assertEqual(api.get_thread(name)["resharedBy"], national)
 
 	def test_acknowledgement_is_recorded_once(self):
 		name = self.post(self.lead, [self.state], ack_required=True)
