@@ -32,12 +32,9 @@ function open(e: MouseEvent) {
     <div class="flex gap-3 p-4 md:gap-4 md:p-5">
       <Avatar :label="userById(thread.authorId).name" size="lg" class="mt-0.5 max-md:hidden" />
       <div class="min-w-0 flex-1">
-        <div v-if="thread.resharedBy" class="mb-3 border-b border-outline-gray-1 pb-3">
-          <p class="flex items-center gap-1.5 text-xs text-ink-gray-5">
-            <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared this
-          </p>
-          <p v-if="thread.reshareNote" class="mt-1.5 whitespace-pre-line text-p-sm text-ink-gray-8">{{ thread.reshareNote }}</p>
-        </div>
+        <p v-if="thread.resharedBy" class="mb-1.5 flex items-center gap-1.5 text-xs text-ink-gray-5">
+          <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared
+        </p>
         <div class="flex items-center gap-2 text-sm">
           <span class="shrink-0 text-ink-gray-8">{{ userById(thread.authorId).name }}</span>
           <span class="truncate text-ink-gray-5 max-md:hidden">{{ userById(thread.authorId).designation }}</span>

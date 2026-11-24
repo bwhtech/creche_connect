@@ -84,11 +84,12 @@ def matches(member, thread) -> bool:
 	)
 
 
+def visible_reshares(member, thread) -> list:
+	return [(u, r) for u, r in thread.reshares.items() if u == member.user or in_place(member.place, r.place)]
+
+
 def reshared_to(member, thread) -> str | None:
-	return next(
-		(u for u, r in reversed(thread.reshares.items()) if u != member.user and in_place(member.place, r.place)),
-		None,
-	)
+	return next((u for u, _r in reversed(visible_reshares(member, thread)) if u != member.user), None)
 
 
 def can_see(me, thread) -> bool:
@@ -274,8 +275,8 @@ def serialize(threads, me) -> list:
 			"authorId": t.owner,
 			"geo": {"places": t.places, "designations": t.designations},
 			"reshares": list(t.reshares),
-			"resharedBy": (by := reshared_to(me, t)),
-			"reshareNote": t.reshares[by].note if by else None,
+			"resharedBy": reshared_to(me, t),
+			"reshareNotes": [{"user": u, "note": r.note} for u, r in visible_reshares(me, t) if r.note],
 			"canReshare": can_reshare(me, t),
 			"tags": t.tags,
 			"policy": t.reply_policy,
