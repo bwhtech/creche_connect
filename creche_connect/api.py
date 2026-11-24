@@ -16,7 +16,6 @@ ThreadTag = DocType("CrecheConnect Thread Tag")
 Visit = DocType("CrecheConnect Thread Visit")
 Acknowledgement = DocType("CrecheConnect Acknowledgement")
 Reply = DocType("CrecheConnect Reply")
-Reshare = DocType("CrecheConnect Reshare")
 
 FeedFilter = Literal["unread", "ack", "mine", "mentions"]
 PAGE_SIZE = 30
@@ -85,11 +84,14 @@ def matches(member, thread) -> bool:
 
 
 def reshared_to(member, thread) -> str | None:
-	return next((user for user, place in thread.reshares.items() if in_place(member.place, place)), None)
+	return next(
+		(u for u, place in reversed(thread.reshares.items()) if u != member.user and in_place(member.place, place)),
+		None,
+	)
 
 
 def can_see(me, thread) -> bool:
-	return thread.owner == me.user or matches(me, thread) or bool(reshared_to(me, thread))
+	return thread.owner == me.user or matches(me, thread)
 
 
 def can_reshare(me, thread) -> bool:
@@ -269,9 +271,9 @@ def serialize(threads, me) -> list:
 			"title": t.title,
 			"body": t.content or "",
 			"authorId": t.owner,
-			"geo": {"places": t.places, "designations": t.designations, "reshared": list(set(t.reshares.values()))},
+			"geo": {"places": t.places, "designations": t.designations},
 			"reshares": list(t.reshares),
-			"resharedBy": None if t.owner == me.user or matches(me, t) else reshared_to(me, t),
+			"resharedBy": reshared_to(me, t),
 			"canReshare": can_reshare(me, t),
 			"tags": t.tags,
 			"policy": t.reply_policy,
@@ -374,10 +376,7 @@ def audience_users(places: list, designations: list) -> list[str]:
 
 
 def thread_audience(thread) -> set[str]:
-	audience = set(audience_users([p.place for p in thread.places], [d.designation for d in thread.designations]))
-	if reshared := frappe.get_all("CrecheConnect Reshare", filters={"thread": thread.name}, pluck="place"):
-		audience |= set(audience_users(reshared, []))
-	return audience
+	return set(audience_users([p.place for p in thread.places], [d.designation for d in thread.designations]))
 
 
 def notify_audience(thread: str, event: str = "crecheconnect_activity"):
@@ -474,10 +473,8 @@ def in_audience(me):
 	if me.designation:
 		designation_ok |= Thread.name.isin(designated.where(ThreadDesignation.designation == me.designation))
 	places = thread_ids(ThreadPlace)
-	mine = ancestors(me.place) or [""]
-	reshared = thread_ids(Reshare, "thread").where(Reshare.place.isin(mine))
-	return (Thread.name.isin(places.where(ThreadPlace.place.isin(mine))) & designation_ok) | Thread.name.isin(
-		reshared
+	return (
+		Thread.name.isin(places.where(ThreadPlace.place.isin(ancestors(me.place) or [""]))) & designation_ok
 	)
 
 

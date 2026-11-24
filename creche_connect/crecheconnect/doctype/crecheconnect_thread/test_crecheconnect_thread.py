@@ -117,24 +117,33 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		api.add_reply(leads_only, "<p>hi</p>")
 		self.assertRaises(frappe.PermissionError, api.add_reply, announcement, "<p>hi</p>")
 
-	def test_reshare_reaches_the_resharers_area_until_undone(self):
-		name = self.post(self.lead, [self.state], designations=["Test coordinator"])
-		self.assertNotIn(name, self.visible_to(self.volunteer))
+	def test_reshare_boosts_the_thread_in_the_resharers_area_only(self):
+		name = self.post(self.lead, [self.state])
+		before = frappe.db.get_value("CrecheConnect Thread", name, "last_activity")
 		frappe.set_user(self.coordinator)
 		self.assertTrue(api.get_thread(name)["canReshare"])
 		api.toggle_reshare(name)
+		self.assertGreater(frappe.db.get_value("CrecheConnect Thread", name, "last_activity"), before)
+		self.assertIsNone(api.get_thread(name)["resharedBy"])
 
-		self.assertIn(name, self.visible_to(self.volunteer))
-		thread = api.get_thread(name)
-		self.assertEqual(thread["resharedBy"], self.coordinator)
-		self.assertFalse(thread["canReshare"])
-		self.assertTrue(frappe.has_permission("CrecheConnect Thread", "read", name))
+		frappe.set_user(self.volunteer)
+		self.assertEqual(api.get_thread(name)["resharedBy"], self.coordinator)
 		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
-		self.assertNotIn(name, self.visible_to(self.outsider))
+		frappe.set_user(self.lead)
+		self.assertIsNone(api.get_thread(name)["resharedBy"])
 
 		frappe.set_user(self.coordinator)
 		api.toggle_reshare(name)
+		frappe.set_user(self.volunteer)
+		self.assertIsNone(api.get_thread(name)["resharedBy"])
+
+	def test_reshare_keeps_the_thread_audience(self):
+		name = self.post(self.lead, [self.state], designations=["Test coordinator"])
+		frappe.set_user(self.coordinator)
+		api.toggle_reshare(name)
 		self.assertNotIn(name, self.visible_to(self.volunteer))
+		frappe.set_user(self.volunteer)
+		self.assertRaises(frappe.PermissionError, api.get_thread, name)
 
 	def test_author_cannot_reshare_own_thread(self):
 		name = self.post(self.lead, [self.state])

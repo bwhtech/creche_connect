@@ -112,8 +112,7 @@ export const matchesGeo = (u, geo) =>
   !!geo?.places.length &&
   geo.places.some((p) => inPlace(u.place, p)) &&
   (!geo.designations.length || geo.designations.includes(u.designation))
-export const audienceOf = (geo, authorId?: string) =>
-  state.users.filter((u) => u.id === authorId || matchesGeo(u, geo) || geo.reshared?.some((p) => inPlace(u.place, p)))
+export const audienceOf = (geo, authorId?: string) => state.users.filter((u) => u.id === authorId || matchesGeo(u, geo))
 export const reachOf = (a) => audienceOf(a.geo).length
 const reachById = computed(() => Object.fromEntries(state.threads.map((t) => [t.id, reachOf(t)])))
 export const threadReach = (t) => reachById.value[t.id] ?? reachOf(t)
