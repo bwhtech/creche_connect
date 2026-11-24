@@ -76,6 +76,9 @@
 	.card-media video {
 		@apply bg-black object-contain;
 	}
+	.reply-preview .rich :is(img, video) {
+		@apply max-h-60 w-auto;
+	}
 	.mention {
 		@apply text-ink-blue-6;
 	}

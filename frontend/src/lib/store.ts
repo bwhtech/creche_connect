@@ -145,6 +145,7 @@ export async function shareThread(t) {
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
+const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 
 export async function loadBoot() {
   try {
@@ -221,7 +222,8 @@ export function listenForActivity() {
   })
 }
 
-export const fetchThread = latest((id: string) => get('creche_connect.api.get_thread', { name: id }))
+export const getThread = (id: string) => get('creche_connect.api.get_thread', { name: id })
+export const fetchThread = latest(getThread)
 export async function logout() {
   await disablePush().catch(() => {})
   await call('logout')
@@ -265,7 +267,7 @@ export async function createThread({ title, body, geo, tags, policy, ackRequired
 export async function addReply(t, body: string) {
   const reply: any = await post('creche_connect.api.add_reply', { thread: t.id, content: body })
   t.replies.push(reply)
-  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
+  for (const x of copies(t)) Object.assign(x, { replyCount: x.replyCount + 1, lastActivity: reply.at, unread: false })
 }
 
 export const isAuthor = (authorId: string) => authorId === state.me.id
@@ -274,7 +276,7 @@ export const canDelete = (authorId: string) => isAuthor(authorId) || state.me.ad
 export async function updateMessage(target, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', body: string, title?: string) {
   const res: any = await post('creche_connect.api.update_message', { doctype, name: target.id, content: body, title })
   Object.assign(target, { body: res.body, editedAt: res.editedAt })
-  if (doctype === 'CrecheConnect Thread') for (const x of [target, feedRow(target.id)]) if (x) Object.assign(x, res)
+  if (doctype === 'CrecheConnect Thread') for (const x of copies(target)) Object.assign(x, res)
 }
 
 export const fetchEditHistory = (doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply', name: string) =>
@@ -283,7 +285,7 @@ export const fetchEditHistory = (doctype: 'CrecheConnect Thread' | 'CrecheConnec
 export async function deleteReply(t, reply) {
   await post('creche_connect.api.delete_message', { doctype: 'CrecheConnect Reply', name: reply.id })
   t.replies = t.replies.filter((r) => r.id !== reply.id)
-  for (const x of [t, feedRow(t.id)]) if (x) x.replyCount -= 1
+  for (const x of copies(t)) x.replyCount -= 1
 }
 
 export async function deleteThread(t) {
@@ -294,12 +296,12 @@ export async function deleteThread(t) {
 export async function acknowledge(t) {
   await post('creche_connect.api.acknowledge', { thread: t.id })
   loadCounts()
-  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
+  for (const x of copies(t)) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
 
 export async function toggleReshare(t, note = '', geo?: { places: string[]; designations: string[] }) {
   const fresh: any = await post('creche_connect.api.toggle_reshare', { thread: t.id, note, ...geo })
-  for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, fresh)
+  for (const x of copies(t)) Object.assign(x, fresh)
 }
 
 export async function toggleReaction(target, emoji: string, doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply') {
@@ -333,7 +335,7 @@ function applyVote(poll, optionId: string) {
 }
 
 export async function vote(t, optionId: string) {
-  const targets = [t, feedRow(t.id)].filter((x) => x?.poll)
+  const targets = copies(t).filter((x) => x.poll)
   const before = targets.map((x) => JSON.parse(JSON.stringify(x.poll)))
   for (const x of targets) applyVote(x.poll, optionId)
   try {
@@ -346,7 +348,7 @@ export async function vote(t, optionId: string) {
 
 export async function closePoll(t) {
   const res: any = await post('creche_connect.api.close_poll', { thread: t.id })
-  for (const x of [t, feedRow(t.id)]) if (x?.poll) Object.assign(x.poll, { closed: true, closesAt: res.closesAt })
+  for (const x of copies(t)) if (x.poll) Object.assign(x.poll, { closed: true, closesAt: res.closesAt })
 }
 
 export const remindPoll = (t) => post('creche_connect.api.remind_poll', { thread: t.id })
