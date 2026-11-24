@@ -430,6 +430,7 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		CrecheConnectSearch().build_index()
 		frappe.set_user(self.volunteer)
 		self.assertEqual({r["thread"] for r in search("zebracrossing")["results"]}, {str(thread)})
+		self.assertEqual({r["thread"] for r in search("ze")["results"]}, {str(thread)})
 		elsewhere = frappe.db.get_value("CrecheConnect Member", self.outsider, "place")
 		self.assertEqual(len(search("zebracrossing", places=[self.district])["results"]), 1)
 		self.assertEqual(search("zebracrossing", places=[elsewhere])["results"], [])

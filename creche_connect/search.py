@@ -40,6 +40,9 @@ class CrecheConnectSearch(SQLiteSearch):
 		visible = query.select(Thread.name).run(pluck=True)
 		return {"thread": [str(name) for name in visible]}
 
+	def _prepare_fts_query(self, query):
+		return " ".join('"{}"*'.format(term.replace('"', '""')) for term in query.split())
+
 	def prepare_document(self, doc):
 		document = super().prepare_document(doc)
 		if document:
