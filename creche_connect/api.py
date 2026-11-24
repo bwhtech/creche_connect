@@ -20,6 +20,7 @@ Reshare = DocType("CrecheConnect Reshare")
 
 FeedFilter = Literal["unread", "ack", "mine", "mentions"]
 PAGE_SIZE = 30
+GROUP_MENTION = "designation:"
 MAX_PAGE_SIZE = 300
 REPLY_PAGE_SIZE = 50
 MAX_CONTENT_LENGTH = 50_000
@@ -525,9 +526,13 @@ def feed_query(me, filter: str | None = None, tag: str | None = None):
 		acked = thread_ids(Acknowledgement, "thread").where(Acknowledgement.user == me.user)
 		query = query.where((Thread.ack_required == 1) & (Thread.owner != me.user) & Thread.name.notin(acked))
 	elif filter == "mentions":
-		mention = f'%data-id="{me.user}"%'
-		replies = thread_ids(Reply, "thread").where(Reply.content.like(mention))
-		query = query.where(Thread.content.like(mention) | Thread.name.isin(replies))
+		me_tag, group_tag = f'%data-id="{me.user}"%', f'%data-id="{GROUP_MENTION}{me.designation}"%'
+
+		def mentioned(content):
+			return content.like(me_tag) | content.like(group_tag)
+
+		replies = thread_ids(Reply, "thread").where(mentioned(Reply.content))
+		query = query.where(mentioned(Thread.content) | Thread.name.isin(replies))
 	if tag:
 		tagged = thread_ids(ThreadTag).where(ThreadTag.tag == tag)
 		query = query.where(Thread.name.isin(tagged))

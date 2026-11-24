@@ -18,6 +18,10 @@ export const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) =>
   file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024
     ? Promise.reject(new Error(`Audio can be up to ${MAX_AUDIO_MB} MB`))
     : upload(file, { ...o, private: !file.type.startsWith('image/'), optimize: true })
+const mentionItems = (people: any[]) => [
+  ...DESIGNATIONS.value.filter((d) => people.some((u) => u.designation === d)).map((d) => ({ label: d, value: `designation:${d}`, group: 'Groups' })),
+  ...people.map((u) => ({ label: u.name, value: u.id, group: 'People' })),
+]
 export const editorKit = (people: () => any[]) => [
   RichTextKit.configure({
     textAlign: false,
@@ -25,7 +29,7 @@ export const editorKit = (people: () => any[]) => [
     contentPaste: { uploadFunction },
     video: { uploadFunction, HTMLAttributes: { preload: 'metadata' } },
     attachment: false,
-    mention: { items: () => people().filter((u) => u.id !== state.me?.id).map((u) => ({ label: u.name, value: u.id })) },
+    mention: { items: () => mentionItems(people().filter((u) => u.id !== state.me?.id)) },
   }),
   Audio,
 ]
