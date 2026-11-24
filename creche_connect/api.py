@@ -22,6 +22,7 @@ PAGE_SIZE = 30
 MAX_PAGE_SIZE = 300
 REPLY_PAGE_SIZE = 50
 MAX_CONTENT_LENGTH = 50_000
+MAX_RESHARE_NOTE = 500
 ADMIN_ROLES = {"System Manager", "CrecheConnect Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
 TAG_COLORS = ["blue", "green", "violet", "red"]
@@ -85,7 +86,7 @@ def matches(member, thread) -> bool:
 
 def reshared_to(member, thread) -> str | None:
 	return next(
-		(u for u, place in reversed(thread.reshares.items()) if u != member.user and in_place(member.place, place)),
+		(u for u, r in reversed(thread.reshares.items()) if u != member.user and in_place(member.place, r.place)),
 		None,
 	)
 
@@ -213,10 +214,10 @@ def load_threads(filters) -> list:
 	for r in frappe.get_all(
 		"CrecheConnect Reshare",
 		filters={"thread": ["in", names]},
-		fields=["thread", "user", "place"],
+		fields=["thread", "user", "place", "note"],
 		order_by="creation asc",
 	):
-		reshares.setdefault(r.thread, {})[r.user] = r.place
+		reshares.setdefault(r.thread, {})[r.user] = r
 	for t in threads:
 		t.reshares = reshares.get(t.name, {})
 		t.places = child["place"].get(t.name, [])
@@ -273,7 +274,8 @@ def serialize(threads, me) -> list:
 			"authorId": t.owner,
 			"geo": {"places": t.places, "designations": t.designations},
 			"reshares": list(t.reshares),
-			"resharedBy": reshared_to(me, t),
+			"resharedBy": (by := reshared_to(me, t)),
+			"reshareNote": t.reshares[by].note if by else None,
 			"canReshare": can_reshare(me, t),
 			"tags": t.tags,
 			"policy": t.reply_policy,
@@ -686,7 +688,7 @@ def acknowledge(thread: str):
 
 
 @frappe.whitelist(methods=["POST"])
-def toggle_reshare(thread: str) -> dict:
+def toggle_reshare(thread: str, note: str | None = None) -> dict:
 	me = get_me()
 	doc = get_visible_thread(thread, me)
 	if doc.reshares.pop(me.user, None):
@@ -694,10 +696,12 @@ def toggle_reshare(thread: str) -> dict:
 	elif not can_reshare(me, doc):
 		frappe.throw(_("You can't reshare this thread"), frappe.PermissionError)
 	else:
-		frappe.get_doc(
-			{"doctype": "CrecheConnect Reshare", "thread": thread, "user": me.user, "place": me.place}
+		note = (note or "").strip()
+		if len(note) > MAX_RESHARE_NOTE:
+			frappe.throw(_("Keep your thoughts under {0} characters").format(MAX_RESHARE_NOTE))
+		doc.reshares[me.user] = frappe.get_doc(
+			{"doctype": "CrecheConnect Reshare", "thread": thread, "user": me.user, "place": me.place, "note": note}
 		).insert(ignore_permissions=True)
-		doc.reshares[me.user] = me.place
 		doc.last_activity = now_datetime()
 		frappe.db.set_value("CrecheConnect Thread", thread, "last_activity", doc.last_activity, update_modified=False)
 		notify_audience(thread)

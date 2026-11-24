@@ -9,7 +9,8 @@
  "field_order": [
   "thread",
   "user",
-  "place"
+  "place",
+  "note"
  ],
  "fields": [
   {
@@ -37,6 +38,11 @@
    "options": "CrecheConnect Place",
    "reqd": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "note",
+   "fieldtype": "Small Text",
+   "label": "Note"
   }
  ],
  "grid_page_length": 50,

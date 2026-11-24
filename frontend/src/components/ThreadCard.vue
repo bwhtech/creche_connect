@@ -32,9 +32,12 @@ function open(e: MouseEvent) {
     <div class="flex gap-3 p-4 md:gap-4 md:p-5">
       <Avatar :label="userById(thread.authorId).name" size="lg" class="mt-0.5 max-md:hidden" />
       <div class="min-w-0 flex-1">
-        <p v-if="thread.resharedBy" class="mb-1.5 flex items-center gap-1.5 text-xs text-ink-gray-5">
-          <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared
-        </p>
+        <div v-if="thread.resharedBy" class="mb-3 border-b border-outline-gray-1 pb-3">
+          <p class="flex items-center gap-1.5 text-xs text-ink-gray-5">
+            <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared this
+          </p>
+          <p v-if="thread.reshareNote" class="mt-1.5 whitespace-pre-line text-p-sm text-ink-gray-8">{{ thread.reshareNote }}</p>
+        </div>
         <div class="flex items-center gap-2 text-sm">
           <span class="shrink-0 text-ink-gray-8">{{ userById(thread.authorId).name }}</span>
           <span class="truncate text-ink-gray-5 max-md:hidden">{{ userById(thread.authorId).designation }}</span>
@@ -76,7 +79,7 @@ function open(e: MouseEvent) {
       <ReshareButton :thread="thread" />
       <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
       <div class="ml-auto flex items-center gap-3 whitespace-nowrap text-xs text-ink-gray-5 md:gap-4">
-        <span v-if="thread.poll" class="flex items-center gap-1">
+        <span v-if="thread.poll" class="flex items-center gap-1 max-md:hidden">
           <span class="lucide-vote size-3.5" aria-hidden="true" />{{ thread.poll.voterCount }} voted
         </span>
         <span class="flex items-center gap-1">

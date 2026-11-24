@@ -297,8 +297,8 @@ export async function acknowledge(t) {
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, { needsAck: false, acks: [...x.acks, state.me.id] })
 }
 
-export async function toggleReshare(t) {
-  const fresh: any = await post('creche_connect.api.toggle_reshare', { thread: t.id })
+export async function toggleReshare(t, note = '') {
+  const fresh: any = await post('creche_connect.api.toggle_reshare', { thread: t.id, note })
   for (const x of [t, feedRow(t.id)]) if (x) Object.assign(x, fresh)
 }
 

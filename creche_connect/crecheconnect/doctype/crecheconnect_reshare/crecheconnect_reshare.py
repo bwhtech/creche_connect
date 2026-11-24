@@ -13,6 +13,7 @@ class CrecheConnectReshare(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		note: DF.SmallText | None
 		place: DF.Link
 		thread: DF.Link
 		user: DF.Link
