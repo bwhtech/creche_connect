@@ -73,6 +73,22 @@ class IntegrationTestCrecheConnectPush(IntegrationTestCase):
 		self.assertIn("mentioned you", sent[self.volunteer]["body"])
 		self.assertNotIn("mentioned you", sent[self.lead]["body"])
 
+	def test_followers_get_every_reply_and_muted_people_only_mentions(self):
+		thread = self.post(self.lead, [self.state])
+		frappe.set_user(self.volunteer)
+		api.set_notify(thread, "Follow")
+		frappe.set_user(self.outsider)
+		with self.assertRaises(frappe.PermissionError):
+			api.set_notify(thread, "Follow")
+		frappe.set_user(self.lead)
+		api.set_notify(thread, "Mute")
+		frappe.set_user(self.coordinator)
+		reply = api.add_reply(thread, "<p>Done</p>")["id"]
+		self.assertEqual(set(self.pushes(push.reply_created, reply)), {self.volunteer})
+		mention = f'<span class="mention" data-type="mention" data-id="{self.lead}" data-label="x">@x</span>'
+		reply = api.add_reply(thread, f"<p>{mention} please check</p>")["id"]
+		self.assertEqual(set(self.pushes(push.reply_created, reply)), {self.volunteer, self.lead})
+
 	def test_reshare_to_team_reaches_the_new_people(self):
 		thread = api.create_thread("Test thread", "<p>Hello</p>", [self.state], designations=["Test coordinator"])["name"]
 		frappe.set_user(self.coordinator)

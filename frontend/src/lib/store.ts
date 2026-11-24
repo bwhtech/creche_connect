@@ -378,6 +378,17 @@ export async function closePoll(t) {
   for (const x of copies(t)) if (x.poll) Object.assign(x.poll, { closed: true, closesAt: res.closesAt })
 }
 
+const NOTIFY_TOASTS = {
+  Follow: "You'll get a notification for every reply",
+  Mute: "You won't get notifications from this thread unless someone mentions you",
+  '': 'Notifications for this thread are back to normal',
+}
+export async function setNotify(t, notify: '' | 'Follow' | 'Mute') {
+  await post('creche_connect.api.set_notify', { name: t.id, notify })
+  for (const x of copies(t)) x.notify = notify
+  toast.success(NOTIFY_TOASTS[notify])
+}
+
 export const remindPoll = (t) => post('creche_connect.api.remind_poll', { thread: t.id })
 
 export const placeFrom = (s: string, district: string, block: string) => block || district || s || ''
