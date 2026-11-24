@@ -2,14 +2,14 @@
 import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useStorage, watchDebounced } from '@vueuse/core'
-import { Avatar, MultiSelect, PageHeader, TextInput } from 'frappe-ui'
+import { Avatar, MultiSelect, PageHeader, Select, TextInput } from 'frappe-ui'
 import { searchThreads, state, useMe, userById, when } from '../lib/store'
 
 const route = useRoute()
 const router = useRouter()
 const list = (v) => (v == null ? [] : [v].flat())
 const query = ref((route.query.q as string) ?? '')
-const filters = reactive({ tags: list(route.query.tag), authors: list(route.query.author), types: list(route.query.type) })
+const filters = reactive({ tags: list(route.query.tag), authors: list(route.query.author), places: list(route.query.place), days: (route.query.days as string) ?? '' })
 const found = ref<any>(null)
 const loading = ref(false)
 const recent = useStorage<string[]>(`crecheconnect:recent-searches:${useMe().value.id}`, [])
@@ -21,20 +21,24 @@ function remember() {
 
 const tagOptions = computed(() => state.tags.map((t) => ({ label: t.name, value: t.id })))
 const authorOptions = computed(() => state.users.map((u) => ({ label: u.name, value: u.id })))
-const typeOptions = [
-  { label: 'Thread', value: 'CrecheConnect Thread' },
-  { label: 'Reply', value: 'CrecheConnect Reply' },
+const placeOptions = computed(() => state.places.filter((p) => p.kind !== 'Country').map((p) => ({ label: `${p.name} · ${p.kind}`, value: p.id })))
+const dayOptions = [
+  { label: 'All time', value: '' },
+  { label: 'Past week', value: '7' },
+  { label: 'Past month', value: '30' },
+  { label: 'Past 3 months', value: '90' },
+  { label: 'Past year', value: '365' },
 ]
 
 watchDebounced(
   [query, filters],
   async () => {
     const q = query.value.trim()
-    router.replace({ query: { q: q || undefined, tag: filters.tags, author: filters.authors, type: filters.types } })
+    router.replace({ query: { q: q || undefined, tag: filters.tags, author: filters.authors, place: filters.places, days: filters.days || undefined } })
     if (q.length < 2) return (found.value = null)
     loading.value = true
     try {
-      found.value = (await searchThreads({ query: q, ...filters })) ?? found.value
+      found.value = (await searchThreads({ query: q, ...filters, days: Number(filters.days) || null })) ?? found.value
     } finally {
       loading.value = false
     }
@@ -55,9 +59,10 @@ watchDebounced(
           <template #prefix><span class="lucide-search size-4 text-ink-gray-5" aria-hidden="true" /></template>
         </TextInput>
         <div class="mt-3 flex flex-wrap gap-2">
-          <MultiSelect v-model="filters.tags" :options="tagOptions" variant="outline" placeholder="Topic" class="w-40" />
+          <MultiSelect v-model="filters.tags" :options="tagOptions" variant="outline" placeholder="Tag" class="w-40" />
           <MultiSelect v-model="filters.authors" :options="authorOptions" variant="outline" placeholder="Author" class="w-48" />
-          <MultiSelect v-model="filters.types" :options="typeOptions" variant="outline" placeholder="Type" class="w-36" />
+          <MultiSelect v-model="filters.places" :options="placeOptions" variant="outline" placeholder="Place" class="w-48" />
+          <Select v-model="filters.days" :options="dayOptions" variant="outline" class="w-40" />
         </div>
 
         <p class="mt-3 min-h-5 text-sm text-ink-gray-5">
