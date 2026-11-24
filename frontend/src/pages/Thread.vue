@@ -280,6 +280,13 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <div class="mt-10 space-y-6 border-t border-outline-gray-1 pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
               <div class="flex items-center gap-2"><Reactions :target="thread" doctype="CrecheConnect Thread" /><ReshareButton :thread="thread" /></div>
+              <div v-for="r in thread.reshareNotes" :key="r.user" class="flex gap-2.5">
+                <span class="lucide-repeat-2 mt-0.5 size-4 shrink-0 text-ink-gray-5" aria-hidden="true" />
+                <p class="text-p-sm text-ink-gray-8">
+                  <span class="font-medium text-ink-gray-9">{{ userById(r.user).name }}</span> reshared:
+                  <span class="whitespace-pre-line">{{ r.note }}</span>
+                </p>
+              </div>
             </div>
 
             <div class="mt-12 flex items-center gap-2 border-b border-outline-gray-1 pb-3">

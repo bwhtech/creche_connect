@@ -129,11 +129,15 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		frappe.set_user(self.volunteer)
 		thread = api.get_thread(name)
 		self.assertEqual(thread["resharedBy"], self.coordinator)
-		self.assertEqual(thread["reshareNote"], "Please read this before Monday")
+		self.assertEqual(
+			thread["reshareNotes"], [{"user": self.coordinator, "note": "Please read this before Monday"}]
+		)
 		self.assertIn("Test thread", thread["title"])
 		self.assertRaises(frappe.PermissionError, api.toggle_reshare, name)
 		frappe.set_user(self.lead)
-		self.assertIsNone(api.get_thread(name)["resharedBy"])
+		thread = api.get_thread(name)
+		self.assertIsNone(thread["resharedBy"])
+		self.assertEqual(thread["reshareNotes"], [])
 
 		frappe.set_user(self.coordinator)
 		api.toggle_reshare(name)
