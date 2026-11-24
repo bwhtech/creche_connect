@@ -73,6 +73,17 @@ class IntegrationTestCrecheConnectPush(IntegrationTestCase):
 		self.assertIn("mentioned you", sent[self.volunteer]["body"])
 		self.assertNotIn("mentioned you", sent[self.lead]["body"])
 
+	def test_group_mention_reaches_that_designation_in_the_audience(self):
+		thread = self.post(self.lead, [self.state])
+		frappe.set_user(self.coordinator)
+		group = '<span class="mention" data-type="mention" data-id="designation:Test volunteer" data-label="Test volunteer">@x</span>'
+		reply = api.add_reply(thread, f"<p>{group} please submit</p>")["id"]
+		sent = self.pushes(push.reply_created, reply)
+		self.assertEqual(set(sent), {self.lead, self.volunteer})
+		self.assertIn("mentioned you", sent[self.volunteer]["body"])
+		frappe.set_user(self.volunteer)
+		self.assertIn(thread, [t["id"] for t in api.get_threads(filter="mentions")["threads"]])
+
 	def test_followers_get_every_reply_and_muted_people_only_mentions(self):
 		thread = self.post(self.lead, [self.state])
 		frappe.set_user(self.volunteer)

@@ -11,7 +11,7 @@ from py_vapid import Vapid
 from py_vapid.utils import b64urlencode
 from pywebpush import WebPushException, webpush
 
-from creche_connect.api import doc_audience, load_threads, thread_audience
+from creche_connect.api import GROUP_MENTION, doc_audience, load_threads, thread_audience
 
 SUBSCRIPTION = "CrecheConnect Push Subscription"
 VAPID_KEY = (SUBSCRIPTION, "vapid", "private_key")
@@ -102,6 +102,13 @@ def with_setting(settings: dict, value: str) -> set:
 	return {u for u, n in settings.items() if n == value}
 
 
+def mentioned_users(ids: set, audience: set) -> set:
+	designations = [i.removeprefix(GROUP_MENTION) for i in ids if i.startswith(GROUP_MENTION)]
+	if designations:
+		ids |= set(frappe.get_all("CrecheConnect Member", {"designation": ["in", designations]}, pluck="user"))
+	return ids & audience
+
+
 def thread_created(name: str):
 	if not frappe.db.count(SUBSCRIPTION):
 		return
@@ -129,9 +136,10 @@ def reply_created(name: str):
 	author, text = get_fullname(reply.owner), preview(reply.content)
 	settings = notify_settings(thread.name)
 	followers = with_setting(settings, "Follow")
-	mentioned = set(extract_mentions(reply.content or ""))
-	audience = thread_audience(thread.name) | {thread.owner} if followers or mentioned else {thread.owner}
+	mention_ids = set(extract_mentions(reply.content or ""))
+	audience = thread_audience(thread.name) | {thread.owner} if followers or mention_ids else {thread.owner}
+	mentioned = mentioned_users(mention_ids, audience)
 	bodies = dict.fromkeys(({thread.owner} | followers) & audience - with_setting(settings, "Mute"), f"{author}: {text}")
-	bodies |= dict.fromkeys(mentioned & audience, _("{0} mentioned you: {1}").format(author, text))
+	bodies |= dict.fromkeys(mentioned, _("{0} mentioned you: {1}").format(author, text))
 	bodies.pop(reply.owner, None)
 	push(bodies, thread.title, f"/c/threads/{thread.name}?reply={name}")
