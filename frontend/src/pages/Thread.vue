@@ -36,6 +36,7 @@ import {
   audienceOf,
   closePoll,
   isMobile,
+  shareThread,
 } from '../lib/store'
 
 const props = defineProps<{ id: string }>()
@@ -160,6 +161,7 @@ const editing = ref<{ title: string; body: string } | null>(null)
 const saving = ref(false)
 const showHistory = ref(false)
 const threadMenu = computed(() => [
+  { label: 'Share', icon: 'lucide-share-2', onClick: () => shareThread(thread.value) },
   isAuthor(thread.value.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (editing.value = { title: thread.value.title, body: thread.value.body }) },
   thread.value.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
   thread.value.poll?.canManage && !thread.value.poll.closed && { label: 'Close poll', icon: 'lucide-lock', onClick: confirmClose },
