@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Avatar, Badge, BottomSheet, Breadcrumbs, Button, Dropdown, LoadingIndicator, PageHeader, PageHeaderBackButton, PageHeaderMobile, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
+import { Avatar, Badge, BottomSheet, Breadcrumbs, Button, Dropdown, PageHeader, PageHeaderBackButton, PageHeaderMobile, Skeleton, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
@@ -214,8 +214,33 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: thread?.title ?? 'Thread' }]" />
     </PageHeader>
 
-    <div v-if="loading" class="flex flex-1 items-center justify-center">
-      <LoadingIndicator class="size-5 text-ink-gray-6" />
+    <div v-if="loading" data-testid="thread-loading-skeleton" class="min-h-0 flex-1 overflow-y-auto">
+      <div class="mx-auto max-w-[770px] space-y-6 px-4 pt-5 pb-12 sm:px-6 md:pt-10">
+        <Skeleton class="h-5 w-36" />
+        <Skeleton class="h-9 w-3/4" />
+        <div class="flex items-center gap-2.5">
+          <Skeleton class="size-10 rounded-full" />
+          <div class="space-y-2">
+            <Skeleton class="h-3 w-28" />
+            <Skeleton class="h-3 w-44" />
+          </div>
+        </div>
+        <div class="space-y-3 pt-3">
+          <Skeleton class="h-4 w-full" />
+          <Skeleton class="h-4 w-full" />
+          <Skeleton class="h-4 w-3/4" />
+        </div>
+        <div class="space-y-3 border-t border-outline-gray-1 pt-6">
+          <Skeleton class="h-5 w-24" />
+          <div v-for="i in 3" :key="i" class="flex gap-3">
+            <Skeleton class="size-8 shrink-0 rounded-full" />
+            <div class="flex-1 space-y-2">
+              <Skeleton class="h-3 w-1/4" />
+              <Skeleton class="h-3 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <StatusPage v-else-if="!visible" v-bind="unavailable">
