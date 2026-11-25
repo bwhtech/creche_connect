@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Button, LoadingIndicator, PageHeader, TabButtons, Tooltip, toast, useCall } from 'frappe-ui'
+import { Button, PageHeader, Skeleton, TabButtons, Tooltip, toast, useCall } from 'frappe-ui'
 import { AreaChart, BarChart } from 'frappe-ui/charts'
 import { useMe, tagById, colorOf, errorText, placeById } from '../lib/store'
 import StatusPage from '../components/StatusPage.vue'
@@ -102,8 +102,34 @@ const maxDesignation = computed(() => Math.max(1, ...data.value.designations.map
       <Button label="Back to feed" route="/" class="mt-2" />
     </StatusPage>
 
-    <div v-else-if="!data" class="flex flex-1 items-center justify-center">
-      <LoadingIndicator class="size-5 text-ink-gray-6" />
+    <div v-else-if="!data" data-testid="insights-loading-skeleton" class="min-h-0 flex-1 overflow-y-auto">
+      <div class="mx-auto max-w-6xl space-y-6 px-3 pt-6 pb-20 sm:px-6">
+        <div class="grid grid-cols-2 divide-outline-gray-1 rounded-5 border border-outline-gray-1 sm:grid-cols-5 sm:divide-x">
+          <div v-for="i in 5" :key="i" class="space-y-2 px-5 py-4">
+            <Skeleton class="h-3 w-24" />
+            <Skeleton class="h-8 w-16" />
+            <Skeleton class="h-3 w-20" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          <div class="rounded-5 border border-outline-gray-1 p-5">
+            <Skeleton class="h-6 w-48" />
+            <Skeleton class="mt-2 h-4 w-72 max-w-full" />
+            <div class="mt-6 grid grid-cols-8 gap-1.5">
+              <Skeleton v-for="i in 32" :key="i" class="aspect-square rounded-4" />
+            </div>
+          </div>
+          <div class="rounded-5 border border-outline-gray-1 p-5">
+            <Skeleton class="h-6 w-40" />
+            <Skeleton v-for="i in 5" :key="i" class="mt-5 h-4 w-full" />
+          </div>
+        </div>
+        <div class="rounded-5 border border-outline-gray-1 p-5">
+          <Skeleton class="h-6 w-36" />
+          <Skeleton class="mt-2 h-4 w-72 max-w-full" />
+          <Skeleton class="mt-5 h-64 w-full" />
+        </div>
+      </div>
     </div>
 
     <div v-else class="min-h-0 flex-1 overflow-y-auto">

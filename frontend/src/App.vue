@@ -3,7 +3,7 @@ import { computed, onMounted, watch } from 'vue'
 import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { useTitle } from '@vueuse/core'
-import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, LoadingIndicator, useColorScheme, toast } from 'frappe-ui'
+import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, Skeleton, useColorScheme, toast } from 'frappe-ui'
 import StatusPage from './components/StatusPage.vue'
 import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile, errorText } from './lib/store'
 import { pushSupported, pushOn, checkPush, enablePush, disablePush } from './lib/push'
@@ -76,7 +76,27 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
         <span class="lucide-lock size-6 text-ink-gray-6" aria-hidden="true" />
         <p class="max-w-sm text-p-sm text-ink-gray-7">{{ state.error }}</p>
       </template>
-      <LoadingIndicator v-else class="size-5 text-ink-gray-6" />
+      <div v-else data-testid="app-loading-skeleton" class="flex h-full w-full">
+        <aside class="hidden w-56 shrink-0 border-r border-outline-gray-1 p-3 md:block">
+          <Skeleton class="h-8 w-36" />
+          <div class="mt-8 space-y-2">
+            <Skeleton v-for="i in 6" :key="i" class="h-8 w-full" />
+          </div>
+        </aside>
+        <main class="flex-1 p-4 sm:p-6">
+          <Skeleton class="h-8 w-32" />
+          <div class="mx-auto mt-8 max-w-[860px] space-y-4">
+            <div v-for="i in 4" :key="i" class="flex gap-4 rounded-5 border border-outline-gray-1 p-5">
+              <Skeleton class="size-8 rounded-full" />
+              <div class="flex-1 space-y-2.5">
+                <Skeleton class="h-3 w-1/3" />
+                <Skeleton class="h-4 w-2/3" />
+                <Skeleton class="h-3 w-full" />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
     <MobileShell v-else-if="isMobile">
       <StatusPage v-if="!online" v-bind="offline" />
