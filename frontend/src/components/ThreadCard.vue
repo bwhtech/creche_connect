@@ -10,6 +10,7 @@ import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
+import FileViewer from './FileViewer.vue'
 import { shareThread, userById, policyOf, when, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft, withPreviews } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
@@ -20,7 +21,12 @@ const body = ref<HTMLElement>()
 const clipped = ref(false)
 useResizeObserver(body, () => (clipped.value = body.value!.scrollHeight > body.value!.clientHeight + 1))
 
+const viewing = ref<{ url: string; name: string } | null>(null)
 function open(e: MouseEvent) {
+  if (e.target instanceof HTMLImageElement && body.value?.contains(e.target)) {
+    viewing.value = { url: e.target.src, name: e.target.alt || props.thread.title }
+    return
+  }
   const controls = 'a, button, input, audio, video, [role=button]'
   if (e.composedPath().some((el) => el instanceof Element && el.matches(controls)) || getSelection()?.toString()) return
   router.push(to.value)
@@ -140,5 +146,6 @@ function onKey(e: KeyboardEvent) {
         </div>
       </template>
     </div>
+    <FileViewer :file="viewing" @close="viewing = null" />
   </div>
 </template>
