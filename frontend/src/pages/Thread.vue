@@ -13,6 +13,7 @@ import EditHistory from '../components/EditHistory.vue'
 import Poll from '../components/Poll.vue'
 import ThreadInfo from '../components/ThreadInfo.vue'
 import StatusPage from '../components/StatusPage.vue'
+import FileViewer, { zoomedImage } from '../components/FileViewer.vue'
 import {
   useMe,
   fetchThread,
@@ -199,11 +200,14 @@ async function saveEdit() {
   }
 }
 
+const viewing = ref<{ url: string; name: string } | null>(null)
+const zoom = (e: MouseEvent) => (viewing.value ||= zoomedImage(e, thread.value?.title))
+
 const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId === thread.value.replies[i].authorId
 </script>
 
 <template>
-  <div class="flex h-full flex-col">
+  <div class="flex h-full flex-col" @click="zoom">
     <PageHeaderMobile v-if="isMobile" :title="thread?.title ?? 'Thread'">
       <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/' }" /></template>
       <template v-if="visible" #suffix>
@@ -293,7 +297,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
                 <Button variant="solid" theme="gray" label="Save" :disabled="!editing.title.trim() || isBlank(editing.body)" :loading="saving" @click="saveEdit" />
               </div>
             </div>
-            <div v-else class="rich mt-6 text-p-md md:mt-8 text-ink-gray-8" v-html="withPreviews(thread.body)" />
+            <div v-else class="rich zoomable mt-6 text-p-md md:mt-8 text-ink-gray-8" v-html="withPreviews(thread.body)" />
             <Poll v-if="thread.poll" :thread="thread" class="mt-6 md:mt-8" />
             <div class="mt-6 space-y-4 border-t border-outline-gray-1 pt-4 md:mt-10 md:space-y-6 md:pt-6">
               <TagChips v-if="thread.tags.length" :tags="thread.tags" />
@@ -366,5 +370,6 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
       <ThreadInfo :thread="thread" :reach="reach" class="pb-[env(safe-area-inset-bottom)]" />
     </BottomSheet>
     <EditHistory v-if="showHistory" v-model:open="showHistory" doctype="CrecheConnect Thread" :name="thread.id" />
+    <FileViewer :file="viewing" @close="viewing = null" />
   </div>
 </template>

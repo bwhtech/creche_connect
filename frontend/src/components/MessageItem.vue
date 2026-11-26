@@ -59,7 +59,7 @@ async function save() {
         </div>
       </div>
       <template v-else>
-        <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="body" />
+        <div class="rich zoomable mt-0.5 text-p-base text-ink-gray-8" v-html="body" />
         <Tooltip v-if="message.editedAt" :text="`Edited ${when(message.editedAt).format('DD MMM YYYY, h:mm A')}`">
           <span class="text-xs text-ink-gray-6">(edited)</span>
         </Tooltip>

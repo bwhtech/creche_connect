@@ -10,7 +10,7 @@ import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
-import FileViewer from './FileViewer.vue'
+import FileViewer, { zoomedImage } from './FileViewer.vue'
 import { shareThread, userById, policyOf, when, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft, withPreviews } from '../lib/store'
 
 const props = defineProps<{ thread: any }>()
@@ -23,10 +23,8 @@ useResizeObserver(body, () => (clipped.value = body.value!.scrollHeight > body.v
 
 const viewing = ref<{ url: string; name: string } | null>(null)
 function open(e: MouseEvent) {
-  if (e.target instanceof HTMLImageElement && body.value?.contains(e.target)) {
-    viewing.value = { url: e.target.src, name: e.target.alt || props.thread.title }
-    return
-  }
+  viewing.value = zoomedImage(e, props.thread.title)
+  if (viewing.value) return
   const controls = 'a, button, input, audio, video, [role=button]'
   if (e.composedPath().some((el) => el instanceof Element && el.matches(controls)) || getSelection()?.toString()) return
   router.push(to.value)
@@ -92,7 +90,7 @@ function onKey(e: KeyboardEvent) {
         </div>
         <div
           ref="body"
-          class="rich card-media mt-1.5 max-h-[44rem] text-p-sm text-ink-gray-7"
+          class="rich zoomable card-media mt-1.5 max-h-[44rem] text-p-sm text-ink-gray-7"
           :class="clipped && '[mask-image:linear-gradient(to_bottom,black_70%,transparent)]'"
           v-html="html"
         />

@@ -3,6 +3,12 @@ import { isMobile } from '../lib/store'
 
 const KINDS = { pdf: /\.pdf$/i, image: /\.(png|jpe?g|gif|webp)$/i, video: /\.(mp4|mov|webm|m4v)$/i, docx: /\.docx$/i }
 export const fileKind = (url: string) => (Object.keys(KINDS) as (keyof typeof KINDS)[]).find((k) => KINDS[k].test(url)) ?? 'other'
+export function zoomedImage(e: Event, name = '') {
+  const img = e.target
+  if (!(img instanceof HTMLImageElement) || !img.closest('.zoomable')) return null
+  if (new URL(img.src).origin !== location.origin || fileKind(img.src) !== 'image') return null
+  return { url: img.src, name: img.alt || name }
+}
 export const canView = (url: string) => !['other', isMobile.value && 'pdf'].includes(fileKind(url))
 </script>
 
