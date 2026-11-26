@@ -9,7 +9,8 @@ import AudienceChips from '../components/AudienceChips.vue'
 import MediaButtons from '../components/MediaButtons.vue'
 import StatusPage from '../components/StatusPage.vue'
 import dayjs from 'dayjs'
-import { state, editorKit, audienceOf, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
+import { editorKit } from '../lib/editor'
+import { state, audienceOf, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
 
 const me = useMe()
 const router = useRouter()

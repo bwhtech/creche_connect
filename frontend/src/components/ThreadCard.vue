@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue'
+import { computed, defineAsyncComponent, h, ref, shallowRef } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useResizeObserver } from '@vueuse/core'
-import { Avatar, Badge, Button, LoadingIndicator, toast } from 'frappe-ui'
+import { Avatar, Badge, Button, LoadingIndicator } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
-import MessageItem from './MessageItem.vue'
 import Poll from './Poll.vue'
-import { Editor, EditorContent } from 'frappe-ui/editor'
 import TagChips from './TagChips.vue'
 import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
 import FileViewer from './FileViewer.vue'
-import { shareThread, userById, policyOf, when, fetchLatestReplies, editorKit, audienceOf, confirmDelete, errorText, addReply, isBlank, state, replyDraft, clearDraft, withPreviews } from '../lib/store'
+import { shareThread, userById, policyOf, when, withPreviews, fetchLatestReplies } from '../lib/store'
+
+const ReplyPreview = defineAsyncComponent({
+  loader: () => import('./ReplyPreview.vue'),
+  loadingComponent: () => h(LoadingIndicator, { class: 'mx-auto my-4 size-5 text-ink-gray-6' }),
+})
 
 const props = defineProps<{ thread: any }>()
 const router = useRouter()
@@ -33,37 +36,10 @@ function open(e: MouseEvent) {
 }
 
 const expanded = ref(false)
-const latest = ref<any>(null)
-const kit = shallowRef<any[]>()
-async function toggle() {
+const replies = shallowRef<Promise<any>>()
+function toggle() {
   expanded.value = !expanded.value
-  if (!expanded.value) return
-  kit.value ??= editorKit(() => audienceOf(props.thread.geo, props.thread.authorId))
-  try {
-    const page: any = await fetchLatestReplies(props.thread.id, 3)
-    latest.value = { id: props.thread.id, replyCount: props.thread.replyCount, replies: page.replies }
-  } catch (e) {
-    expanded.value = false
-    toast.error(errorText(e, 'Could not load replies'))
-  }
-}
-const shown = computed(() => latest.value.replies.slice(-3))
-const draft = replyDraft(() => props.thread.id)
-const sending = ref(false)
-async function send() {
-  if (isBlank(draft.value) || sending.value) return
-  sending.value = true
-  try {
-    await addReply(latest.value, draft.value)
-    clearDraft(props.thread.id)
-  } catch (e) {
-    toast.error(errorText(e, 'Could not send your reply'))
-  } finally {
-    sending.value = false
-  }
-}
-function onKey(e: KeyboardEvent) {
-  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) send()
+  if (expanded.value) replies.value = fetchLatestReplies(props.thread.id, 3)
 }
 </script>
 
@@ -116,7 +92,7 @@ function onKey(e: KeyboardEvent) {
         size="sm"
         icon-left="lucide-message-square"
         :class="expanded && '!bg-surface-gray-3'"
-        :aria-label="expanded ? 'Hide replies' : 'Show replies'"
+        :aria-label="`${thread.replyCount} replies`"
         :aria-expanded="expanded"
         @click="toggle"
       >
@@ -125,27 +101,7 @@ function onKey(e: KeyboardEvent) {
       <ReshareButton :thread="thread" />
       <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
     </div>
-    <div v-if="expanded" class="cursor-auto bg-surface-gray-1 px-2 pt-1 pb-3 reply-preview md:pr-5 md:pl-[3.75rem]" @click.stop>
-      <LoadingIndicator v-if="!latest" class="mx-auto my-4 size-5 text-ink-gray-6" />
-      <template v-else>
-        <RouterLink v-if="thread.replyCount > shown.length" :to="to" class="mx-2 block py-1 text-sm font-medium text-ink-gray-6 hover:text-ink-gray-8">
-          View all {{ thread.replyCount }} replies
-        </RouterLink>
-        <MessageItem v-for="m in shown" :key="m.id" :message="m" :kit="kit" @delete="confirmDelete(latest, m)" />
-        <p v-if="!shown.length && !thread.canReply" class="px-2 py-2 text-sm text-ink-gray-6">No replies yet.</p>
-        <div v-if="thread.canReply" class="mt-2 flex items-end gap-3 px-2" @keydown="onKey">
-          <Avatar :label="state.me.name" :image="state.me.image" size="lg" class="mb-0.5 max-md:hidden" />
-          <div class="min-w-0 flex-1 rounded-4 border border-outline-gray-2 bg-surface-base">
-            <Editor v-model="draft" :extensions="kit" :placeholder="shown.length ? 'Write a reply…' : 'Be the first to reply…'">
-              <div class="flex items-end">
-                <EditorContent class="rich max-h-40 min-h-[2.25rem] flex-1 overflow-y-auto px-3 py-1.5 text-p-base text-ink-gray-8" />
-                <Button class="m-1" variant="ghost" icon="lucide-send-horizontal" aria-label="Send reply" :disabled="isBlank(draft)" :loading="sending" @click="send" />
-              </div>
-            </Editor>
-          </div>
-        </div>
-      </template>
-    </div>
+    <ReplyPreview v-if="expanded" :thread="thread" :replies="replies" @failed="expanded = false" />
     <FileViewer :file="viewing" @close="viewing = null" />
   </div>
 </template>

@@ -3,6 +3,7 @@ import { computed, ref, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Avatar, Badge, BottomSheet, Breadcrumbs, Button, Dropdown, PageHeader, PageHeaderBackButton, PageHeaderMobile, Skeleton, TextInput, Tooltip, dialog, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
+import { editorKit } from '../lib/editor'
 import AudienceChips from '../components/AudienceChips.vue'
 import MessageItem from '../components/MessageItem.vue'
 import MediaButtons from '../components/MediaButtons.vue'
@@ -30,7 +31,6 @@ import {
   canDelete,
   isAuthor,
   updateMessage,
-  editorKit,
   audienceOf,
   closePoll,
   isMobile,
