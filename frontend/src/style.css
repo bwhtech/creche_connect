@@ -81,7 +81,7 @@
 		@apply my-2 max-h-[32rem] w-full rounded-5 border border-outline-gray-1;
 	}
 	.card-media img {
-		@apply object-cover;
+		@apply cursor-zoom-in object-cover;
 	}
 	.card-media video {
 		@apply bg-black object-contain;
