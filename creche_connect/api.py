@@ -638,7 +638,8 @@ def get_replies(thread: str, before: int | None = None, limit: int = REPLY_PAGE_
 def set_avatar(image: str | None = None):
 	user = get_me().user
 	preset = re.fullmatch(r"/assets/creche_connect/avatars/\d+\.svg", image or "")
-	if image and not preset and not frappe.db.exists("File", {"file_url": image, "owner": user}):
+	upload = re.fullmatch(r"/files/[^/]+\.(png|jpe?g|gif|webp)", image or "", re.I)
+	if image and not preset and not (upload and frappe.db.exists("File", {"file_url": image, "owner": user})):
 		frappe.throw(_("Choose one of the avatars or upload a photo"))
 	frappe.db.set_value("User", user, "user_image", image)
 

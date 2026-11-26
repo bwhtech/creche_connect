@@ -664,5 +664,6 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		for image in ["/assets/creche_connect/avatars/3.svg", mine, None]:
 			api.set_avatar(image)
 			self.assertEqual(api.get_boot()["me"].image, image)
-		for image in [theirs, "https://example.com/x.png", "/assets/frappe/x.svg"]:
+		link = insert({"doctype": "File", "file_url": "https://example.com/me.png"}).file_url
+		for image in [theirs, link, "https://example.com/x.png", "/assets/frappe/x.svg"]:
 			self.assertRaises(frappe.ValidationError, api.set_avatar, image)
