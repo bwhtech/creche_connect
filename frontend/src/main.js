@@ -7,6 +7,9 @@ import './style.css'
 setConfig('systemTimezone', window.system_timezone ?? null)
 setConfig('maxFileSize', window.max_file_size ?? null)
 
+// iOS Safari only applies :active styles when a touchstart listener exists
+document.addEventListener('touchstart', () => {}, { passive: true })
+
 createApp({ render: () => h(FrappeUIProvider, () => h(App)) }).use(router).use(FrappeUI).mount('#app')
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register(`/crecheconnect-sw.js?build=${new URL(import.meta.url).pathname.split('/').pop()}`, { scope: '/c' })
