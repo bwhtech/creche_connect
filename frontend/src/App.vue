@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { useTitle } from '@vueuse/core'
@@ -42,6 +42,10 @@ const mainNav = computed(() => [
   ...(canStart(me.value) ? [{ label: 'My posts', icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
 const { resolvedColorScheme, toggleColorScheme } = useColorScheme()
+watchEffect(() => {
+  const color = resolvedColorScheme.value === 'dark' ? '#0f0f0f' : '#ffffff'
+  document.querySelectorAll('meta[name=theme-color]').forEach((m) => m.setAttribute('content', color))
+})
 const isIOS = /iPhone|iPad/.test(navigator.userAgent)
 async function togglePush() {
   if (!pushSupported) return toast.info('On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on.', { duration: 10000 })
