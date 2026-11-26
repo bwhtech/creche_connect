@@ -29,7 +29,7 @@ ADMIN_ROLES = {"System Manager", "CrecheConnect Admin"}
 EMOJIS = ["👍", "❤️", "🙏", "🎉", "👏", "😮"]
 TAG_COLORS = ["blue", "green", "violet", "red"]
 limit_posts = rate_limit(limit=30, seconds=60, ip_based=False, user_based=True)
-MEMBER_FIELDS = ["user", "full_name", "designation", "place", "can_post"]
+MEMBER_FIELDS = ["user", "full_name", "designation", "place", "can_post", "user.user_image as image"]
 THREAD_FIELDS = [
 	"name",
 	"title",
@@ -60,7 +60,14 @@ def get_me():
 			frappe.throw(
 				_("You are not a CrecheConnect member yet. Ask an admin to add you."), frappe.PermissionError
 			)
-		me = frappe._dict(user=user, full_name=get_fullname(user), designation=None, place=None, can_post=1)
+		me = frappe._dict(
+			user=user,
+			full_name=get_fullname(user),
+			designation=None,
+			place=None,
+			can_post=1,
+			image=frappe.db.get_value("User", user, "user_image"),
+		)
 	me.is_admin = admin
 	return me
 
@@ -625,6 +632,15 @@ def get_thread(name: str) -> dict:
 def get_replies(thread: str, before: int | None = None, limit: int = REPLY_PAGE_SIZE) -> dict:
 	get_visible_thread(thread, get_me())
 	return load_replies(thread, before, min(max(cint(limit), 1), REPLY_PAGE_SIZE))
+
+
+@frappe.whitelist(methods=["POST"])
+def set_avatar(image: str | None = None):
+	user = get_me().user
+	preset = re.fullmatch(r"/assets/creche_connect/avatars/\d+\.svg", image or "")
+	if image and not preset and not frappe.db.exists("File", {"file_url": image, "owner": user}):
+		frappe.throw(_("Choose one of the avatars or upload a photo"))
+	frappe.db.set_value("User", user, "user_image", image)
 
 
 @frappe.whitelist(methods=["POST"])

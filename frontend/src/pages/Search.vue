@@ -98,7 +98,7 @@ watchDebounced(
             class="flex gap-3 rounded-4 px-2 py-3 hover:bg-surface-gray-1 [&_mark]:bg-surface-blue-2 [&_mark]:text-ink-gray-9"
             @click="remember"
           >
-            <Avatar :label="userById(r.authorId).name" size="lg" class="mt-0.5" />
+            <Avatar :label="userById(r.authorId).name" :image="userById(r.authorId).image" size="lg" class="mt-0.5" />
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 text-sm text-ink-gray-6">
                 <span class="text-ink-gray-7">{{ userById(r.authorId).name }}</span>

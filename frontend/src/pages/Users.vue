@@ -121,7 +121,7 @@ async function save() {
             <ListRow>
               <ListCell>
                 <div class="flex min-w-0 items-center gap-3">
-                  <Avatar :label="item.name" size="lg" />
+                  <Avatar :label="item.name" :image="item.image" size="lg" />
                   <div class="min-w-0">
                     <div class="truncate text-base text-ink-gray-8">
                       {{ item.name }}

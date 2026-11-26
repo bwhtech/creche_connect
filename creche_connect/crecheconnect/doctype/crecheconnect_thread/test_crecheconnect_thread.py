@@ -655,3 +655,14 @@ class IntegrationTestCrecheConnectThread(IntegrationTestCase):
 		self.assertFalse(file.is_downloadable())
 		self.assertFalse(public.reload().is_downloadable())
 		self.assertEqual(frappe.get_list("CrecheConnect Resource"), [])
+
+	def test_avatar_is_a_preset_or_your_own_upload(self):
+		frappe.set_user(self.coordinator)
+		theirs = insert({"doctype": "File", "file_name": "them.png", "content": b"x"}).file_url
+		frappe.set_user(self.volunteer)
+		mine = insert({"doctype": "File", "file_name": "me.png", "content": b"me"}).file_url
+		for image in ["/assets/creche_connect/avatars/3.svg", mine, None]:
+			api.set_avatar(image)
+			self.assertEqual(api.get_boot()["me"].image, image)
+		for image in [theirs, "https://example.com/x.png", "/assets/frappe/x.svg"]:
+			self.assertRaises(frappe.ValidationError, api.set_avatar, image)

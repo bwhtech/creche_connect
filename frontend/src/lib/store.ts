@@ -106,6 +106,7 @@ const shapeUser = (m) => ({
   title: m.place && placeById(m.place) ? `${m.designation}, ${placeById(m.place).name}` : m.designation ?? '',
   admin: !!m.is_admin,
   canPost: !!m.can_post,
+  image: m.image ?? '',
 })
 const userMap = computed(() => Object.fromEntries(state.users.map((u) => [u.id, u])))
 export const userById = (id: string) => userMap.value[id] ?? { id, name: id, designation: '', place: '', title: '' }
@@ -393,6 +394,11 @@ export async function setNotify(t, notify: '' | 'Follow' | 'Mute') {
   await post('creche_connect.api.set_notify', { name: t.id, notify })
   for (const x of copies(t)) x.notify = notify
   toast.success(NOTIFY_TOASTS[notify])
+}
+
+export async function setAvatar(image: string | null) {
+  await post('creche_connect.api.set_avatar', { image })
+  state.me.image = userById(state.me.id).image = image ?? ''
 }
 
 export const remindPoll = (t) => post('creche_connect.api.remind_poll', { thread: t.id })
