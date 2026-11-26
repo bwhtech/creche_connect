@@ -44,7 +44,7 @@ function upload(file?: File) {
             v-for="(src, i) in PRESETS"
             :key="src"
             type="button"
-            class="overflow-hidden rounded-full ring-offset-2 ring-offset-[color:var(--surface-elevation-1)] hover:ring-2 hover:ring-outline-gray-3 disabled:opacity-50"
+            class="overflow-hidden rounded-full ring-offset-2 transition active:scale-95 ring-offset-[color:var(--surface-elevation-1)] hover:ring-2 hover:ring-outline-gray-3 disabled:opacity-50"
             :class="state.me.image === src && '!ring-2 !ring-outline-gray-5'"
             :disabled="busy"
             :aria-label="`Avatar ${i + 1}`"

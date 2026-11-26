@@ -194,7 +194,7 @@ async function post() {
                   v-for="t in tags"
                   :key="t.id"
                   type="button"
-                  class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-sm transition-colors"
+                  class="inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-sm transition active:scale-[0.97]"
                   :class="
                     picked.includes(t.id)
                       ? [colorOf(t.color).soft, 'border-transparent text-ink-gray-9']

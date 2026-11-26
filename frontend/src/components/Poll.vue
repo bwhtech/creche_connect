@@ -68,15 +68,15 @@ async function remind() {
         :disabled="poll.closed"
         :aria-pressed="o.mine"
         :title="o.label"
-        class="relative flex h-7 w-full items-center gap-2 overflow-hidden rounded-full px-2.5 text-left transition-colors [corner-shape:squircle]"
+        class="relative flex h-7 w-full items-center gap-2 overflow-hidden rounded-full px-2.5 text-left transition enabled:active:scale-[0.98] [corner-shape:squircle]"
         :class="o.mine ? 'bg-surface-violet-1' : 'bg-surface-gray-2 enabled:hover:bg-surface-gray-3'"
         @click="pick(o)"
       >
         <span
           v-if="showResults"
-          class="absolute inset-y-0 left-0 transition-[width] duration-300"
+          class="absolute inset-0 origin-left transition-transform duration-300 ease-out"
           :class="o.mine ? 'bg-surface-violet-4' : 'bg-surface-gray-4'"
-          :style="{ width: `${pct(o)}%` }"
+          :style="{ transform: `scaleX(${pct(o) / 100})` }"
         />
         <span v-if="!poll.closed || o.mine" class="relative size-3.5 shrink-0" :class="icon(o)" aria-hidden="true" />
         <span class="relative min-w-0 flex-1 truncate text-sm" :class="o.mine ? 'font-medium text-ink-gray-9' : 'text-ink-gray-7'">

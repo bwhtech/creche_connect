@@ -42,6 +42,7 @@ onKeyStroke('Escape', () => props.file && emit('close'))
 
 <template>
   <Teleport to="body">
+    <Transition enter-active-class="transition-opacity duration-200 ease-out" leave-active-class="transition-opacity duration-150 ease-out" enter-from-class="opacity-0" leave-to-class="opacity-0">
     <div v-if="file" class="fixed inset-0 z-50 flex flex-col bg-surface-gray-2" role="dialog" aria-modal="true" :aria-label="file.name">
       <div class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 bg-surface-base px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
         <Button variant="ghost" icon="lucide-x" aria-label="Close" @click="emit('close')" />
@@ -60,6 +61,7 @@ onKeyStroke('Escape', () => props.file && emit('close'))
         <p v-else class="m-auto p-6 text-center text-p-base text-ink-gray-6">This file can't be shown here. Use Download.</p>
       </div>
     </div>
+    </Transition>
   </Teleport>
 </template>
 

@@ -17,7 +17,7 @@ const people = computed(() =>
 )
 watch(open, () => (tab.value = 'all'))
 const pillClass = (mine: boolean) => [
-  'inline-flex h-6 items-center gap-1 rounded-full border px-2 text-xs tabular-nums transition-colors',
+  'inline-flex h-6 items-center gap-1 rounded-full border px-2 text-xs tabular-nums transition active:scale-[0.97]',
   mine ? 'border-outline-blue-2 bg-surface-blue-2 text-ink-blue-7' : 'border-outline-gray-1 bg-surface-gray-1 text-ink-gray-7 hover:bg-surface-gray-2',
 ]
 
@@ -64,7 +64,7 @@ function pick(emoji: string) {
             v-for="e in state.emojis"
             :key="e"
             type="button"
-            class="flex size-8 items-center justify-center rounded-4 text-lg transition-transform hover:scale-110 hover:bg-surface-gray-2"
+            class="flex size-8 items-center justify-center rounded-4 text-lg transition hover:scale-110 hover:bg-surface-gray-2 active:scale-95"
             :aria-label="`React with ${e}`"
             @click="pick(e)"
           >
