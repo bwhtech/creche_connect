@@ -69,7 +69,7 @@ function onKey(e: KeyboardEvent) {
 
 <template>
   <div
-    class="cursor-pointer overflow-hidden rounded-5 border border-outline-gray-1 bg-surface-base transition-shadow hover:border-outline-gray-2 hover:shadow-sm"
+    class="cursor-pointer overflow-hidden rounded-5 border border-outline-gray-1 bg-surface-base transition-[box-shadow,border-color] hover:border-outline-gray-2 hover:shadow-sm"
     @click="open"
   >
     <div class="flex gap-3 p-4 md:gap-4 md:p-5">

@@ -19,7 +19,7 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
   <div class="-mx-3 flex items-center gap-2 overflow-x-auto px-3 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0">
     <button
       type="button"
-      class="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors"
+      class="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm transition active:scale-[0.97]"
       :class="!active ? 'border-transparent bg-surface-gray-3 text-ink-gray-9' : 'border-outline-gray-2 text-ink-gray-7 hover:bg-surface-gray-1'"
       @click="setTag(undefined)"
     >
@@ -30,7 +30,7 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
       v-for="t in options"
       :key="t.id"
       type="button"
-      class="inline-flex h-8 shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm transition-colors"
+      class="inline-flex h-8 shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm transition active:scale-[0.97]"
       :class="active === t.id ? [colorOf(t.color).soft, 'border-transparent text-ink-gray-9'] : 'border-outline-gray-2 text-ink-gray-7 hover:bg-surface-gray-1'"
       :aria-pressed="active === t.id"
       @click="setTag(t.id)"
