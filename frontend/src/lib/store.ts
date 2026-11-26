@@ -2,7 +2,7 @@ import { reactive, computed, type Ref } from 'vue'
 import { call, frappeRequest, dayjsLocal, upload, toast, dialog } from 'frappe-ui'
 import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core'
-import { disablePush } from './push'
+import { disablePush, enablePush, pushOn, pushSupported } from './push'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -443,4 +443,14 @@ export async function deleteResource(r) {
 export async function setPinned(r, pinned: boolean) {
   r.pinned = pinned
   await post('frappe.client.set_value', { doctype: 'CrecheConnect Resource', name: r.id, fieldname: 'pinned', value: pinned ? 1 : 0 })
+}
+
+export async function togglePush() {
+  if (!pushSupported) return toast.info('On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on.', { duration: 10000 })
+  try {
+    await (pushOn.value ? disablePush() : enablePush())
+    toast.success(pushOn.value ? 'Notifications are on for this device' : 'Notifications are off for this device')
+  } catch (e) {
+    toast.error(errorText(e, e?.message || 'Could not change notifications'))
+  }
 }

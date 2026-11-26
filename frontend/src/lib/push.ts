@@ -3,6 +3,7 @@ import { call, frappeRequest } from 'frappe-ui'
 
 export const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 export const pushOn = ref(false)
+export const pushOffered = pushSupported || /iPhone|iPad/.test(navigator.userAgent)
 
 const registration = () => navigator.serviceWorker.getRegistration('/c')
 const subscription = async () => (await registration())?.pushManager.getSubscription()
