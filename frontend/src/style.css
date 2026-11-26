@@ -18,6 +18,11 @@
 	[role='button'] {
 		touch-action: manipulation;
 	}
+	button,
+	[role='button'] {
+		user-select: none;
+		-webkit-user-select: none;
+	}
 	@media (pointer: coarse) {
 		input,
 		textarea,
