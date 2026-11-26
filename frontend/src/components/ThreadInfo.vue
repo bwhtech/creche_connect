@@ -46,7 +46,7 @@ const seenPct = computed(() => (props.reach ? Math.min(100, Math.round((props.th
       <div class="mt-2.5 flex items-center gap-2">
         <div class="flex -space-x-1.5">
           <Tooltip v-for="uid in thread.acks.slice(0, 6)" :key="uid" :text="userById(uid).name">
-            <Avatar :label="userById(uid).name" size="sm" class="ring-2 ring-[color:var(--surface-base)]" />
+            <Avatar :label="userById(uid).name" :image="userById(uid).image" size="sm" class="ring-2 ring-[color:var(--surface-base)]" />
           </Tooltip>
         </div>
         <span class="text-sm text-ink-gray-7 tabular-nums">{{ thread.acks.length }} of {{ reach }}</span>

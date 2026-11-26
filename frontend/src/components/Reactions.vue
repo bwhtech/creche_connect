@@ -103,7 +103,7 @@ function pick(emoji: string) {
         <ul class="max-h-[50dvh] divide-y divide-outline-gray-1 overflow-y-auto overscroll-contain px-4 pb-8">
           <li v-for="p in people" :key="p.uid" class="flex items-center gap-3 py-3">
             <span class="relative shrink-0">
-              <Avatar :label="userById(p.uid).name" size="2xl" />
+              <Avatar :label="userById(p.uid).name" :image="userById(p.uid).image" size="2xl" />
               <span class="absolute -right-1 -bottom-1 flex size-5 items-center justify-center rounded-full bg-surface-white text-sm leading-none">{{ p.emoji }}</span>
             </span>
             <span class="min-w-0">

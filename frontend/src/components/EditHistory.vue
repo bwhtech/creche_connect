@@ -76,7 +76,7 @@ fetchEditHistory(props.doctype, props.name)
         </div>
         <div v-if="shown" ref="preview" class="min-w-0 md:max-h-[60vh] md:overflow-y-auto">
           <div class="mb-3 flex items-center gap-2">
-            <Avatar :label="userById(shown.by).name" size="md" />
+            <Avatar :label="userById(shown.by).name" :image="userById(shown.by).image" size="md" />
             <div>
               <div class="text-sm font-medium text-ink-gray-8">{{ userById(shown.by).name }}</div>
               <div class="text-xs text-ink-gray-6">{{ label(current) }} · {{ when(shown.at).format('DD MMM YYYY, h:mm A') }}</div>

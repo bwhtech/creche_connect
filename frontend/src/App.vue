@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useOnline } from '@vueuse/core'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { useTitle } from '@vueuse/core'
 import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, Skeleton, useColorScheme, toast } from 'frappe-ui'
 import StatusPage from './components/StatusPage.vue'
+import AvatarPicker from './components/AvatarPicker.vue'
 import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile, errorText } from './lib/store'
 import { pushSupported, pushOn, checkPush, enablePush, disablePush } from './lib/push'
 
@@ -51,7 +52,9 @@ async function togglePush() {
     toast.error(errorText(e, e?.message || 'Could not change notifications'))
   }
 }
+const pickingAvatar = ref(false)
 const userMenu = computed(() => [
+  { label: me.value.image ? 'Change photo' : 'Add photo', icon: 'lucide-circle-user-round', onClick: () => (pickingAvatar.value = true) },
   ...(pushSupported || isIOS ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
   resolvedColorScheme.value === 'dark'
     ? { label: 'Light mode', icon: 'lucide-sun', onClick: toggleColorScheme }
@@ -116,7 +119,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
           <MobileNavItem label="Resources" icon="lucide-library" route="/resources" :active="route.path === '/resources'" />
           <Dropdown :options="mobileMenu" side="top" align="end">
             <MobileNavItem label="You" :active="['/users', '/insights'].includes(route.path)">
-              <Avatar :label="me.name" size="md" />
+              <Avatar :label="me.name" :image="me.image" size="md" />
             </MobileNavItem>
           </Dropdown>
         </MobileNav>
@@ -166,7 +169,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
           </ScrollArea>
           <Dropdown :options="userMenu" side="top" align="start">
             <button type="button" class="flex w-full items-center gap-2 border-t border-outline-gray-1 p-3 text-left hover:bg-surface-gray-2">
-              <Avatar :label="me.name" size="md" />
+              <Avatar :label="me.name" :image="me.image" size="md" />
               <div class="min-w-0 flex-1">
                 <div class="truncate text-sm text-ink-gray-8">{{ me.name }}</div>
                 <div class="truncate text-xs text-ink-gray-6">{{ [me.admin && 'Admin', me.title].filter(Boolean).join(' · ') }}</div>
@@ -179,5 +182,6 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
       <StatusPage v-if="!online" v-bind="offline" />
       <RouterView v-show="online" />
     </DesktopShell>
+    <AvatarPicker v-if="state.ready" v-model:open="pickingAvatar" />
   </div>
 </template>

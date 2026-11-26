@@ -34,7 +34,7 @@ async function save() {
 <template>
   <div class="group flex gap-3 rounded-4 px-2" :class="compact ? 'py-1' : 'pt-3 pb-1'">
     <div class="w-8 shrink-0">
-      <Avatar v-if="!compact" :label="author.name" size="lg" />
+      <Avatar v-if="!compact" :label="author.name" :image="author.image" size="lg" />
       <span v-else class="invisible block pt-0.5 text-2xs text-ink-gray-5 tabular-nums group-hover:visible">
         {{ when(message.at).format('h:mm') }}
       </span>

@@ -88,7 +88,7 @@ async function remind() {
           </span>
           <Tooltip v-if="o.voters.length" :text="names(o.voters).join(', ')">
             <span class="relative -mr-1.5 flex shrink-0 items-center -space-x-1 max-sm:hidden">
-              <Avatar v-for="id in o.voters.slice(0, 4)" :key="id" :label="userById(id).name" size="xs" class="ring-2 ring-[color:var(--surface-base)]" />
+              <Avatar v-for="id in o.voters.slice(0, 4)" :key="id" :label="userById(id).name" :image="userById(id).image" size="xs" class="ring-2 ring-[color:var(--surface-base)]" />
             </span>
           </Tooltip>
         </template>

@@ -73,7 +73,7 @@ function onKey(e: KeyboardEvent) {
     @click="open"
   >
     <div class="flex gap-3 p-4 md:gap-4 md:p-5">
-      <Avatar :label="userById(thread.authorId).name" size="lg" class="mt-0.5 max-md:hidden" />
+      <Avatar :label="userById(thread.authorId).name" :image="userById(thread.authorId).image" size="lg" class="mt-0.5 max-md:hidden" />
       <div class="min-w-0 flex-1">
         <p v-if="thread.resharedBy" class="mb-1.5 flex items-center gap-1.5 text-xs text-ink-gray-6">
           <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared
@@ -134,7 +134,7 @@ function onKey(e: KeyboardEvent) {
         <MessageItem v-for="m in shown" :key="m.id" :message="m" :kit="kit" @delete="confirmDelete(latest, m)" />
         <p v-if="!shown.length && !thread.canReply" class="px-2 py-2 text-sm text-ink-gray-6">No replies yet.</p>
         <div v-if="thread.canReply" class="mt-2 flex items-end gap-3 px-2" @keydown="onKey">
-          <Avatar :label="state.me.name" size="lg" class="mb-0.5 max-md:hidden" />
+          <Avatar :label="state.me.name" :image="state.me.image" size="lg" class="mb-0.5 max-md:hidden" />
           <div class="min-w-0 flex-1 rounded-4 border border-outline-gray-2 bg-surface-base">
             <Editor v-model="draft" :extensions="kit" :placeholder="shown.length ? 'Write a reply…' : 'Be the first to reply…'">
               <div class="flex items-end">

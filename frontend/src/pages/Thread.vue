@@ -255,7 +255,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
             <TextInput v-if="editing" v-model="editing.title" class="mt-4" size="lg" aria-label="Topic" />
             <h1 v-else class="mt-4 text-2xl font-semibold text-ink-gray-9 md:text-3xl">{{ thread.title }}</h1>
             <div class="mt-4 flex items-center gap-2.5">
-              <Avatar :label="author.name" size="md" />
+              <Avatar :label="author.name" :image="author.image" size="md" />
               <span class="shrink-0 text-sm text-ink-gray-8">{{ author.name }}</span>
               <span class="truncate text-sm text-ink-gray-6">{{ author.title }}</span>
               <span class="shrink-0 text-sm text-ink-gray-6">· {{ when(thread.createdAt).fromNow() }}</span>
