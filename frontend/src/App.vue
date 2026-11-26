@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useOnline } from '@vueuse/core'
-import { RouterView, useRoute, useRouter } from 'vue-router'
+import { RouterView, useRoute } from 'vue-router'
 import { useTitle } from '@vueuse/core'
-import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, Skeleton, useColorScheme, toast } from 'frappe-ui'
+import { DesktopShell, MobileShell, MobileNav, MobileNavItem, Badge, Sidebar, SidebarHeader, SidebarItem, ScrollArea, Button, Avatar, Dropdown, Skeleton, useColorScheme } from 'frappe-ui'
 import StatusPage from './components/StatusPage.vue'
 import AvatarPicker from './components/AvatarPicker.vue'
-import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile, errorText } from './lib/store'
-import { pushSupported, pushOn, checkPush, enablePush, disablePush } from './lib/push'
+import { state, loadBoot, loadCounts, listenForActivity, useMe, canStart, RESOURCE_KINDS, logout, isMobile, togglePush } from './lib/store'
+import { pushOffered, pushOn, checkPush } from './lib/push'
 
 const me = useMe()
 onMounted(() => {
@@ -21,7 +21,6 @@ const offline = { icon: 'lucide-wifi-off', title: "You're offline", text: "Check
 watch(online, (on) => on && !state.ready && loadBoot())
 const reload = () => window.location.reload()
 const route = useRoute()
-const router = useRouter()
 
 const isActive = (to: string) => {
   const [path, qs] = to.split('?')
@@ -46,29 +45,14 @@ watchEffect(() => {
   const color = resolvedColorScheme.value === 'dark' ? '#0f0f0f' : '#ffffff'
   document.querySelectorAll('meta[name=theme-color]').forEach((m) => m.setAttribute('content', color))
 })
-const isIOS = /iPhone|iPad/.test(navigator.userAgent)
-async function togglePush() {
-  if (!pushSupported) return toast.info('On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on.', { duration: 10000 })
-  try {
-    await (pushOn.value ? disablePush() : enablePush())
-    toast.success(pushOn.value ? 'Notifications are on for this device' : 'Notifications are off for this device')
-  } catch (e) {
-    toast.error(errorText(e, e?.message || 'Could not change notifications'))
-  }
-}
 const pickingAvatar = ref(false)
 const userMenu = computed(() => [
   { label: me.value.image ? 'Change photo' : 'Add photo', icon: 'lucide-circle-user-round', onClick: () => (pickingAvatar.value = true) },
-  ...(pushSupported || isIOS ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
+  ...(pushOffered ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
   resolvedColorScheme.value === 'dark'
     ? { label: 'Light mode', icon: 'lucide-sun', onClick: toggleColorScheme }
     : { label: 'Dark mode', icon: 'lucide-moon', onClick: toggleColorScheme },
   { label: 'Log out', icon: 'lucide-log-out', onClick: logout },
-])
-const mobileMenu = computed(() => [
-  ...(me.value.admin ? [{ label: 'Insights', icon: 'lucide-chart-column', onClick: () => router.push('/insights') }] : []),
-  { label: 'Users', icon: 'lucide-users', onClick: () => router.push('/users') },
-  ...userMenu.value,
 ])
 const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
 </script>
@@ -121,11 +105,9 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
           <MobileNavItem label="Search" icon="lucide-search" route="/search" :active="route.path === '/search'" />
           <MobileNavItem v-if="canStart(me)" label="New" icon="lucide-square-pen" route="/new" />
           <MobileNavItem label="Resources" icon="lucide-library" route="/resources" :active="route.path === '/resources'" />
-          <Dropdown :options="mobileMenu" side="top" align="end">
-            <MobileNavItem label="You" :active="['/users', '/insights'].includes(route.path)">
-              <Avatar :label="me.name" :image="me.image" size="md" />
-            </MobileNavItem>
-          </Dropdown>
+          <MobileNavItem label="You" route="/you" :active="['/you', '/users', '/insights'].includes(route.path)">
+            <Avatar :label="me.name" :image="me.image" size="md" />
+          </MobileNavItem>
         </MobileNav>
       </template>
     </MobileShell>

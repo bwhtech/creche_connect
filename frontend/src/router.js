@@ -9,6 +9,7 @@ const router = createRouter({
 		{ path: '/threads/:id', component: () => import('./pages/Thread.vue'), props: true },
 		{ path: '/users', component: () => import('./pages/Users.vue') },
 		{ path: '/resources', component: () => import('./pages/Resources.vue') },
+		{ path: '/you', component: () => import('./pages/You.vue') },
 		{ path: '/insights', component: () => import('./pages/Insights.vue') },
 		{ path: '/:path(.*)*', component: () => import('./pages/NotFound.vue') },
 	],
