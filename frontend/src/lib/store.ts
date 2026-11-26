@@ -2,8 +2,6 @@ import { reactive, computed, type Ref } from 'vue'
 import { call, frappeRequest, dayjsLocal, upload, toast, dialog } from 'frappe-ui'
 import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core'
-import { RichTextKit } from 'frappe-ui/editor'
-import { Audio } from './audio'
 import { disablePush } from './push'
 
 const COLORS = {
@@ -18,21 +16,6 @@ export const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) =>
   file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024
     ? Promise.reject(new Error(`Audio can be up to ${MAX_AUDIO_MB} MB`))
     : upload(file, { ...o, private: !file.type.startsWith('image/'), optimize: true })
-const mentionItems = (people: any[]) => [
-  ...DESIGNATIONS.value.filter((d) => people.some((u) => u.designation === d)).map((d) => ({ label: d, value: `designation:${d}`, group: 'Groups' })),
-  ...people.map((u) => ({ label: u.name, value: u.id, group: 'People' })),
-]
-export const editorKit = (people: () => any[]) => [
-  RichTextKit.configure({
-    textAlign: false,
-    image: { uploadFunction },
-    contentPaste: { uploadFunction },
-    video: { uploadFunction, HTMLAttributes: { preload: 'metadata' } },
-    attachment: false,
-    mention: { items: () => mentionItems(people().filter((u) => u.id !== state.me?.id)) },
-  }),
-  Audio,
-]
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 const PLACE_COLORS = { Country: 'gray', State: 'green', District: 'blue', Block: 'violet' }
 export const when = (s: string) => dayjsLocal(s)
