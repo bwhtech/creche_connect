@@ -54,7 +54,7 @@ async function togglePush() {
 }
 const pickingAvatar = ref(false)
 const userMenu = computed(() => [
-  { label: 'Change photo', icon: 'lucide-circle-user-round', onClick: () => (pickingAvatar.value = true) },
+  { label: me.value.image ? 'Change photo' : 'Add photo', icon: 'lucide-circle-user-round', onClick: () => (pickingAvatar.value = true) },
   ...(pushSupported || isIOS ? [{ label: pushOn.value ? 'Turn off notifications' : 'Turn on notifications', icon: pushOn.value ? 'lucide-bell-off' : 'lucide-bell', onClick: togglePush }] : []),
   resolvedColorScheme.value === 'dark'
     ? { label: 'Light mode', icon: 'lucide-sun', onClick: toggleColorScheme }
