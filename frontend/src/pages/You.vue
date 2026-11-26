@@ -37,7 +37,7 @@ const groups = computed(() => [
         <Button variant="ghost" size="lg" class="mt-2" :label="me.image ? 'Change photo' : 'Add photo'" @click="picking = true" />
       </div>
 
-      <nav v-for="(items, i) in groups" :key="i" class="mt-6 overflow-hidden rounded-xl bg-surface-base">
+      <nav v-for="(items, i) in groups" :key="i" class="mt-6 overflow-hidden rounded-7 bg-surface-base">
         <button v-for="(item, j) in items" :key="item.label" type="button" class="block w-full text-left active:bg-surface-gray-2" @click="item.onClick">
           <span class="flex min-h-14 w-full items-stretch">
             <span class="flex w-14 shrink-0 items-center justify-center">
