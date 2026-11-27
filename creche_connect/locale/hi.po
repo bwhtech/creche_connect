@@ -1901,3 +1901,11 @@ msgstr "{0} वोट"
 msgid "{0} won with {1}"
 msgstr "{0} {1} से जीता"
 
+
+#: frontend/src/components/FeedSidebar.vue
+msgid "All posts"
+msgstr "सभी पोस्ट"
+
+#: frontend/src/components/FeedSidebar.vue
+msgid "See all"
+msgstr "सभी देखें"

@@ -1899,3 +1899,11 @@ msgstr ""
 msgid "{0} won with {1}"
 msgstr ""
 
+
+#: frontend/src/components/FeedSidebar.vue
+msgid "All posts"
+msgstr ""
+
+#: frontend/src/components/FeedSidebar.vue
+msgid "See all"
+msgstr ""

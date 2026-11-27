@@ -5,6 +5,7 @@ import { Button, PageHeader, TabButtons } from 'frappe-ui'
 import FeedList from '../components/FeedList.vue'
 import TagFilter from '../components/TagFilter.vue'
 import { __ } from '../lib/translate'
+import FeedSidebar from '../components/FeedSidebar.vue'
 import { state, useMe, canStart, tagById, loadThreads, loadCounts, isMobile } from '../lib/store'
 
 const me = useMe()
@@ -57,15 +58,18 @@ const title = computed(
       <Button v-if="canStart(me)" class="ml-auto max-md:hidden" variant="solid" theme="gray" icon-left="lucide-plus" :label="__('New thread')" route="/new" />
     </PageHeader>
 
-    <div class="min-h-0 flex-1 overflow-y-auto">
-      <div class="mx-auto max-w-[860px] px-3 pt-4 pb-20 sm:px-6 md:pt-8">
-        <TabButtons v-if="isMobile" class="mb-3 w-full overflow-x-auto [scrollbar-width:none] [&>*]:flex-1" :model-value="filter ?? ''" :options="filters" @update:model-value="setFilter" />
-        <TagFilter v-if="!isMobile || !filter || tag" />
-        <div class="mt-4 md:mt-8">
-          <FeedList :rows="state.threads" :loading="loading" />
-          <Button v-if="state.cursor" class="mt-4 w-full" :label="__('Load more')" :loading="loadingMore" @click="more" />
+    <div class="flex min-h-0 flex-1">
+      <div class="min-w-0 flex-1 overflow-y-auto">
+        <div class="mx-auto max-w-[860px] px-3 pt-4 pb-20 sm:px-6 md:pt-8 lg:max-w-[680px]">
+          <TabButtons v-if="isMobile" class="mb-3 w-full overflow-x-auto [scrollbar-width:none] [&>*]:flex-1" :model-value="filter ?? ''" :options="filters" @update:model-value="setFilter" />
+          <TagFilter v-if="!isMobile || !filter || tag" class="lg:hidden" />
+          <div class="mt-4 md:mt-8 lg:mt-0">
+            <FeedList :rows="state.threads" :loading="loading" />
+            <Button v-if="state.cursor" class="mt-4 w-full" :label="__('Load more')" :loading="loadingMore" @click="more" />
+          </div>
         </div>
       </div>
+      <FeedSidebar v-if="!isMobile" class="hidden lg:block" />
     </div>
   </div>
 </template>
