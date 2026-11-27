@@ -83,10 +83,10 @@
 	}
 	.card-media img,
 	.card-media video {
-		@apply my-2 max-h-[32rem] w-full rounded-5 border border-outline-gray-1 sm:max-h-[24rem] sm:w-auto sm:max-w-full;
+		@apply my-2 max-h-[32rem] w-full rounded-5 border border-outline-gray-1 sm:max-h-[24rem];
 	}
 	.card-media img {
-		@apply cursor-zoom-in object-cover;
+		@apply cursor-zoom-in object-cover sm:bg-surface-gray-1 sm:object-contain;
 	}
 	.card-media video {
 		@apply bg-black object-contain;
