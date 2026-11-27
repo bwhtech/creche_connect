@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 from typing import Literal
 
 import frappe
@@ -460,6 +461,7 @@ def get_boot() -> dict:
 		"tags": frappe.get_all("CrecheConnect Tag", fields=["name", "color"], order_by="creation asc"),
 		"resources": [r for r in load_resources() if me.is_admin or can_see_resource(me, r)],
 		"emojis": EMOJIS,
+		"languages": get_languages(),
 	}
 
 
@@ -899,6 +901,24 @@ def delete_message(doctype: Literal["CrecheConnect Thread", "CrecheConnect Reply
 	if frappe.db.get_value(doctype, name, "owner") != frappe.session.user and not get_me().is_admin:
 		frappe.throw(_("Only the author or an admin can delete this message"), frappe.PermissionError)
 	frappe.delete_doc(doctype, name, ignore_permissions=True)
+
+
+def get_languages() -> list:
+	shipped = {po.stem for po in Path(frappe.get_app_path("creche_connect", "locale")).glob("*.po")}
+	added = frappe.get_all("Translation", pluck="language", distinct=True)
+	return frappe.get_all(
+		"Language",
+		filters={"name": ["in", ["en", *shipped, *added]]},
+		fields=["name", "language_name"],
+		order_by="name asc",
+	)
+
+
+@frappe.whitelist(methods=["POST"])
+def set_language(language: str):
+	if language not in {lang.name for lang in get_languages()}:
+		frappe.throw(_("This language is not available"))
+	frappe.db.set_value("User", frappe.session.user, "language", language)
 
 
 @frappe.whitelist(methods=["POST"])

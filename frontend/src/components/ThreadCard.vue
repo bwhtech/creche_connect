@@ -52,19 +52,19 @@ function toggle() {
       <Avatar :label="userById(thread.authorId).name" :image="userById(thread.authorId).image" size="lg" class="mt-0.5 max-md:hidden" />
       <div class="min-w-0 flex-1">
         <p v-if="thread.resharedBy" class="mb-1.5 flex items-center gap-1.5 text-xs text-ink-gray-6">
-          <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ userById(thread.resharedBy).name }} reshared
+          <span class="lucide-repeat-2 size-3.5" aria-hidden="true" />{{ __('{0} reshared', userById(thread.resharedBy).name) }}
         </p>
         <div class="flex items-center gap-2 text-sm">
           <span class="shrink-0 text-ink-gray-8">{{ userById(thread.authorId).name }}</span>
-          <span class="truncate text-ink-gray-6">{{ userById(thread.authorId).designation }}</span>
+          <span class="truncate text-ink-gray-6">{{ __(userById(thread.authorId).designation) }}</span>
           <span class="ml-auto shrink-0 text-xs text-ink-gray-6">{{ when(thread.lastActivity).fromNow() }}</span>
         </div>
 
         <div class="mt-2 flex items-center gap-2">
           <RouterLink :to="to" class="text-lg max-md:line-clamp-2 md:truncate" :class="thread.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'">
-            {{ thread.title }}
+            {{ __(thread.title) }}
           </RouterLink>
-          <span v-if="thread.unread" class="size-2 shrink-0 rounded-full bg-surface-blue-7" aria-label="Unread" />
+          <span v-if="thread.unread" class="size-2 shrink-0 rounded-full bg-surface-blue-7" :aria-label="__('Unread')" />
         </div>
         <div
           ref="body"
@@ -72,7 +72,7 @@ function toggle() {
           :class="clipped && '[mask-image:linear-gradient(to_bottom,black_70%,transparent)]'"
           v-html="html"
         />
-        <span v-if="clipped" class="text-sm text-ink-blue-link">Show more</span>
+        <span v-if="clipped" class="text-sm text-ink-blue-link">{{ __('Show more') }}</span>
         <Poll v-if="thread.poll" :thread="thread" class="mt-3 cursor-auto" @click.stop />
 
         <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -80,7 +80,7 @@ function toggle() {
           <Badge v-if="thread.policy !== 'everyone'" :label="policyOf(thread.policy).short" :theme="policyOf(thread.policy).theme" variant="outline" size="sm">
             <template #prefix><span :class="policyOf(thread.policy).icon" class="size-3" aria-hidden="true" /></template>
           </Badge>
-          <Badge v-if="thread.needsAck" label="Needs your acknowledgment" theme="blue" variant="solid" size="sm" />
+          <Badge v-if="thread.needsAck" :label="__('Needs your acknowledgment')" theme="blue" variant="solid" size="sm" />
           <TagChips v-if="thread.tags.length" :tags="thread.tags" />
         </div>
       </div>
@@ -92,14 +92,14 @@ function toggle() {
         size="sm"
         icon-left="lucide-message-square"
         :class="expanded && '!bg-surface-gray-3'"
-        :aria-label="`${thread.replyCount} replies`"
+        :aria-label="__('{0} replies', thread.replyCount)"
         :aria-expanded="expanded"
         @click="toggle"
       >
         {{ thread.replyCount }}
       </Button>
       <ReshareButton :thread="thread" />
-      <Button variant="ghost" size="sm" icon="lucide-share-2" aria-label="Share" @click="shareThread(thread)" />
+      <Button variant="ghost" size="sm" icon="lucide-share-2" :aria-label="__('Share')" @click="shareThread(thread)" />
     </div>
     <ReplyPreview v-if="expanded" :thread="thread" :replies="replies" @failed="expanded = false" />
     <FileViewer :file="viewing" @close="viewing = null" />

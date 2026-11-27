@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Button, Checkbox, TextInput } from 'frappe-ui'
+import { __ } from '../lib/translate'
 import { state, useMe, allowedPlaces, inPlace, rootPlace, peopleByPlace, DESIGNATIONS, NATIONAL_DESIGNATIONS, toggleIn, colorOf, placeById } from '../lib/store'
 
 const draft = defineModel<{ places: string[]; designations: string[] }>({ required: true })
@@ -28,11 +29,12 @@ const childCounts = computed(() => {
 })
 const peopleLabel = (id: string) => {
   const n = peopleByPlace.value[id] ?? 0
-  return `${n} ${n === 1 ? 'person' : 'people'}`
+  return n === 1 ? __('{0} person', n) : __('{0} people', n)
 }
 const childLabel = (p) => {
   const n = childCounts.value[p.id]
-  return `${n} ${p.kind === 'State' ? 'district' : 'block'}${n === 1 ? '' : 's'}`
+  if (p.kind === 'State') return n === 1 ? __('{0} district', n) : __('{0} districts', n)
+  return n === 1 ? __('{0} block', n) : __('{0} blocks', n)
 }
 const indent = (kind: string) => (query.value ? 'pl-4' : ({ Country: 'pl-4', State: 'pl-4', District: 'pl-10', Block: 'pl-16' })[kind])
 const iconFor = (kind: string) => ({ Country: 'lucide-globe', State: 'lucide-map' })[kind] ?? 'lucide-map-pin'
@@ -61,8 +63,8 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
   <div class="space-y-8">
     <div>
       <div class="flex items-baseline gap-2">
-        <span class="text-base-semibold text-ink-gray-8">1. Where</span>
-        <span class="text-sm text-ink-gray-6">State, district or block</span>
+        <span class="text-base-semibold text-ink-gray-8">{{ __('1. Where') }}</span>
+        <span class="text-sm text-ink-gray-6">{{ __('State, district or block') }}</span>
       </div>
 
       <div v-if="draft.places.length" class="mt-3 flex flex-wrap gap-1.5">
@@ -73,14 +75,14 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
           variant="subtle"
           icon-left="lucide-map-pin"
           icon-right="lucide-x"
-          :label="`${placeById(id).name} · ${placeById(id).kind}`"
+          :label="`${placeById(id).name} · ${__(placeById(id).kind)}`"
           @click="togglePlace(id)"
         />
       </div>
 
       <div class="mt-3 rounded-5 border border-outline-gray-1">
         <div class="border-b border-outline-gray-1 p-2">
-          <TextInput v-model="query" placeholder="Search places…" aria-label="Search places">
+          <TextInput v-model="query" :placeholder="__('Search places…')" :aria-label="__('Search places')">
             <template #prefix><span class="lucide-search size-4 text-ink-gray-6" aria-hidden="true" /></template>
           </TextInput>
         </div>
@@ -90,14 +92,14 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
             <span class="lucide-globe size-3.5" aria-hidden="true" />
           </span>
           <div class="min-w-0">
-            <div class="truncate text-sm-semibold text-ink-gray-9">{{ isCountry ? root.name : `All of ${root.name}` }}</div>
-            <div class="truncate text-xs text-ink-gray-6">Every {{ isCountry ? 'state, district and block' : 'place below it' }}</div>
+            <div class="truncate text-sm-semibold text-ink-gray-9">{{ isCountry ? root.name : __('All of {0}', root.name) }}</div>
+            <div class="truncate text-xs text-ink-gray-6">{{ isCountry ? __('Every state, district and block') : __('Every place below it') }}</div>
           </div>
           <span class="ml-auto text-xs text-ink-gray-6 tabular-nums">{{ peopleLabel(root.id) }}</span>
         </label>
         <div class="divide-y divide-outline-gray-1 md:max-h-72 md:overflow-y-auto" :class="allPlaces && 'pointer-events-none opacity-50'">
           <div v-for="p in results" :key="p.id" class="flex items-center gap-3 py-2 pr-4 hover:bg-surface-gray-1" :class="indent(p.kind)">
-            <Checkbox :model-value="covered(p.id) || draft.places.includes(p.id)" :disabled="covered(p.id)" :aria-label="`Send to ${p.name}`" @update:model-value="togglePlace(p.id)" />
+            <Checkbox :model-value="covered(p.id) || draft.places.includes(p.id)" :disabled="covered(p.id)" :aria-label="__('Send to {0}', p.name)" @update:model-value="togglePlace(p.id)" />
             <button
               type="button"
               class="flex min-w-0 flex-1 items-center gap-3 py-0.5 text-left"
@@ -109,7 +111,7 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
               </span>
               <span class="min-w-0">
                 <span class="block truncate text-sm text-ink-gray-8">{{ p.name }}</span>
-                <span class="block truncate text-xs text-ink-gray-6">{{ p.kind }}{{ p.parent ? ` · ${p.parent}` : '' }}</span>
+                <span class="block truncate text-xs text-ink-gray-6">{{ __(p.kind) }}{{ p.parent ? ` · ${p.parent}` : '' }}</span>
               </span>
               <span class="ml-auto shrink-0 text-xs text-ink-gray-6 tabular-nums">{{ peopleLabel(p.id) }}</span>
               <span class="flex w-28 shrink-0 items-center justify-end gap-1 text-xs text-ink-gray-6">
@@ -120,20 +122,20 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
               </span>
             </button>
           </div>
-          <p v-if="!results.length" class="px-4 py-6 text-center text-sm text-ink-gray-6">No place matches “{{ query }}”</p>
+          <p v-if="!results.length" class="px-4 py-6 text-center text-sm text-ink-gray-6">{{ __('No place matches “{0}”', query) }}</p>
         </div>
       </div>
     </div>
 
     <div>
       <div class="flex items-baseline gap-2">
-        <span class="text-base-semibold text-ink-gray-8">2. Designations</span>
-        <span class="text-sm text-ink-gray-6">Optional. Leave empty to reach everyone there.</span>
+        <span class="text-base-semibold text-ink-gray-8">{{ __('2. Designations') }}</span>
+        <span class="text-sm text-ink-gray-6">{{ __('Optional. Leave empty to reach everyone there.') }}</span>
       </div>
       <div class="mt-3 grid gap-x-6 gap-y-1 rounded-5 border border-outline-gray-1 p-3 sm:grid-cols-2" :class="!draft.places.length && 'opacity-50'">
         <label class="mb-1 flex cursor-pointer items-center gap-3 rounded-4 bg-surface-gray-1 px-2 py-2 hover:bg-surface-gray-2 sm:col-span-2">
           <Checkbox :model-value="allDesignations" :disabled="!draft.places.length" @update:model-value="toggleAllDesignations" />
-          <span class="truncate text-sm-semibold text-ink-gray-9">All designations</span>
+          <span class="truncate text-sm-semibold text-ink-gray-9">{{ __('All designations') }}</span>
           <span class="ml-auto text-xs text-ink-gray-6 tabular-nums">{{ draft.places.length ? inSelected.length : '—' }}</span>
         </label>
         <label v-for="d in designations" :key="d" class="flex cursor-pointer items-center gap-3 rounded-4 px-2 py-2 hover:bg-surface-gray-1">
@@ -142,7 +144,7 @@ const toggleAllDesignations = () => (draft.value.designations = allDesignations.
             :disabled="!draft.places.length"
             @update:model-value="draft.designations = toggleIn(draft.designations, d)"
           />
-          <span class="truncate text-sm text-ink-gray-8">{{ d }}</span>
+          <span class="truncate text-sm text-ink-gray-8">{{ __(d) }}</span>
           <span class="ml-auto text-xs text-ink-gray-6 tabular-nums">{{ draft.places.length ? designationCounts[d] ?? 0 : '—' }}</span>
         </label>
       </div>

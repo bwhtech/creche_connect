@@ -6,6 +6,7 @@ import { Badge, Button, Dialog, FormControl, PageHeader, PageHeaderBackButton, P
 import FileViewer, { canView, fileKind } from '../components/FileViewer.vue'
 import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
+import { __ } from '../lib/translate'
 import { state, useMe, addResource, updateResource, deleteResource, setPinned, errorText, RESOURCE_KINDS, colorOf, isMobile } from '../lib/store'
 
 const me = useMe()
@@ -17,13 +18,13 @@ const pick = (r) => (isMobile.value && r ? router.push : router.replace)({ query
 const isFile = (url: string) => url.startsWith('/private/files/')
 const isVideo = (url: string) => fileKind(url) === 'video'
 const fileName = (url: string) => decodeURIComponent(url.split('/').pop())
-const fileLabel = (f) => f.label || (isFile(f.url) ? fileName(f.url) : f.url.replace(/^https?:\/\//, ''))
+const fileLabel = (f) => (f.label ? __(f.label) : null) || (isFile(f.url) ? fileName(f.url) : f.url.replace(/^https?:\/\//, ''))
 const fileIcon = (f) => (!isFile(f.url) ? 'lucide-link' : isVideo(f.url) ? 'lucide-file-video' : 'lucide-file-text')
 const kindOf = (r) => ({ ...RESOURCE_KINDS[r.kind], ...colorOf(RESOURCE_KINDS[r.kind].color) })
 const viewing = ref(null)
 const viewable = (f) => isFile(f.url) && canView(f.url)
 const view = (f) => (viewing.value = { url: f.url, name: fileLabel(f) })
-const filesCount = (r) => `${r.files.length} ${r.files.length === 1 ? 'file' : 'files'}`
+const filesCount = (r) => (r.files.length === 1 ? __('{0} file', r.files.length) : __('{0} files', r.files.length))
 
 const showNew = ref(false)
 const editing = ref(null)
@@ -123,15 +124,15 @@ function togglePin(r, pinned: boolean) {
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeaderMobile v-if="isMobile && selected" :title="selected.title">
+    <PageHeaderMobile v-if="isMobile && selected" :title="__(selected.title)">
       <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/resources' }" /></template>
       <template v-if="me.admin" #suffix>
-        <Button icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
+        <Button icon="lucide-pencil" :aria-label="__('Edit resource')" variant="ghost" @click="openEdit(selected)" />
       </template>
     </PageHeaderMobile>
     <PageHeader v-else>
-      <h1 class="text-2xl text-ink-gray-9">Program resources</h1>
-      <Button v-if="me.admin" class="ml-auto" variant="solid" theme="gray" icon-left="lucide-plus" :label="isMobile ? 'Add' : 'Add resource'" @click="openNew" />
+      <h1 class="text-2xl text-ink-gray-9">{{ __('Program resources') }}</h1>
+      <Button v-if="me.admin" class="ml-auto" variant="solid" theme="gray" icon-left="lucide-plus" :label="isMobile ? __('Add') : __('Add resource')" @click="openNew" />
     </PageHeader>
 
     <div class="flex min-h-0 flex-1">
@@ -147,11 +148,11 @@ function togglePin(r, pinned: boolean) {
             <span :class="kindOf(r).icon" class="size-4" aria-hidden="true" />
           </span>
           <div class="min-w-0 flex-1">
-            <div class="truncate text-base text-ink-gray-8">{{ r.title }}</div>
+            <div class="truncate text-base text-ink-gray-8">{{ __(r.title) }}</div>
             <div class="truncate text-xs text-ink-gray-6">{{ filesCount(r) }}</div>
           </div>
         </button>
-        <p v-if="!state.resources.length" class="px-2 py-10 text-center text-p-sm text-ink-gray-6">No resources yet.</p>
+        <p v-if="!state.resources.length" class="px-2 py-10 text-center text-p-sm text-ink-gray-6">{{ __('No resources yet.') }}</p>
       </aside>
 
       <div v-if="selected" class="min-w-0 flex-1 overflow-y-auto">
@@ -162,15 +163,15 @@ function togglePin(r, pinned: boolean) {
             </span>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
-                <h2 class="text-xl text-ink-gray-9">{{ selected.title }}</h2>
+                <h2 class="text-xl text-ink-gray-9">{{ __(selected.title) }}</h2>
                 <Badge class="max-md:hidden" :label="kindOf(selected).label" :theme="kindOf(selected).color" variant="subtle" size="sm" />
               </div>
-              <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-6">{{ selected.description }}</p>
+              <p v-if="selected.description" class="mt-1 text-p-sm text-ink-gray-6">{{ __(selected.description) }}</p>
               <AudienceChips v-if="me.admin && selected.places.length" :geo="selected" class="mt-2" />
             </div>
             <template v-if="me.admin && !isMobile">
-              <Switch :model-value="selected.pinned" label="Pinned" @update:model-value="togglePin(selected, $event)" />
-              <Button icon="lucide-pencil" aria-label="Edit resource" variant="ghost" @click="openEdit(selected)" />
+              <Switch :model-value="selected.pinned" :label="__('Pinned')" @update:model-value="togglePin(selected, $event)" />
+              <Button icon="lucide-pencil" :aria-label="__('Edit resource')" variant="ghost" @click="openEdit(selected)" />
             </template>
           </div>
           <div class="mt-6 text-sm text-ink-gray-6">{{ filesCount(selected) }}</div>

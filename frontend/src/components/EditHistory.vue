@@ -4,6 +4,7 @@ import { usePointerSwipe } from '@vueuse/core'
 import { Avatar, BottomSheet, Dialog, LoadingIndicator } from 'frappe-ui'
 import HtmlDiff from 'htmldiff-js'
 import DOMPurify from 'dompurify'
+import { __ } from '../lib/translate'
 import { errorText, fetchEditHistory, isMobile, userById, when } from '../lib/store'
 
 const props = defineProps<{ doctype: 'CrecheConnect Thread' | 'CrecheConnect Reply'; name: string }>()
@@ -11,7 +12,7 @@ const open = defineModel<boolean>('open', { default: false })
 const versions = ref<any[] | null>(null)
 const error = ref('')
 const current = ref(0)
-const label = (i: number) => (i === 0 ? 'Current' : i === versions.value!.length - 1 ? 'Original' : `Edit ${versions.value!.length - 1 - i}`)
+const label = (i: number) => (i === 0 ? __('Current') : i === versions.value!.length - 1 ? __('Original') : __('Edit {0}', versions.value!.length - 1 - i))
 
 const execute = (HtmlDiff as any).default?.execute || HtmlDiff.execute
 const makeDiff = (before: string, after: string) => DOMPurify.sanitize(execute(before, after))
@@ -39,11 +40,11 @@ const { distanceX } = usePointerSwipe(preview, {
 
 fetchEditHistory(props.doctype, props.name)
   .then((v) => (versions.value = v))
-  .catch((e) => (error.value = errorText(e, 'Could not load the edit history')))
+  .catch((e) => (error.value = errorText(e, __('Could not load the edit history'))))
 </script>
 
 <template>
-  <component :is="isMobile ? BottomSheet : Dialog" v-model:open="open" title="Edit history" :size="isMobile ? undefined : '4xl'">
+  <component :is="isMobile ? BottomSheet : Dialog" v-model:open="open" :title="__('Edit history')" :size="isMobile ? undefined : '4xl'">
     <div :class="isMobile && 'px-4 pb-6'">
       <LoadingIndicator v-if="!versions && !error" class="mx-auto my-6 size-5 text-ink-gray-6" />
       <p v-else-if="error" class="text-p-sm text-ink-red-4">{{ error }}</p>

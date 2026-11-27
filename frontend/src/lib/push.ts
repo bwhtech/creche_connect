@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { call, frappeRequest } from 'frappe-ui'
+import { __ } from './translate'
 
 export const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 export const pushOn = ref(false)
@@ -14,7 +15,7 @@ export async function checkPush() {
 }
 
 export async function enablePush() {
-  if ((await Notification.requestPermission()) !== 'granted') throw new Error('Notifications are blocked. Allow them for CrecheConnect in your phone or browser settings.')
+  if ((await Notification.requestPermission()) !== 'granted') throw new Error(__('Notifications are blocked. Allow them for CrecheConnect in your phone or browser settings.'))
   const key = await frappeRequest({ url: 'creche_connect.push.get_public_key', method: 'GET' })
   const sub = await (await registration())!.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toBytes(key) })
   await call('creche_connect.push.subscribe', { subscription: sub.toJSON() })

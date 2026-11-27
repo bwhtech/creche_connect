@@ -1,0 +1,1909 @@
+# Translations template for CrecheConnect.
+# Copyright (C) 2026 BWH
+# This file is distributed under the same license as the CrecheConnect project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CrecheConnect VERSION\n"
+"Report-Msgid-Bugs-To: vishwajeet@bwh.tech\n"
+"POT-Creation-Date: 2026-11-27 17:52+0553\n"
+"PO-Revision-Date: 2026-11-27 17:52+0553\n"
+"Last-Translator: vishwajeet@bwh.tech\n"
+"Language-Team: vishwajeet@bwh.tech\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: frontend/src/components/MessageItem.vue:65 frontend/src/pages/Thread.vue:264
+msgid "(edited)"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:313
+msgid "1 reply"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:23 frontend/src/components/Poll.vue:88
+msgid "1 vote"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:66
+msgid "1. Where"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:132
+msgid "2. Designations"
+msgstr ""
+
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.py:70
+#, python-brace-format
+msgid "A poll needs between 2 and {0} options"
+msgstr ""
+
+#: creche_connect/api.py:820
+msgid "A reminder was already sent in the last hour"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:280
+msgid "Acknowledge"
+msgstr ""
+
+#: frontend/src/components/ThreadInfo.vue:45 frontend/src/pages/Thread.vue:113
+msgid "Acknowledged"
+msgstr ""
+
+#. Label of the activity_section (Section Break) field in DocType
+#. 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:118
+msgid "Activity"
+msgstr ""
+
+#: frontend/src/pages/Resources.vue:135
+msgid "Add"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:75
+msgid "Add at least two options"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:189
+msgid "Add option"
+msgstr ""
+
+#: frontend/src/App.vue:52 frontend/src/pages/You.vue:34
+#: frontend/src/pages/You.vue:39
+msgid "Add photo"
+msgstr ""
+
+#: frontend/src/components/Reactions.vue:57
+#: frontend/src/components/Reactions.vue:60
+msgid "Add reaction"
+msgstr ""
+
+#: frontend/src/pages/Resources.vue:135
+msgid "Add resource"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:80
+#: frontend/src/components/MediaButtons.vue:81
+msgid "Add voice note"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:71
+msgid "Add your thoughts (optional)…"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:71
+msgid "Add your thoughts…"
+msgstr ""
+
+#: frontend/src/App.vue:166 frontend/src/pages/Users.vue:129
+#: frontend/src/pages/You.vue:38
+msgid "Admin"
+msgstr ""
+
+#. Name of a role
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:104
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:179
+#: frontend/src/pages/Feed.vue:40
+msgid "All"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:138
+msgid "All designations"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:95
+#, python-brace-format
+msgid "All of {0}"
+msgstr ""
+
+#: frontend/src/lib/store.ts:296
+msgid "All replies, reactions and acknowledgements in it will be removed too."
+msgstr ""
+
+#: frontend/src/App.vue:136
+msgid "All resources"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:12
+msgid "All states"
+msgstr ""
+
+#: frontend/src/components/TagFilter.vue:26
+msgid "All tags"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:27
+msgid "All time"
+msgstr ""
+
+#: frontend/src/components/Reactions.vue:15
+#, python-brace-format
+msgid "All {0}"
+msgstr ""
+
+#. Label of the poll_multiple (Check) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:102
+msgid "Allow More Than One Answer"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:44
+msgid "Allow microphone access to record a voice note"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:249
+msgid "Allow more than one answer"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:126
+msgid "An admin can turn on “Can start threads” for you on the Users page."
+msgstr ""
+
+#: frontend/src/lib/store.ts:125
+msgid "Announcement"
+msgstr ""
+
+#: frontend/src/lib/store.ts:125
+msgid "Announcement, replies off"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:54
+msgid "Anonymous"
+msgstr ""
+
+#. Label of the poll_anonymous (Check) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:108
+msgid "Anonymous Votes"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:250
+msgid "Anonymous votes"
+msgstr ""
+
+#. Label of the ack_required (Check) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:79
+msgid "Ask for Acknowledgment"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:257
+msgid "Ask for acknowledgment"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:85
+#: frontend/src/components/MediaButtons.vue:86
+msgid "Attach audio or video"
+msgstr ""
+
+#. Label of the audience_section (Section Break) field in DocType
+#. 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:46
+#: frontend/src/components/ThreadInfo.vue:14
+msgid "Audience"
+msgstr ""
+
+#: creche_connect/files.py:9 frontend/src/lib/store.ts:18
+#, python-brace-format
+msgid "Audio can be up to {0} MB"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:64
+msgid "Author"
+msgstr ""
+
+#: frontend/src/components/AvatarPicker.vue:51
+#, python-brace-format
+msgid "Avatar {0}"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:35 frontend/src/pages/Compose.vue:127
+#: frontend/src/pages/NotFound.vue:8 frontend/src/pages/Thread.vue:248
+msgid "Back to feed"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:57
+msgid "Be the first to reply…"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:29
+#: frontend/src/pages/Users.vue:117
+msgid "Block"
+msgstr ""
+
+#. Label of the can_post (Check) field in DocType 'CrecheConnect Member'
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:59
+msgid "Can Start Threads"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:143
+msgid "Can start threads"
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:58
+#: frontend/src/components/ReshareButton.vue:80
+#: frontend/src/pages/Compose.vue:121 frontend/src/pages/Thread.vue:293
+msgid "Cancel"
+msgstr ""
+
+#: frontend/src/App.vue:52 frontend/src/pages/You.vue:34
+#: frontend/src/pages/You.vue:39
+msgid "Change photo"
+msgstr ""
+
+#: frontend/src/App.vue:21
+msgid "Check your mobile data or Wi-Fi. CrecheConnect will carry on from here once you're back online."
+msgstr ""
+
+#: creche_connect/api.py:645
+msgid "Choose one of the avatars or upload a photo"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:80
+msgid "Clear"
+msgstr ""
+
+#: frontend/src/components/FileViewer.vue:48
+msgid "Close"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:172 frontend/src/pages/Thread.vue:184
+msgid "Close poll"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:182
+msgid "Close this poll?"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:55
+msgid "Closed"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:20
+#, python-brace-format
+msgid "Closes {0} ({1})"
+msgstr ""
+
+#. Label of the code (Data) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:36
+msgid "Code"
+msgstr ""
+
+#. Label of the color (Select) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:28
+msgid "Color"
+msgstr ""
+
+#. Label of the content (Text Editor) field in DocType 'CrecheConnect Reply'
+#. Label of the content (Text Editor) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.json:29
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:41
+msgid "Content"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:115
+msgid "Could not acknowledge"
+msgstr ""
+
+#: frontend/src/lib/store.ts:466 frontend/src/pages/Thread.vue:177
+msgid "Could not change notifications"
+msgstr ""
+
+#: frontend/src/lib/store.ts:280
+msgid "Could not change the language"
+msgstr ""
+
+#: frontend/src/lib/store.ts:304
+msgid "Could not delete"
+msgstr ""
+
+#: frontend/src/lib/store.ts:160
+msgid "Could not load CrecheConnect"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:134
+msgid "Could not load older replies"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:22
+msgid "Could not load replies"
+msgstr ""
+
+#: frontend/src/components/EditHistory.vue:43
+msgid "Could not load the edit history"
+msgstr ""
+
+#: frontend/src/components/FileViewer.vue:58
+msgid "Could not open this document. Use Download."
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:40
+msgid "Could not reshare"
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:28 frontend/src/pages/Thread.vue:197
+msgid "Could not save your changes"
+msgstr ""
+
+#: frontend/src/components/Reactions.vue:26
+msgid "Could not save your reaction"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:32
+msgid "Could not save your vote"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:42
+msgid "Could not send the reminder"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:35
+#: frontend/src/pages/Thread.vue:100
+msgid "Could not send your reply"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:103
+msgid "Could not start the thread"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:22
+msgid "Could not upload the audio"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:29
+msgid "Country"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:32
+#: frontend/src/lib/store.ts:422
+msgid "Course"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_acknowledgement/crecheconnect_acknowledgement.json:39
+msgid "CrecheConnect Acknowledgement"
+msgstr ""
+
+#. Name of a role
+#: creche_connect/crecheconnect/doctype/crecheconnect_acknowledgement/crecheconnect_acknowledgement.json:62
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:68
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:91
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:76
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_vote/crecheconnect_poll_vote.json:69
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:78
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.json:68
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:91
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:98
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:61
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:173
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:76
+msgid "CrecheConnect Admin"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:45
+msgid "CrecheConnect Designation"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:68
+msgid "CrecheConnect Member"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:53
+msgid "CrecheConnect Place"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_option/crecheconnect_poll_option.json:28
+msgid "CrecheConnect Poll Option"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_vote/crecheconnect_poll_vote.json:46
+msgid "CrecheConnect Poll Vote"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_push_subscription/crecheconnect_push_subscription.json:39
+msgid "CrecheConnect Push Subscription"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:55
+msgid "CrecheConnect Reaction"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.json:45
+msgid "CrecheConnect Reply"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:68
+msgid "CrecheConnect Reshare"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:75
+msgid "CrecheConnect Resource"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource_file/crecheconnect_resource_file.json:31
+msgid "CrecheConnect Resource File"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:38
+msgid "CrecheConnect Tag"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:150
+msgid "CrecheConnect Thread"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_designation/crecheconnect_thread_designation.json:30
+msgid "CrecheConnect Thread Designation"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_place/crecheconnect_thread_place.json:30
+msgid "CrecheConnect Thread Place"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_tag/crecheconnect_thread_tag.json:30
+msgid "CrecheConnect Thread Tag"
+msgstr ""
+
+#. Name of a DocType
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:53
+msgid "CrecheConnect Thread Visit"
+msgstr ""
+
+#: frontend/src/components/EditHistory.vue:15
+msgid "Current"
+msgstr ""
+
+#: frontend/src/pages/You.vue:23
+msgid "Dark"
+msgstr ""
+
+#: frontend/src/App.vue:56
+msgid "Dark mode"
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:20 frontend/src/lib/store.ts:299
+#: frontend/src/pages/Thread.vue:173
+msgid "Delete"
+msgstr ""
+
+#: frontend/src/lib/store.ts:295
+msgid "Delete this reply?"
+msgstr ""
+
+#: frontend/src/lib/store.ts:295
+msgid "Delete this thread?"
+msgstr ""
+
+#. Label of the description (Small Text) field in DocType 'CrecheConnect
+#. Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:45
+msgid "Description"
+msgstr ""
+
+#. Label of the designation (Link) field in DocType 'CrecheConnect Member'
+#. Label of the designation (Link) field in DocType 'CrecheConnect Thread
+#. Designation'
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:39
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_designation/crecheconnect_thread_designation.json:17
+msgid "Designation"
+msgstr ""
+
+#. Label of the designation_name (Data) field in DocType 'CrecheConnect
+#. Designation'
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:20
+msgid "Designation Name"
+msgstr ""
+
+#. Label of the designations (Table) field in DocType 'CrecheConnect Reshare'
+#. Label of the designations (Table) field in DocType 'CrecheConnect Resource'
+#. Label of the designations (Table MultiSelect) field in DocType
+#. 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:58
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:65
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:59
+msgid "Designations"
+msgstr ""
+
+#: frontend/src/App.vue:154
+msgid "Directory"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:77
+msgid "Discard"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:78
+msgid "Discard recording"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:28
+msgid "Discussion"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:29
+#: frontend/src/pages/Users.vue:116
+msgid "District"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:32
+#: frontend/src/lib/store.ts:423
+msgid "Document"
+msgstr ""
+
+#: frontend/src/components/FileViewer.vue:50
+msgid "Download"
+msgstr ""
+
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.py:72
+msgid "Each poll option must be different"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:109
+msgid "Each user has a state, district, block and designation. Threads reach people by these four fields."
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:18 frontend/src/pages/Thread.vue:170
+msgid "Edit"
+msgstr ""
+
+#: frontend/src/components/EditHistory.vue:47
+#: frontend/src/components/MessageItem.vue:19 frontend/src/pages/Thread.vue:171
+msgid "Edit history"
+msgstr ""
+
+#: frontend/src/pages/Resources.vue:130 frontend/src/pages/Resources.vue:174
+msgid "Edit resource"
+msgstr ""
+
+#: frontend/src/components/EditHistory.vue:15
+#, python-brace-format
+msgid "Edit {0}"
+msgstr ""
+
+#. Label of the edited_at (Datetime) field in DocType 'CrecheConnect Reply'
+#. Label of the edited_at (Datetime) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.json:34
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:139
+msgid "Edited At"
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:64 frontend/src/pages/Thread.vue:263
+#, python-brace-format
+msgid "Edited {0}"
+msgstr ""
+
+#. Label of the emoji (Data) field in DocType 'CrecheConnect Reaction'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:37
+msgid "Emoji"
+msgstr ""
+
+#. Label of the endpoint (Small Text) field in DocType 'CrecheConnect Push
+#. Subscription'
+#: creche_connect/crecheconnect/doctype/crecheconnect_push_subscription/crecheconnect_push_subscription.json:25
+msgid "Endpoint"
+msgstr ""
+
+#: frontend/src/components/ThreadInfo.vue:26
+msgid "Every designation"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:96
+msgid "Every place below it"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:96
+msgid "Every state, district and block"
+msgstr ""
+
+#: frontend/src/components/AudienceChips.vue:14 frontend/src/lib/store.ts:123
+msgid "Everyone"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:40
+msgid "Everyone has voted"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:244
+msgid "Everyone in these places, any designation."
+msgstr ""
+
+#: frontend/src/App.vue:39 frontend/src/App.vue:102
+#: frontend/src/pages/Compose.vue:119 frontend/src/pages/Feed.vue:49
+#: frontend/src/pages/Thread.vue:215
+msgid "Feed"
+msgstr ""
+
+#. Label of the files (Table) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:38
+msgid "Files"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:85 frontend/src/pages/Users.vue:100
+msgid "Filter by state"
+msgstr ""
+
+#. Option for the 'Notify' (Select) field in DocType 'CrecheConnect Thread
+#. Visit'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:44
+msgid "Follow"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:168
+msgid "Follow replies"
+msgstr ""
+
+#. Label of the full_name (Data) field in DocType 'CrecheConnect Member'
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:31
+msgid "Full Name"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:74
+msgid "Give the thread a topic"
+msgstr ""
+
+#: frontend/src/lib/editor.ts:7
+msgid "Groups"
+msgstr ""
+
+#: frontend/src/App.vue:156 frontend/src/pages/You.vue:19
+msgid "Insights"
+msgstr ""
+
+#: creche_connect/api.py:574
+msgid "Invalid cursor"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:64
+msgid "It was deleted, so it can't be opened."
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:65
+msgid "It was sent to a place or designation that doesn't include you."
+msgstr ""
+
+#: creche_connect/api.py:758
+#, python-brace-format
+msgid "Keep your thoughts under {0} characters"
+msgstr ""
+
+#. Label of the kind (Select) field in DocType 'CrecheConnect Place'
+#. Label of the kind (Select) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:28
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:31
+msgid "Kind"
+msgstr ""
+
+#. Label of the label (Data) field in DocType 'CrecheConnect Resource File'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource_file/crecheconnect_resource_file.json:16
+msgid "Label"
+msgstr ""
+
+#: frontend/src/App.vue:58 frontend/src/pages/You.vue:24
+msgid "Language"
+msgstr ""
+
+#. Label of the last_activity (Datetime) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:125
+msgid "Last Activity"
+msgstr ""
+
+#. Label of the last_visit (Datetime) field in DocType 'CrecheConnect Thread
+#. Visit'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:38
+msgid "Last Visit"
+msgstr ""
+
+#: frontend/src/lib/store.ts:124
+msgid "Leads reply"
+msgstr ""
+
+#. Description of the 'Place' (Link) field in DocType 'CrecheConnect Member'
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:45
+msgid "Leave empty for national staff"
+msgstr ""
+
+#. Description of the 'Designations' (Table MultiSelect) field in DocType
+#. 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:56
+msgid "Leave empty to reach everyone in these places"
+msgstr ""
+
+#. Description of the 'Places' (Table) field in DocType 'CrecheConnect
+#. Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:56
+msgid "Leave empty to show this resource to everyone"
+msgstr ""
+
+#: frontend/src/pages/You.vue:23
+msgid "Light"
+msgstr ""
+
+#: frontend/src/App.vue:55
+msgid "Light mode"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:32
+#: frontend/src/lib/store.ts:424
+msgid "Link"
+msgstr ""
+
+#: frontend/src/lib/store.ts:134
+msgid "Link copied"
+msgstr ""
+
+#: frontend/src/pages/Feed.vue:66
+msgid "Load more"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:320
+msgid "Load older replies"
+msgstr ""
+
+#: frontend/src/App.vue:60 frontend/src/pages/You.vue:25
+msgid "Log out"
+msgstr ""
+
+#. Description of the 'Seniority' (Int) field in DocType 'CrecheConnect
+#. Designation'
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:25
+msgid "Lower comes first"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:257
+msgid "Members confirm they have read it. You see who did."
+msgstr ""
+
+#: frontend/src/App.vue:42 frontend/src/pages/Feed.vue:43
+#: frontend/src/pages/Feed.vue:49
+msgid "Mentions"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:145
+msgid "Message"
+msgstr ""
+
+#: creche_connect/api.py:363
+msgid "Message too long"
+msgstr ""
+
+#. Option for the 'Notify' (Select) field in DocType 'CrecheConnect Thread
+#. Visit'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:44
+#: frontend/src/pages/Thread.vue:169
+msgid "Mute"
+msgstr ""
+
+#: frontend/src/App.vue:43 frontend/src/pages/Feed.vue:44
+#: frontend/src/pages/Feed.vue:49
+msgid "My posts"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:114
+msgid "Name"
+msgstr ""
+
+#: frontend/src/lib/store.ts:74 frontend/src/pages/Users.vue:12
+#: frontend/src/pages/Users.vue:17 frontend/src/pages/Users.vue:138
+msgid "National"
+msgstr ""
+
+#. Label of the is_national (Check) field in DocType 'CrecheConnect
+#. Designation'
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:36
+msgid "National Only"
+msgstr ""
+
+#: frontend/src/components/ThreadCard.vue:83
+msgid "Needs your acknowledgment"
+msgstr ""
+
+#: frontend/src/App.vue:111 frontend/src/pages/Thread.vue:323
+msgid "New"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:112 frontend/src/pages/Compose.vue:119
+msgid "New poll"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:214
+msgid "New tag"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:214
+msgid "New tag…"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:112 frontend/src/pages/Compose.vue:119
+#: frontend/src/pages/Feed.vue:57
+msgid "New thread"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:11
+msgid "No mentions yet"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:125
+#, python-brace-format
+msgid "No place matches “{0}”"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:12
+msgid "No posts yet"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:53
+#: frontend/src/pages/Thread.vue:335
+msgid "No replies yet."
+msgstr ""
+
+#: frontend/src/pages/Resources.vue:155
+msgid "No resources yet."
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:14
+msgid "No threads match this view yet."
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:9
+msgid "No unread threads."
+msgstr ""
+
+#: frontend/src/pages/Users.vue:154
+msgid "No users match."
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:183
+msgid "Nobody can vote or change their vote after this. Results stay visible."
+msgstr ""
+
+#. Label of the note (Small Text) field in DocType 'CrecheConnect Reshare'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:47
+msgid "Note"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:14
+msgid "Nothing here"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:10
+msgid "Nothing to acknowledge"
+msgstr ""
+
+#: frontend/src/pages/You.vue:22
+msgid "Notifications"
+msgstr ""
+
+#: frontend/src/lib/push.ts:18
+msgid "Notifications are blocked. Allow them for CrecheConnect in your phone or browser settings."
+msgstr ""
+
+#: frontend/src/lib/store.ts:464
+msgid "Notifications are off for this device"
+msgstr ""
+
+#: frontend/src/lib/store.ts:464
+msgid "Notifications are on for this device"
+msgstr ""
+
+#: frontend/src/lib/store.ts:386
+msgid "Notifications for this thread are back to normal"
+msgstr ""
+
+#. Label of the notify (Select) field in DocType 'CrecheConnect Thread Visit'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:43
+msgid "Notify"
+msgstr ""
+
+#: frontend/src/pages/You.vue:22
+msgid "Off"
+msgstr ""
+
+#: frontend/src/pages/You.vue:22
+msgid "On"
+msgstr ""
+
+#: frontend/src/lib/store.ts:461
+msgid "On iPhone, add CrecheConnect to your Home Screen first: tap Share, then Add to Home Screen. Open it from there and turn notifications on."
+msgstr ""
+
+#. Description of the 'National Only' (Check) field in DocType 'CrecheConnect
+#. Designation'
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:33
+msgid "Only offered when a thread targets the whole country"
+msgstr ""
+
+#: frontend/src/lib/store.ts:124
+msgid "Only people who can start threads can reply"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:124
+msgid "Only people who can start threads can reply here."
+msgstr ""
+
+#: creche_connect/api.py:369
+msgid "Only the author can edit this message"
+msgstr ""
+
+#: creche_connect/api.py:902
+msgid "Only the author or an admin can delete this message"
+msgstr ""
+
+#: creche_connect/api.py:785
+msgid "Only the author or an admin can do this"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:244
+msgid "Only the ticked designations in these places."
+msgstr ""
+
+#: frontend/src/lib/store.ts:123
+msgid "Open replies"
+msgstr ""
+
+#: creche_connect/api.py:832
+msgid "Open the poll"
+msgstr ""
+
+#. Label of the option (Data) field in DocType 'CrecheConnect Poll Option'
+#. Label of the option (Data) field in DocType 'CrecheConnect Poll Vote'
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_option/crecheconnect_poll_option.json:17
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_vote/crecheconnect_poll_vote.json:28
+msgid "Option"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:168
+#, python-brace-format
+msgid "Option {0}"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:133
+msgid "Optional. Leave empty to reach everyone there."
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:158
+msgid "Options"
+msgstr ""
+
+#: frontend/src/components/AvatarPicker.vue:42
+msgid "Or pick one"
+msgstr ""
+
+#: frontend/src/components/EditHistory.vue:15
+msgid "Original"
+msgstr ""
+
+#: frontend/src/pages/NotFound.vue:7
+msgid "Page not found"
+msgstr ""
+
+#. Label of the parent_place (Link) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:43
+msgid "Parent Place"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:30
+msgid "Past 3 months"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:29
+msgid "Past month"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:28
+msgid "Past week"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:31
+msgid "Past year"
+msgstr ""
+
+#: frontend/src/lib/editor.ts:8
+msgid "People"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:249
+msgid "People can tick every option that works for them."
+msgstr ""
+
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.py:74
+msgid "Pick a deadline in the future"
+msgstr ""
+
+#: frontend/src/components/AvatarPicker.vue:25
+msgid "Pick a photo"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:241
+msgid "Pick a place below to see who this reaches."
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:31
+msgid "Pick an audio or video file"
+msgstr ""
+
+#: creche_connect/api.py:681 frontend/src/pages/Compose.vue:73
+msgid "Pick at least one place"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:53
+msgid "Pick one"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:53
+msgid "Pick one or more"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:76
+msgid "Pick places and cadres in your area"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:223
+msgid "Pick where, then optionally who. Everyone who matches sees the thread in their feed."
+msgstr ""
+
+#. Label of the pinned (Check) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:53
+#: frontend/src/pages/Resources.vue:173
+msgid "Pinned"
+msgstr ""
+
+#. Description of the 'Pinned' (Check) field in DocType 'CrecheConnect
+#. Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:49
+msgid "Pinned resources show in the sidebar"
+msgstr ""
+
+#. Label of the place (Link) field in DocType 'CrecheConnect Member'
+#. Label of the place (Link) field in DocType 'CrecheConnect Reshare'
+#. Label of the place (Link) field in DocType 'CrecheConnect Thread Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:50
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:39
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_place/crecheconnect_thread_place.json:17
+#: frontend/src/pages/Search.vue:65
+msgid "Place"
+msgstr ""
+
+#. Label of the place_name (Data) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:20
+msgid "Place Name"
+msgstr ""
+
+#. Label of the places (Table) field in DocType 'CrecheConnect Reshare'
+#. Label of the places (Table) field in DocType 'CrecheConnect Resource'
+#. Label of the places (Table MultiSelect) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:52
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:59
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:51
+msgid "Places"
+msgstr ""
+
+#. Label of the poll_section (Section Break) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:90
+#: frontend/src/pages/Compose.vue:29
+msgid "Poll"
+msgstr ""
+
+#. Label of the poll_options (Table) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:95
+msgid "Poll Options"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:187
+msgid "Poll closed"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:97
+#, python-brace-format
+msgid "Poll sent to {0} people"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:97
+#, python-brace-format
+msgid "Poll sent to {0} person"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:248
+msgid "Poll settings"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:115 frontend/src/pages/Compose.vue:122
+msgid "Post"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:118
+msgid "Posting"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:192
+msgid "Press Enter for the next option, or paste a list to fill them all."
+msgstr ""
+
+#: frontend/src/App.vue:135 frontend/src/pages/Resources.vue:134
+msgid "Program resources"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:143
+msgid "Question"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:233
+msgid "Reach"
+msgstr ""
+
+#: frontend/src/components/Reactions.vue:69
+#: frontend/src/components/Reactions.vue:85
+#, python-brace-format
+msgid "React with {0}"
+msgstr ""
+
+#: frontend/src/components/Reactions.vue:77
+msgid "Reactions"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:144
+msgid "Read and reply"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:79
+msgid "Recent searches"
+msgstr ""
+
+#: frontend/src/components/MediaButtons.vue:88
+#: frontend/src/components/MediaButtons.vue:89
+msgid "Record a voice note"
+msgstr ""
+
+#. Label of the reference_doctype (Link) field in DocType 'CrecheConnect
+#. Reaction'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:20
+msgid "Reference Doctype"
+msgstr ""
+
+#. Label of the reference_name (Dynamic Link) field in DocType 'CrecheConnect
+#. Reaction'
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:28
+msgid "Reference Name"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:107
+msgid "Remind those who haven’t voted"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:40
+msgid "Reminder emailed to 1 person"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:40
+#, python-brace-format
+msgid "Reminder emailed to {0} people"
+msgstr ""
+
+#: frontend/src/components/AvatarPicker.vue:37
+msgid "Remove"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:179
+#, python-brace-format
+msgid "Remove option {0}"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:106
+msgid "Reply"
+msgstr ""
+
+#. Label of the reply_count (Int) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:133
+msgid "Reply Count"
+msgstr ""
+
+#. Label of the reply_policy (Select) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:71
+msgid "Reply Policy"
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:76
+msgid "Reply actions"
+msgstr ""
+
+#: frontend/src/lib/store.ts:306
+msgid "Reply deleted"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:21
+#: frontend/src/components/ReshareButton.vue:56
+#: frontend/src/components/ReshareButton.vue:81
+msgid "Reshare"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:22
+#: frontend/src/components/ReshareButton.vue:64
+msgid "Reshare with your thoughts"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:37
+#: frontend/src/components/ReshareButton.vue:56
+msgid "Reshared"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:61
+#: frontend/src/components/ReshareButton.vue:62
+#, python-brace-format
+msgid "Reshared by {0}"
+msgstr ""
+
+#: frontend/src/App.vue:112 frontend/src/App.vue:158
+msgid "Resources"
+msgstr ""
+
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.py:38
+#, python-brace-format
+msgid "Row {0}: add a file, or a link that starts with https://"
+msgstr ""
+
+#. Label of the rules_section (Section Break) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:65
+msgid "Rules"
+msgstr ""
+
+#: frontend/src/components/MessageItem.vue:59 frontend/src/pages/Thread.vue:294
+msgid "Save"
+msgstr ""
+
+#: frontend/src/App.vue:110 frontend/src/App.vue:125
+#: frontend/src/pages/Search.vue:54 frontend/src/pages/Search.vue:59
+msgid "Search"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:85
+msgid "Search places"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:85
+msgid "Search places…"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:59
+msgid "Search threads and replies"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:88 frontend/src/pages/Users.vue:103
+msgid "Search users"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:71
+msgid "Searching…"
+msgstr ""
+
+#: frontend/src/components/ThreadInfo.vue:36
+msgid "Seen"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:60
+#: frontend/src/pages/Thread.vue:348
+msgid "Send reply"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:102
+#, python-brace-format
+msgid "Send to {0}"
+msgstr ""
+
+#. Label of the seniority (Int) field in DocType 'CrecheConnect Designation'
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:29
+msgid "Seniority"
+msgstr ""
+
+#: creche_connect/push.py:83
+msgid "Sent a picture, audio or video"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:251
+msgid "Set a deadline"
+msgstr ""
+
+#: frontend/src/components/ThreadCard.vue:102 frontend/src/pages/Thread.vue:167
+msgid "Share"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:76
+msgid "Share with my team"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:250
+msgid "Show counts only. Nobody, including you, sees who voted for what."
+msgstr ""
+
+#: frontend/src/components/ThreadCard.vue:75
+msgid "Show more"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Place'
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:29
+#: frontend/src/pages/Users.vue:115
+msgid "State"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:67
+msgid "State, district or block"
+msgstr ""
+
+#. Label of the subscription (JSON) field in DocType 'CrecheConnect Push
+#. Subscription'
+#: creche_connect/crecheconnect/doctype/crecheconnect_push_subscription/crecheconnect_push_subscription.json:31
+msgid "Subscription"
+msgstr ""
+
+#. Name of a role
+#: creche_connect/crecheconnect/doctype/crecheconnect_acknowledgement/crecheconnect_acknowledgement.json:50
+#: creche_connect/crecheconnect/doctype/crecheconnect_designation/crecheconnect_designation.json:56
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:79
+#: creche_connect/crecheconnect/doctype/crecheconnect_place/crecheconnect_place.json:64
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_vote/crecheconnect_poll_vote.json:57
+#: creche_connect/crecheconnect/doctype/crecheconnect_push_subscription/crecheconnect_push_subscription.json:47
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:66
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.json:56
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:79
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:86
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:49
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:161
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:64
+msgid "System Manager"
+msgstr ""
+
+#. Label of the tag (Link) field in DocType 'CrecheConnect Thread Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_tag/crecheconnect_thread_tag.json:17
+#: frontend/src/pages/Search.vue:63
+msgid "Tag"
+msgstr ""
+
+#. Label of the tag_name (Data) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:19
+msgid "Tag Name"
+msgstr ""
+
+#. Label of the tags (Table MultiSelect) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:84
+#: frontend/src/pages/Compose.vue:195
+msgid "Tags"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:28
+msgid "Tap to vote · results show after you vote"
+msgstr ""
+
+#: frontend/src/lib/store.ts:296
+msgid "The reply and its reactions will be removed."
+msgstr ""
+
+#: frontend/src/pages/You.vue:23
+msgid "Theme"
+msgstr ""
+
+#: creche_connect/push.py:45
+msgid "This device can't receive notifications"
+msgstr ""
+
+#: frontend/src/components/FileViewer.vue:61
+msgid "This file can't be shown here. Use Download."
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:123
+msgid "This is an announcement. Replies are off."
+msgstr ""
+
+#: creche_connect/api.py:920
+msgid "This language is not available"
+msgstr ""
+
+#: frontend/src/pages/NotFound.vue:7
+msgid "This link doesn’t lead anywhere in CrecheConnect. It may be mistyped or out of date."
+msgstr ""
+
+#: creche_connect/api.py:362
+msgid "This message is too long. Shorten it, or add long documents under Resources and link to them."
+msgstr ""
+
+#: creche_connect/api.py:876
+msgid "This message was removed"
+msgstr ""
+
+#: creche_connect/api.py:781
+msgid "This option is not part of the poll"
+msgstr ""
+
+#: creche_connect/api.py:783
+msgid "This poll is closed"
+msgstr ""
+
+#: creche_connect/api.py:738
+msgid "This thread doesn't ask you to acknowledge it"
+msgstr ""
+
+#: creche_connect/api.py:781
+msgid "This thread is not a poll"
+msgstr ""
+
+#: creche_connect/api.py:375 frontend/src/pages/Thread.vue:64
+msgid "This thread was removed"
+msgstr ""
+
+#. Label of the thread (Link) field in DocType 'CrecheConnect Acknowledgement'
+#. Label of the thread (Link) field in DocType 'CrecheConnect Poll Vote'
+#. Label of the thread (Link) field in DocType 'CrecheConnect Reply'
+#. Label of the thread (Link) field in DocType 'CrecheConnect Reshare'
+#. Label of the thread (Link) field in DocType 'CrecheConnect Thread Visit'
+#: creche_connect/crecheconnect/doctype/crecheconnect_acknowledgement/crecheconnect_acknowledgement.json:18
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_vote/crecheconnect_poll_vote.json:19
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.json:21
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:22
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:20
+#: frontend/src/pages/Search.vue:106 frontend/src/pages/Thread.vue:208
+#: frontend/src/pages/Thread.vue:215
+msgid "Thread"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:271
+msgid "Thread actions"
+msgstr ""
+
+#: frontend/src/lib/store.ts:306
+msgid "Thread deleted"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:211 frontend/src/pages/Thread.vue:366
+msgid "Thread details"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:255
+msgid "Thread rules"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:98
+#, python-brace-format
+msgid "Thread sent to {0} people"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:98
+#, python-brace-format
+msgid "Thread sent to {0} person"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:12
+msgid "Threads you post show here."
+msgstr ""
+
+#: frontend/src/components/Poll.vue:24
+#, python-brace-format
+msgid "Tie at {0}: {1}"
+msgstr ""
+
+#. Label of the title (Data) field in DocType 'CrecheConnect Resource'
+#. Label of the title (Data) field in DocType 'CrecheConnect Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:23
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:35
+msgid "Title"
+msgstr ""
+
+#: frontend/src/App.vue:41 frontend/src/pages/Feed.vue:42
+#: frontend/src/pages/Feed.vue:49
+msgid "To acknowledge"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:143 frontend/src/pages/Thread.vue:256
+msgid "Topic"
+msgstr ""
+
+#: frontend/src/App.vue:68
+msgid "Try again"
+msgstr ""
+
+#: frontend/src/App.vue:53
+msgid "Turn off notifications"
+msgstr ""
+
+#: frontend/src/App.vue:53
+msgid "Turn on notifications"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:70
+msgid "Type at least two letters."
+msgstr ""
+
+#. Label of the url (Attach) field in DocType 'CrecheConnect Resource File'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource_file/crecheconnect_resource_file.json:22
+msgid "URL"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:19
+msgid "Undo reshare"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:168
+msgid "Unfollow"
+msgstr ""
+
+#: frontend/src/components/ThreadInfo.vue:30
+msgid "Unique people"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:169
+msgid "Unmute"
+msgstr ""
+
+#: frontend/src/App.vue:40 frontend/src/components/ThreadCard.vue:67
+#: frontend/src/pages/Feed.vue:41 frontend/src/pages/Feed.vue:49
+msgid "Unread"
+msgstr ""
+
+#: creche_connect/api.py:844
+msgid "Unsupported reaction"
+msgstr ""
+
+#: frontend/src/components/AvatarPicker.vue:36
+msgid "Upload photo"
+msgstr ""
+
+#. Label of the user (Link) field in DocType 'CrecheConnect Acknowledgement'
+#. Label of the user (Link) field in DocType 'CrecheConnect Member'
+#. Label of the user (Link) field in DocType 'CrecheConnect Poll Vote'
+#. Label of the user (Link) field in DocType 'CrecheConnect Push Subscription'
+#. Label of the user (Link) field in DocType 'CrecheConnect Reaction'
+#. Label of the user (Link) field in DocType 'CrecheConnect Reshare'
+#. Label of the user (Link) field in DocType 'CrecheConnect Thread Visit'
+#: creche_connect/crecheconnect/doctype/crecheconnect_acknowledgement/crecheconnect_acknowledgement.json:27
+#: creche_connect/crecheconnect/doctype/crecheconnect_member/crecheconnect_member.json:21
+#: creche_connect/crecheconnect/doctype/crecheconnect_poll_vote/crecheconnect_poll_vote.json:35
+#: creche_connect/crecheconnect/doctype/crecheconnect_push_subscription/crecheconnect_push_subscription.json:17
+#: creche_connect/crecheconnect/doctype/crecheconnect_reaction/crecheconnect_reaction.json:44
+#: creche_connect/crecheconnect/doctype/crecheconnect_reshare/crecheconnect_reshare.json:31
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread_visit/crecheconnect_thread_visit.json:29
+msgid "User"
+msgstr ""
+
+#: frontend/src/App.vue:157 frontend/src/pages/Users.vue:81
+#: frontend/src/pages/You.vue:18
+msgid "Users"
+msgstr ""
+
+#. Option for the 'Kind' (Select) field in DocType 'CrecheConnect Resource'
+#: creche_connect/crecheconnect/doctype/crecheconnect_resource/crecheconnect_resource.json:32
+#: frontend/src/lib/store.ts:421
+msgid "Video"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:50
+#, python-brace-format
+msgid "View all {0} replies"
+msgstr ""
+
+#. Label of the poll_closes_at (Datetime) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:113
+msgid "Voting Closes At"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:252
+msgid "Voting closes"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:251
+msgid "Voting closes on its own. You can also close it any time."
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:135
+msgid "What's it about?"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:11
+msgid "When someone @mentions you, it shows here."
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:256
+msgid "Who can reply"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:221
+msgid "Who is this for?"
+msgstr ""
+
+#: creche_connect/crecheconnect/doctype/crecheconnect_reply/crecheconnect_reply.py:33
+msgid "Write a reply or add a picture, audio or video"
+msgstr ""
+
+#: frontend/src/components/ReplyPreview.vue:57
+#: frontend/src/pages/Thread.vue:344
+msgid "Write a reply…"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:344
+msgid "Write a reply…  (Ctrl + Enter to send)"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:74
+msgid "Write the poll question"
+msgstr ""
+
+#: frontend/src/App.vue:113 frontend/src/components/Reactions.vue:111
+#: frontend/src/lib/store.ts:99
+msgid "You"
+msgstr ""
+
+#: creche_connect/api.py:62
+msgid "You are not a CrecheConnect member yet. Ask an admin to add you."
+msgstr ""
+
+#: creche_connect/api.py:354
+#, python-brace-format
+msgid "You can only post to {0} and places below it"
+msgstr ""
+
+#: creche_connect/api.py:725
+msgid "You can't reply to this thread"
+msgstr ""
+
+#: creche_connect/api.py:753
+msgid "You can't reshare this thread"
+msgstr ""
+
+#: creche_connect/api.py:377 frontend/src/pages/Thread.vue:65
+msgid "You can't see this thread"
+msgstr ""
+
+#: creche_connect/api.py:679
+msgid "You can't start threads"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:126
+msgid "You can’t start threads"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:28
+msgid "You voted · tap to change"
+msgstr ""
+
+#: frontend/src/lib/store.ts:385
+msgid "You won't get notifications from this thread unless someone mentions you"
+msgstr ""
+
+#: frontend/src/lib/store.ts:384
+msgid "You'll get a notification for every reply"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:9
+msgid "You're all caught up"
+msgstr ""
+
+#: frontend/src/App.vue:21
+msgid "You're offline"
+msgstr ""
+
+#: frontend/src/components/FeedList.vue:10
+msgid "You've acknowledged everything sent to you."
+msgstr ""
+
+#: frontend/src/components/AvatarPicker.vue:31
+msgid "Your photo"
+msgstr ""
+
+#: frontend/src/components/ReshareButton.vue:72
+msgid "Your thoughts"
+msgstr ""
+
+#: creche_connect/api.py:826
+#, python-brace-format
+msgid "Your vote is needed: {0}"
+msgstr ""
+
+#. Option for the 'Color' (Select) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:29
+msgid "amber"
+msgstr ""
+
+#. Option for the 'Color' (Select) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:29
+msgid "blue"
+msgstr ""
+
+#. Option for the 'Reply Policy' (Select) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:72
+msgid "everyone"
+msgstr ""
+
+#. Option for the 'Color' (Select) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:29
+msgid "green"
+msgstr ""
+
+#. Option for the 'Reply Policy' (Select) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:72
+msgid "none"
+msgstr ""
+
+#. Option for the 'Reply Policy' (Select) field in DocType 'CrecheConnect
+#. Thread'
+#: creche_connect/crecheconnect/doctype/crecheconnect_thread/crecheconnect_thread.json:72
+msgid "posters"
+msgstr ""
+
+#. Option for the 'Color' (Select) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:29
+msgid "red"
+msgstr ""
+
+#: frontend/src/pages/Compose.vue:236
+msgid "unique people"
+msgstr ""
+
+#. Option for the 'Color' (Select) field in DocType 'CrecheConnect Tag'
+#: creche_connect/crecheconnect/doctype/crecheconnect_tag/crecheconnect_tag.json:29
+msgid "violet"
+msgstr ""
+
+#: frontend/src/pages/Thread.vue:278
+#, python-brace-format
+msgid "{0} asked everyone in the audience to acknowledge this thread."
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:37
+#, python-brace-format
+msgid "{0} block"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:37
+#, python-brace-format
+msgid "{0} blocks"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:36
+#, python-brace-format
+msgid "{0} district"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:36
+#, python-brace-format
+msgid "{0} districts"
+msgstr ""
+
+#: frontend/src/pages/Resources.vue:27
+#, python-brace-format
+msgid "{0} file"
+msgstr ""
+
+#: frontend/src/pages/Resources.vue:27
+#, python-brace-format
+msgid "{0} files"
+msgstr ""
+
+#: creche_connect/api.py:936
+#, python-brace-format
+msgid "{0} is already a member"
+msgstr ""
+
+#: creche_connect/api.py:828
+#, python-brace-format
+msgid "{0} is waiting for your vote on {1}."
+msgstr ""
+
+#: frontend/src/pages/Search.vue:73
+#, python-brace-format
+msgid "{0} match"
+msgstr ""
+
+#: frontend/src/pages/Search.vue:73
+#, python-brace-format
+msgid "{0} matches"
+msgstr ""
+
+#: creche_connect/push.py:143
+#, python-brace-format
+msgid "{0} mentioned you: {1}"
+msgstr ""
+
+#: frontend/src/components/ThreadInfo.vue:39
+#: frontend/src/components/ThreadInfo.vue:52 frontend/src/pages/Compose.vue:159
+#, python-brace-format
+msgid "{0} of {1}"
+msgstr ""
+
+#: frontend/src/pages/Users.vue:110
+#, python-brace-format
+msgid "{0} of {1} shown."
+msgstr ""
+
+#: frontend/src/components/Poll.vue:100
+#, python-brace-format
+msgid "{0} of {1} voted"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:32
+#, python-brace-format
+msgid "{0} people"
+msgstr ""
+
+#: frontend/src/components/GeoPicker.vue:32
+#, python-brace-format
+msgid "{0} person"
+msgstr ""
+
+#: frontend/src/components/ThreadCard.vue:95 frontend/src/pages/Thread.vue:313
+#, python-brace-format
+msgid "{0} replies"
+msgstr ""
+
+#: frontend/src/components/ThreadCard.vue:55
+#, python-brace-format
+msgid "{0} reshared"
+msgstr ""
+
+#: creche_connect/push.py:126
+#, python-brace-format
+msgid "{0} reshared: {1}"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:23 frontend/src/components/Poll.vue:88
+#, python-brace-format
+msgid "{0} votes"
+msgstr ""
+
+#: frontend/src/components/Poll.vue:24
+#, python-brace-format
+msgid "{0} won with {1}"
+msgstr ""
+
+
+#: frontend/src/components/FeedSidebar.vue
+msgid "All posts"
+msgstr ""
+
+#: frontend/src/components/FeedSidebar.vue
+msgid "See all"
+msgstr ""

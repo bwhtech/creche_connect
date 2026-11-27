@@ -45,9 +45,9 @@ onKeyStroke('Escape', () => props.file && emit('close'))
     <Transition enter-active-class="transition-opacity duration-200 ease-out" leave-active-class="transition-opacity duration-150 ease-out" enter-from-class="opacity-0" leave-to-class="opacity-0">
     <div v-if="file" class="fixed inset-0 z-50 flex flex-col bg-surface-gray-2" role="dialog" aria-modal="true" :aria-label="file.name">
       <div class="flex shrink-0 items-center gap-2 border-b border-outline-gray-1 bg-surface-base px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top))]">
-        <Button variant="ghost" icon="lucide-x" aria-label="Close" @click="emit('close')" />
+        <Button variant="ghost" icon="lucide-x" :aria-label="__('Close')" @click="emit('close')" />
         <span class="min-w-0 flex-1 truncate text-base font-medium text-ink-gray-8">{{ file.name }}</span>
-        <Button :href="file.url" :download="file.name" icon-left="lucide-download" label="Download" />
+        <Button :href="file.url" :download="file.name" icon-left="lucide-download" :label="__('Download')" />
       </div>
       <div class="flex min-h-0 flex-1 overflow-auto">
         <iframe v-if="kind === 'pdf'" :src="file.url" :title="file.name" class="size-full bg-surface-base" />
@@ -55,10 +55,10 @@ onKeyStroke('Escape', () => props.file && emit('close'))
         <video v-else-if="kind === 'video'" :src="file.url" controls class="m-auto max-h-full max-w-full" />
         <div v-else-if="kind === 'docx'" class="relative w-full">
           <LoadingIndicator v-if="loading" class="absolute left-1/2 top-10 size-5 text-ink-gray-6" />
-          <p v-if="failed" class="p-10 text-center text-p-base text-ink-gray-6">Could not open this document. Use Download.</p>
+          <p v-if="failed" class="p-10 text-center text-p-base text-ink-gray-6">{{ __('Could not open this document. Use Download.') }}</p>
           <div ref="docxEl" class="docx-view" />
         </div>
-        <p v-else class="m-auto p-6 text-center text-p-base text-ink-gray-6">This file can't be shown here. Use Download.</p>
+        <p v-else class="m-auto p-6 text-center text-p-base text-ink-gray-6">{{ __("This file can't be shown here. Use Download.") }}</p>
       </div>
     </div>
     </Transition>

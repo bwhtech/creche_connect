@@ -8,6 +8,7 @@ import GeoPicker from '../components/GeoPicker.vue'
 import AudienceChips from '../components/AudienceChips.vue'
 import MediaButtons from '../components/MediaButtons.vue'
 import StatusPage from '../components/StatusPage.vue'
+import { __ } from '../lib/translate'
 import dayjs from 'dayjs'
 import { editorKit } from '../lib/editor'
 import { state, audienceOf, useMe, canStart, createThread, reachOf, toggleIn, colorOf, errorText, POLICIES, isMobile } from '../lib/store'
@@ -24,8 +25,8 @@ const addedTags = useStorage<any[]>(`${key}:new-tags`, [])
 const kind = useStorage(`${key}:kind`, 'discussion')
 const isPoll = computed(() => kind.value === 'poll')
 const KINDS = [
-  { label: 'Discussion', value: 'discussion' },
-  { label: 'Poll', value: 'poll' },
+  { label: __('Discussion'), value: 'discussion' },
+  { label: __('Poll'), value: 'poll' },
 ]
 const blankPoll = () => ({ options: ['', ''], multiple: false, anonymous: false, closesAt: '' })
 const poll = useStorage(`${key}:poll`, blankPoll())
@@ -69,9 +70,9 @@ function addTag() {
 }
 
 async function post() {
-  if (!geo.value) return toast.error('Pick at least one place')
-  if (!text.value.title.trim()) return toast.error(isPoll.value ? 'Write the poll question' : 'Give the thread a topic')
-  if (isPoll.value && filledOptions.value.length < 2) return toast.error('Add at least two options')
+  if (!geo.value) return toast.error(__('Pick at least one place'))
+  if (!text.value.title.trim()) return toast.error(isPoll.value ? __('Write the poll question') : __('Give the thread a topic'))
+  if (isPoll.value && filledOptions.value.length < 2) return toast.error(__('Add at least two options'))
   const sentTo = reach.value
   posting.value = true
   try {
@@ -92,12 +93,14 @@ async function post() {
     ackRequired.value = false
     picked.value = []
     addedTags.value = []
-    toast.success(`${isPoll.value ? 'Poll' : 'Thread'} sent to ${sentTo} ${sentTo === 1 ? 'person' : 'people'}`)
+    const one = sentTo === 1
+    if (isPoll.value) toast.success(one ? __('Poll sent to {0} person', sentTo) : __('Poll sent to {0} people', sentTo))
+    else toast.success(one ? __('Thread sent to {0} person', sentTo) : __('Thread sent to {0} people', sentTo))
     kind.value = 'discussion'
     poll.value = blankPoll()
     router.push(`/threads/${id}`)
   } catch (e) {
-    toast.error(errorText(e, 'Could not start the thread'))
+    toast.error(errorText(e, __('Could not start the thread')))
   } finally {
     posting.value = false
   }
@@ -106,22 +109,22 @@ async function post() {
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeaderMobile v-if="isMobile" :title="isPoll ? 'New poll' : 'New thread'">
+    <PageHeaderMobile v-if="isMobile" :title="isPoll ? __('New poll') : __('New thread')">
       <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/' }" /></template>
       <template v-if="canStart(me)" #suffix>
-        <Button variant="solid" theme="gray" label="Post" :loading="posting" @click="post" />
+        <Button variant="solid" theme="gray" :label="__('Post')" :loading="posting" @click="post" />
       </template>
     </PageHeaderMobile>
     <PageHeader v-else>
-      <Breadcrumbs :items="[{ label: 'Feed', route: { path: '/' } }, { label: isPoll ? 'New poll' : 'New thread' }]" />
+      <Breadcrumbs :items="[{ label: __('Feed'), route: { path: '/' } }, { label: isPoll ? __('New poll') : __('New thread') }]" />
       <div v-if="canStart(me)" class="ml-auto flex items-center gap-2">
-        <Button label="Cancel" route="/" />
-        <Button variant="solid" theme="gray" icon-left="lucide-send" label="Post" :loading="posting" @click="post" />
+        <Button :label="__('Cancel')" route="/" />
+        <Button variant="solid" theme="gray" icon-left="lucide-send" :label="__('Post')" :loading="posting" @click="post" />
       </div>
     </PageHeader>
 
-    <StatusPage v-if="!canStart(me)" icon="lucide-lock" title="You can't start threads" text="An admin can turn on “Can start threads” for you on the Users page.">
-      <Button label="Back to feed" route="/" class="mt-2" />
+    <StatusPage v-if="!canStart(me)" icon="lucide-lock" :title="__('You can’t start threads')" :text="__('An admin can turn on “Can start threads” for you on the Users page.')">
+      <Button :label="__('Back to feed')" route="/" class="mt-2" />
     </StatusPage>
 
     <div v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
@@ -129,7 +132,7 @@ async function post() {
         <div class="mx-auto max-w-[770px] space-y-12 px-3 pt-6 pb-20 sm:px-6 md:pt-10">
           <section class="space-y-5">
             <div class="flex items-center gap-3">
-              <h2 class="text-xl text-ink-gray-9">What's it about?</h2>
+              <h2 class="text-xl text-ink-gray-9">{{ __("What's it about?") }}</h2>
               <TabButtons
                 v-model="kind"
                 size="md"
@@ -137,9 +140,9 @@ async function post() {
                 :options="KINDS"
               />
             </div>
-            <FormControl v-model="text.title" variant="outline" :label="isPoll ? 'Question' : 'Topic'" required />
+            <FormControl v-model="text.title" variant="outline" :label="isPoll ? __('Question') : __('Topic')" required />
             <div>
-              <div class="mb-1.5 text-xs text-ink-gray-6">Message</div>
+              <div class="mb-1.5 text-xs text-ink-gray-6">{{ __('Message') }}</div>
               <div class="rounded-4 border border-outline-gray-2 bg-surface-base">
                 <Editor v-slot="{ editor }" v-model="text.body" :extensions="kit">
                   <div class="flex items-center gap-1 border-b border-outline-gray-1 px-1 py-1">
@@ -152,8 +155,8 @@ async function post() {
             </div>
             <div v-if="isPoll">
               <div class="mb-1.5 flex items-baseline text-xs text-ink-gray-6">
-                Options
-                <span class="ml-auto text-ink-gray-6 tabular-nums">{{ poll.options.length }} of {{ MAX_OPTIONS }}</span>
+                {{ __('Options') }}
+                <span class="ml-auto text-ink-gray-6 tabular-nums">{{ __('{0} of {1}', poll.options.length, MAX_OPTIONS) }}</span>
               </div>
               <div class="divide-y divide-outline-gray-2 rounded-4 border border-outline-gray-2 bg-surface-base">
                 <div v-for="(o, i) in poll.options" :key="i" class="group flex items-center gap-2 pr-1.5 pl-3 focus-within:bg-surface-gray-1">
@@ -162,7 +165,7 @@ async function post() {
                     v-model="poll.options[i]"
                     variant="ghost"
                     class="flex-1 py-1"
-                    :placeholder="`Option ${i + 1}`"
+                    :placeholder="__('Option {0}', i + 1)"
                     :aria-label="`Option ${i + 1}`"
                     @keydown.enter.prevent="addOptionAfter(i)"
                     @paste="pasteOptions(i, $event)"
@@ -173,7 +176,7 @@ async function post() {
                     size="sm"
                     icon="lucide-x"
                     class="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 group-focus-within:opacity-100"
-                    :aria-label="`Remove option ${i + 1}`"
+                    :aria-label="__('Remove option {0}', i + 1)"
                     @click="poll.options.splice(i, 1)"
                   />
                 </div>
@@ -183,13 +186,13 @@ async function post() {
                   class="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-ink-gray-6 hover:bg-surface-gray-1 hover:text-ink-gray-8"
                   @click="addOptionAfter(poll.options.length - 1)"
                 >
-                  <span class="lucide-plus size-4" aria-hidden="true" />Add option
+                  <span class="lucide-plus size-4" aria-hidden="true" />{{ __('Add option') }}
                 </button>
               </div>
-              <p class="mt-1.5 text-xs text-ink-gray-6">Press Enter for the next option, or paste a list to fill them all.</p>
+              <p class="mt-1.5 text-xs text-ink-gray-6">{{ __('Press Enter for the next option, or paste a list to fill them all.') }}</p>
             </div>
             <div>
-              <div class="mb-2 text-xs text-ink-gray-6">Tags</div>
+              <div class="mb-2 text-xs text-ink-gray-6">{{ __('Tags') }}</div>
               <div class="flex flex-wrap items-center gap-1.5">
                 <button
                   v-for="t in tags"
@@ -208,16 +211,16 @@ async function post() {
                   {{ t.name }}
                 </button>
                 <div class="w-36">
-                  <TextInput v-model="newTag" size="sm" placeholder="New tag…" aria-label="New tag" @keydown.enter.prevent="addTag" />
+                  <TextInput v-model="newTag" size="sm" :placeholder="__('New tag…')" :aria-label="__('New tag')" @keydown.enter.prevent="addTag" />
                 </div>
               </div>
             </div>
           </section>
 
           <section>
-            <h2 class="text-xl text-ink-gray-9">Who is this for?</h2>
+            <h2 class="text-xl text-ink-gray-9">{{ __('Who is this for?') }}</h2>
             <p class="mt-1.5 mb-6 text-p-sm text-ink-gray-6">
-              Pick where, then optionally who. Everyone who matches sees the thread in their feed.
+              {{ __('Pick where, then optionally who. Everyone who matches sees the thread in their feed.') }}
             </p>
             <GeoPicker v-model="draft" />
           </section>
@@ -227,31 +230,31 @@ async function post() {
       <aside class="shrink-0 border-t border-outline-gray-1 lg:w-[22rem] lg:overflow-y-auto lg:border-t-0 lg:border-l">
         <div class="space-y-8 p-6">
           <section>
-            <h2 class="text-sm text-ink-gray-6">Reach</h2>
+            <h2 class="text-sm text-ink-gray-6">{{ __('Reach') }}</h2>
             <div class="mt-1.5 flex items-baseline gap-1.5">
               <span class="text-3xl font-semibold text-ink-gray-9 tabular-nums">{{ reach }}</span>
-              <span class="text-sm text-ink-gray-6">unique people</span>
+              <span class="text-sm text-ink-gray-6">{{ __('unique people') }}</span>
             </div>
             <AudienceChips v-if="geo" :geo="geo" class="mt-4" />
             <div v-else class="mt-3 flex items-center gap-2 rounded-4 bg-surface-gray-2 px-3 py-2.5">
               <span class="lucide-map-pin size-4 shrink-0 text-ink-gray-6" aria-hidden="true" />
-              <p class="text-p-sm text-ink-gray-7">Pick a place below to see who this reaches.</p>
+              <p class="text-p-sm text-ink-gray-7">{{ __('Pick a place below to see who this reaches.') }}</p>
             </div>
             <p v-if="draft.places.length" class="mt-4 text-p-xs text-ink-gray-6">
-              {{ draft.designations.length ? 'Only the ticked designations in these places.' : 'Everyone in these places, any designation.' }}
+              {{ draft.designations.length ? __('Only the ticked designations in these places.') : __('Everyone in these places, any designation.') }}
             </p>
           </section>
           <section v-if="isPoll" class="space-y-4">
-            <h2 class="text-sm text-ink-gray-6">Poll settings</h2>
-            <Switch v-model="poll.multiple" label="Allow more than one answer" description="People can tick every option that works for them." />
-            <Switch v-model="poll.anonymous" label="Anonymous votes" description="Show counts only. Nobody, including you, sees who voted for what." />
-            <Switch :model-value="!!poll.closesAt" label="Set a deadline" description="Voting closes on its own. You can also close it any time." @update:model-value="setDeadline" />
-            <DateTimePicker v-if="poll.closesAt" v-model="poll.closesAt" label="Voting closes" format="ddd D MMM YYYY, h:mm A" />
+            <h2 class="text-sm text-ink-gray-6">{{ __('Poll settings') }}</h2>
+            <Switch v-model="poll.multiple" :label="__('Allow more than one answer')" :description="__('People can tick every option that works for them.')" />
+            <Switch v-model="poll.anonymous" :label="__('Anonymous votes')" :description="__('Show counts only. Nobody, including you, sees who voted for what.')" />
+            <Switch :model-value="!!poll.closesAt" :label="__('Set a deadline')" :description="__('Voting closes on its own. You can also close it any time.')" @update:model-value="setDeadline" />
+            <DateTimePicker v-if="poll.closesAt" v-model="poll.closesAt" :label="__('Voting closes')" format="ddd D MMM YYYY, h:mm A" />
           </section>
           <section class="space-y-4">
-            <h2 class="text-sm text-ink-gray-6">Thread rules</h2>
-            <FormControl v-model="policy" type="select" label="Who can reply" :options="POLICIES.filter((p) => p.value !== 'posters').map((p) => ({ label: p.label, value: p.value }))" />
-            <Switch v-model="ackRequired" label="Ask for acknowledgment" description="Members confirm they have read it. You see who did." />
+            <h2 class="text-sm text-ink-gray-6">{{ __('Thread rules') }}</h2>
+            <FormControl v-model="policy" type="select" :label="__('Who can reply')" :options="POLICIES.filter((p) => p.value !== 'posters').map((p) => ({ label: p.label, value: p.value }))" />
+            <Switch v-model="ackRequired" :label="__('Ask for acknowledgment')" :description="__('Members confirm they have read it. You see who did.')" />
           </section>
         </div>
       </aside>

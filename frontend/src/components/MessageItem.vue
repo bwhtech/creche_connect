@@ -4,6 +4,7 @@ import { Avatar, Button, Dropdown, Tooltip, toast } from 'frappe-ui'
 import { Editor, EditorContent } from 'frappe-ui/editor'
 import Reactions from './Reactions.vue'
 import EditHistory from './EditHistory.vue'
+import { __ } from '../lib/translate'
 import { canDelete, isAuthor, errorText, isBlank, updateMessage, userById, when, withPreviews } from '../lib/store'
 
 const props = defineProps<{ message: any; kit: any[]; compact?: boolean }>()
@@ -14,9 +15,9 @@ const draft = ref<string | null>(null)
 const saving = ref(false)
 const showHistory = ref(false)
 const menu = computed(() => [
-  isAuthor(props.message.authorId) && { label: 'Edit', icon: 'lucide-pencil', onClick: () => (draft.value = props.message.body) },
-  props.message.editedAt && { label: 'Edit history', icon: 'lucide-history', onClick: () => (showHistory.value = true) },
-  canDelete(props.message.authorId) && { label: 'Delete', icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('delete') },
+  isAuthor(props.message.authorId) && { label: __('Edit'), icon: 'lucide-pencil', onClick: () => (draft.value = props.message.body) },
+  props.message.editedAt && { label: __('Edit history'), icon: 'lucide-history', onClick: () => (showHistory.value = true) },
+  canDelete(props.message.authorId) && { label: __('Delete'), icon: 'lucide-trash-2', theme: 'red', onClick: () => emit('delete') },
 ].filter(Boolean))
 async function save() {
   saving.value = true
@@ -24,7 +25,7 @@ async function save() {
     await updateMessage(props.message, 'CrecheConnect Reply', draft.value!)
     draft.value = null
   } catch (e) {
-    toast.error(errorText(e, 'Could not save your changes'))
+    toast.error(errorText(e, __('Could not save your changes')))
   } finally {
     saving.value = false
   }
@@ -54,14 +55,14 @@ async function save() {
           </Editor>
         </div>
         <div class="mt-2 flex justify-end gap-2">
-          <Button label="Cancel" @click="draft = null" />
-          <Button variant="solid" theme="gray" label="Save" :disabled="isBlank(draft)" :loading="saving" @click="save" />
+          <Button :label="__('Cancel')" @click="draft = null" />
+          <Button variant="solid" theme="gray" :label="__('Save')" :disabled="isBlank(draft)" :loading="saving" @click="save" />
         </div>
       </div>
       <template v-else>
         <div class="rich mt-0.5 text-p-base text-ink-gray-8" v-html="body" />
-        <Tooltip v-if="message.editedAt" :text="`Edited ${when(message.editedAt).format('DD MMM YYYY, h:mm A')}`">
-          <span class="text-xs text-ink-gray-6">(edited)</span>
+        <Tooltip v-if="message.editedAt" :text="__('Edited {0}', when(message.editedAt).format('DD MMM YYYY, h:mm A'))">
+          <span class="text-xs text-ink-gray-6">{{ __('(edited)') }}</span>
         </Tooltip>
       </template>
       <div class="mt-1.5">
@@ -72,7 +73,7 @@ async function save() {
       v-if="menu.length && draft === null"
       :options="menu"
       align="end"
-      :button="{ icon: 'lucide-ellipsis', variant: 'ghost', size: 'sm', 'aria-label': 'Reply actions' }"
+      :button="{ icon: 'lucide-ellipsis', variant: 'ghost', size: 'sm', 'aria-label': __('Reply actions') }"
       class="shrink-0 self-start"
     />
     <EditHistory v-if="showHistory" v-model:open="showHistory" doctype="CrecheConnect Reply" :name="message.id" />
