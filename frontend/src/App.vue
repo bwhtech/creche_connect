@@ -38,7 +38,7 @@ const pinned = computed(() => state.resources.filter((r) => r.pinned))
 const mainNav = computed(() => [
   { label: __('Feed'), icon: 'lucide-rss', to: '/' },
   { label: __('Unread'), icon: 'lucide-circle-dot', to: '/?filter=unread', count: unreadCount.value },
-  { label: __('To acknowledge'), icon: 'lucide-badge-check', to: '/?filter=ack', count: ackCount.value },
+  { label: __('To acknowledge'), icon: 'lucide-badge-check', to: '/?filter=ack', count: ackCount.value, class: 'lg:hidden' },
   { label: __('Mentions'), icon: 'lucide-at-sign', to: '/?filter=mentions' },
   ...(canStart(me.value) ? [{ label: __('My posts'), icon: 'lucide-send', to: '/?filter=mine' }] : []),
 ])
@@ -123,7 +123,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
           <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-10">
             <div class="space-y-0.5">
               <SidebarItem :label="__('Search')" icon="lucide-search" route="/search" :active="route.path === '/search'" />
-              <SidebarItem v-for="n in mainNav" :key="n.to" :label="n.label" :icon="n.icon" :route="n.to" :active="isActive(n.to)">
+              <SidebarItem v-for="n in mainNav" :key="n.to" :label="n.label" :icon="n.icon" :route="n.to" :active="isActive(n.to)" :class="n.class">
                 <template v-if="n.count" #suffix>
                   <span class="text-xs text-ink-gray-6 tabular-nums">{{ n.count }}</span>
                 </template>
