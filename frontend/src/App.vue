@@ -67,7 +67,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
     <StatusPage v-if="!state.ready && (!online || state.unreachable)" v-bind="offline">
       <Button :label="__('Try again')" class="mt-2" @click="reload" />
     </StatusPage>
-    <div v-else-if="!state.ready" class="flex h-full flex-col items-center justify-center gap-3 text-center">
+    <div v-else-if="!state.ready || !route.matched.length" class="flex h-full flex-col items-center justify-center gap-3 text-center">
       <template v-if="state.error">
         <span class="lucide-lock size-6 text-ink-gray-6" aria-hidden="true" />
         <p class="max-w-sm text-p-sm text-ink-gray-7">{{ state.error }}</p>
@@ -119,7 +119,7 @@ const showTabs = computed(() => !/^\/(threads|new)/.test(route.path))
     <DesktopShell v-else :scroll="false">
       <template #sidebar>
         <Sidebar width="14rem" class="border-r">
-          <SidebarHeader title="CrecheConnect" logo="/assets/creche_connect/logo.png" />
+          <SidebarHeader title="CrecheConnect" logo="/assets/creche_connect/logo-small.png" />
           <ScrollArea class="min-h-0 flex-1" viewport-class="px-2 pt-0.5 pb-10">
             <div class="space-y-0.5">
               <SidebarItem :label="__('Search')" icon="lucide-search" route="/search" :active="route.path === '/search'" />

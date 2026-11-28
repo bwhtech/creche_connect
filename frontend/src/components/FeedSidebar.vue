@@ -19,9 +19,15 @@ const setTag = (id?: string) => router.push({ path: '/', query: { ...route.query
 const acks = ref<any[]>([])
 watch(
   () => state.counts.ack,
-  async () => {
+  async (count, _, onCleanup) => {
+    if (!count) {
+      acks.value = []
+      return
+    }
+    let current = true
+    onCleanup(() => { current = false })
     const page: any = await get('creche_connect.api.get_threads', { filter: 'ack' }).catch(() => null)
-    if (page) acks.value = page.threads.slice(0, 5)
+    if (current && page) acks.value = page.threads.slice(0, 5)
   },
   { immediate: true },
 )

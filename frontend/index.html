@@ -2,7 +2,42 @@
 <html lang="{{ boot.lang }}" class="h-full">
 	<head>
 		<meta charset="UTF-8" />
-		<link rel="icon" href="/assets/creche_connect/logo.png" />
+		<link rel="preload" as="fetch" crossorigin href="/api/method/creche_connect.api.get_boot?" />
+		<script>
+			(() => {
+				if (!/^\/c\/?$/.test(location.pathname)) return
+				const page = new URLSearchParams(location.search)
+				const params = new URLSearchParams()
+				for (const key of ['filter', 'tag']) {
+					if (page.has(key)) params.set(key, page.getAll(key).join(','))
+				}
+				const query = params.toString()
+				const href = location.href
+				const result = fetch('/api/method/creche_connect.api.get_threads?' + query, {
+					headers: { Accept: 'application/json' },
+				}).then(async (response) => {
+					if (!response.ok) return
+					const { message } = await response.json()
+					if (location.href === href && message?.threads?.[0]?.body) {
+						const template = document.createElement('template')
+						template.innerHTML = message.threads[0].body
+						const image = template.content.querySelector('img[src]')
+						if (image && !image.hasAttribute('srcset') && /^\/(?:private\/)?files\//.test(image.getAttribute('src'))) {
+							const link = document.createElement('link')
+							link.rel = 'preload'
+							link.as = 'image'
+							link.href = image.getAttribute('src')
+							link.fetchPriority = 'high'
+							document.head.append(link)
+						}
+					}
+					return message
+				}).catch(() => undefined)
+				window.crecheInitialFeed = { query, result }
+			})()
+		</script>
+		<link rel="preload" as="font" type="font/woff2" crossorigin href="/src/fonts/Inter-latin.woff2" />
+		<link rel="icon" href="/assets/creche_connect/logo-small.png" />
 		<link rel="manifest" href="/assets/creche_connect/pwa/crecheconnect.webmanifest?v=2" />
 		<link rel="apple-touch-icon" href="/assets/creche_connect/pwa/icon-180.png?v=2" />
 		<meta name="apple-mobile-web-app-title" content="CrecheConnect" />

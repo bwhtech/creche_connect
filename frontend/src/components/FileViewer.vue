@@ -9,7 +9,6 @@ export const canView = (url: string) => !['other', isMobile.value && 'pdf'].incl
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { onKeyStroke } from '@vueuse/core'
-import DOMPurify from 'dompurify'
 import { Button, LoadingIndicator } from 'frappe-ui'
 
 const props = defineProps<{ file: { url: string; name: string } | null }>()
@@ -26,7 +25,11 @@ watch(docxEl, async (el) => {
   loading.value = true
   failed.value = false
   try {
-    const [{ renderAsync }, blob] = await Promise.all([import('docx-preview'), fetch(props.file.url).then((r) => r.blob())])
+    const [{ renderAsync }, { default: DOMPurify }, blob] = await Promise.all([
+      import('docx-preview'),
+      import('dompurify'),
+      fetch(props.file.url).then((r) => r.blob()),
+    ])
     const draft = document.createElement('div')
     await renderAsync(blob, draft, undefined, { inWrapper: true, renderAltChunks: false, ignoreFonts: true, ignoreWidth: isMobile.value, ignoreHeight: isMobile.value })
     el.innerHTML = DOMPurify.sanitize(draft.innerHTML, { FORCE_BODY: true })

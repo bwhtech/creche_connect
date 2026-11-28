@@ -1,8 +1,13 @@
 @import 'frappe-ui/style.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@font-face {
+	font-family: 'InterVar';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('./fonts/Inter-latin.woff2') format('woff2');
+	unicode-range: U+0000-00FF, U+2010-2027, U+20AC;
+}
 
 @layer base {
 	html {
