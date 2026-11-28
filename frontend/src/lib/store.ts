@@ -3,7 +3,7 @@ import { call, frappeRequest, dayjsLocal, upload, toast, dialog } from 'frappe-u
 import { io } from 'socket.io-client'
 import { breakpointsTailwind, useBreakpoints, useStorage } from '@vueuse/core'
 import { disablePush, enablePush, pushOn, pushSupported } from './push'
-import { __, translateHtml } from './translate'
+import { __ } from './translate'
 
 const COLORS = {
   blue: { dot: 'bg-surface-blue-7', soft: 'bg-surface-blue-2', ink: 'text-ink-blue-6' },
@@ -135,7 +135,7 @@ export async function shareThread(t) {
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
 export const withPreviews = (html: string) =>
-  translateHtml(html).replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
+  html.replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 

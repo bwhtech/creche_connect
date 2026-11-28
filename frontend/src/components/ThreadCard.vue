@@ -73,7 +73,7 @@ function toggle() {
 
         <div class="mt-2 flex items-center gap-2">
           <RouterLink :to="to" class="text-lg max-md:line-clamp-2 md:truncate" :class="thread.unread ? 'font-semibold text-ink-gray-9' : 'text-ink-gray-8'">
-            {{ __(thread.title) }}
+            {{ thread.title }}
           </RouterLink>
           <span v-if="thread.unread" class="size-2 shrink-0 rounded-full bg-surface-blue-7" :aria-label="__('Unread')" />
         </div>

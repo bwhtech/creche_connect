@@ -59,7 +59,7 @@ watch(
       <RouterLink v-for="t in acks" :key="t.id" :to="`/threads/${t.id}`" class="flex gap-2.5 rounded-4 px-2 py-1.5 hover:bg-surface-gray-1">
         <span class="mt-1.5 size-2 shrink-0 rounded-full bg-surface-blue-7" aria-hidden="true" />
         <span class="min-w-0">
-          <span class="line-clamp-2 text-p-sm text-ink-gray-8">{{ __(t.title) }}</span>
+          <span class="line-clamp-2 text-p-sm text-ink-gray-8">{{ t.title }}</span>
           <span class="text-xs text-ink-gray-5">{{ userById(t.authorId).name }} · {{ when(t.lastActivity).fromNow() }}</span>
         </span>
       </RouterLink>

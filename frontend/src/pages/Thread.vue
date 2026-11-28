@@ -205,14 +205,14 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
 
 <template>
   <div class="flex h-full flex-col">
-    <PageHeaderMobile v-if="isMobile" :title="thread ? __(thread.title) : __('Thread')">
+    <PageHeaderMobile v-if="isMobile" :title="thread ? thread.title : __('Thread')">
       <template #prefix><PageHeaderBackButton :fallback-route="{ path: '/' }" /></template>
       <template v-if="visible" #suffix>
         <Button variant="ghost" icon="lucide-info" :aria-label="__('Thread details')" @click="showInfo = true" />
       </template>
     </PageHeaderMobile>
     <PageHeader v-else>
-      <Breadcrumbs :items="[{ label: __('Feed'), route: { path: '/' } }, { label: thread ? __(thread.title) : __('Thread') }]" />
+      <Breadcrumbs :items="[{ label: __('Feed'), route: { path: '/' } }, { label: thread ? thread.title : __('Thread') }]" />
     </PageHeader>
 
     <div v-if="loading" data-testid="thread-loading-skeleton" class="min-h-0 flex-1 overflow-y-auto">
@@ -254,7 +254,7 @@ const sameAuthor = (i: number) => i > 0 && thread.value.replies[i - 1].authorId 
           <div class="mx-auto max-w-[770px] px-4 pt-5 pb-12 sm:px-6 md:pt-10">
             <AudienceChips :geo="thread.geo" />
             <TextInput v-if="editing" v-model="editing.title" class="mt-4" size="lg" :aria-label="__('Topic')" />
-            <h1 v-else class="mt-4 text-2xl font-semibold text-ink-gray-9 md:text-3xl">{{ __(thread.title) }}</h1>
+            <h1 v-else class="mt-4 text-2xl font-semibold text-ink-gray-9 md:text-3xl">{{ thread.title }}</h1>
             <div class="mt-4 flex items-center gap-2.5">
               <Avatar :label="author.name" :image="author.image" size="md" />
               <span class="shrink-0 text-sm text-ink-gray-8">{{ author.name }}</span>
