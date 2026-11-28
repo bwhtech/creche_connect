@@ -13,22 +13,26 @@ const COLORS = {
   red: { dot: 'bg-surface-red-7', soft: 'bg-surface-red-2', ink: 'text-ink-red-6' },
 }
 const MAX_AUDIO_MB = 10
-async function toWebp(file: File) {
+async function compressImage(file: File) {
   if (!['image/png', 'image/jpeg'].includes(file.type)) return file
   try {
-    const bitmap = await createImageBitmap(file)
+    const original = await createImageBitmap(file)
+    const bitmap = original.width > 1600 ? await createImageBitmap(file, { resizeWidth: 1600, resizeQuality: 'high' }) : original
     const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
-    canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
+    const context = canvas.getContext('2d')!
+    context.drawImage(bitmap, 0, 0)
+    original.close()
     bitmap.close()
-    const blob = await canvas.convertToBlob({ type: 'image/webp', quality: 0.82 })
-    return blob.type === 'image/webp' && blob.size < file.size ? new File([blob], file.name.replace(/\.\w+$/, '') + '.webp', { type: blob.type }) : file
+    if (file.type === 'image/png' && context.getImageData(0, 0, canvas.width, canvas.height).data.some((value, i) => i % 4 === 3 && value < 255)) return file
+    const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 })
+    return blob.size < file.size ? new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: blob.type }) : file
   } catch {
     return file
   }
 }
 export const uploadFunction = async (file: File, o?: Parameters<typeof upload>[1]) => {
   if (file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024) throw new Error(__('Audio can be up to {0} MB', MAX_AUDIO_MB))
-  return upload(await toWebp(file), { ...o, private: !file.type.startsWith('image/'), optimize: true })
+  return upload(await compressImage(file), { ...o, private: !file.type.startsWith('image/'), optimize: true })
 }
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 const PLACE_COLORS = { Country: 'gray', State: 'green', District: 'blue', Block: 'violet' }
