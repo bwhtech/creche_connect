@@ -1,8 +1,20 @@
+<script lang="ts">
+import { defineAsyncComponent, h } from 'vue'
+import { LoadingIndicator } from 'frappe-ui'
+
+const loadReplyPreview = () => import('./ReplyPreview.vue')
+const ReplyPreview = defineAsyncComponent({
+  loader: loadReplyPreview,
+  loadingComponent: () => h(LoadingIndicator, { class: 'mx-auto my-4 size-5 text-ink-gray-6' }),
+})
+setTimeout(loadReplyPreview, 3000)
+</script>
+
 <script setup lang="ts">
-import { computed, defineAsyncComponent, h, ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useResizeObserver } from '@vueuse/core'
-import { Avatar, Badge, Button, LoadingIndicator } from 'frappe-ui'
+import { Avatar, Badge, Button } from 'frappe-ui'
 import AudienceChips from './AudienceChips.vue'
 import Poll from './Poll.vue'
 import TagChips from './TagChips.vue'
@@ -10,11 +22,6 @@ import Reactions from './Reactions.vue'
 import ReshareButton from './ReshareButton.vue'
 import FileViewer from './FileViewer.vue'
 import { shareThread, userById, policyOf, when, withPreviews, fetchLatestReplies } from '../lib/store'
-
-const ReplyPreview = defineAsyncComponent({
-  loader: () => import('./ReplyPreview.vue'),
-  loadingComponent: () => h(LoadingIndicator, { class: 'mx-auto my-4 size-5 text-ink-gray-6' }),
-})
 
 const props = defineProps<{ thread: any }>()
 const router = useRouter()
@@ -37,9 +44,13 @@ function open(e: MouseEvent) {
 
 const expanded = ref(false)
 const replies = shallowRef<Promise<any>>()
+let repliesAt = -1
 function toggle() {
   expanded.value = !expanded.value
-  if (expanded.value) replies.value = fetchLatestReplies(props.thread.id, 3)
+  if (expanded.value && repliesAt !== props.thread.replyCount) {
+    repliesAt = props.thread.replyCount
+    replies.value = fetchLatestReplies(props.thread.id, 3)
+  }
 }
 </script>
 
@@ -101,7 +112,7 @@ function toggle() {
       <ReshareButton :thread="thread" />
       <Button variant="ghost" size="sm" icon="lucide-share-2" :aria-label="__('Share')" @click="shareThread(thread)" />
     </div>
-    <ReplyPreview v-if="expanded" :thread="thread" :replies="replies" @failed="expanded = false" />
+    <ReplyPreview v-if="expanded" :thread="thread" :replies="replies" @failed="(expanded = false), (repliesAt = -1)" />
     <FileViewer :file="viewing" @close="viewing = null" />
   </div>
 </template>
