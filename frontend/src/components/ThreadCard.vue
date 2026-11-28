@@ -7,7 +7,6 @@ const ReplyPreview = defineAsyncComponent({
   loader: loadReplyPreview,
   loadingComponent: () => h(LoadingIndicator, { class: 'mx-auto my-4 size-5 text-ink-gray-6' }),
 })
-setTimeout(loadReplyPreview, 3000)
 </script>
 
 <script setup lang="ts">
@@ -23,10 +22,10 @@ import ReshareButton from './ReshareButton.vue'
 import FileViewer from './FileViewer.vue'
 import { shareThread, userById, policyOf, when, withPreviews, fetchLatestReplies } from '../lib/store'
 
-const props = defineProps<{ thread: any }>()
+const props = defineProps<{ thread: any; first?: boolean }>()
 const router = useRouter()
 const to = computed(() => `/threads/${props.thread.id}`)
-const html = computed(() => withPreviews(props.thread.body))
+const html = computed(() => withPreviews(props.thread.body, props.first))
 const body = ref<HTMLElement>()
 const clipped = ref(false)
 useResizeObserver(body, () => (clipped.value = body.value!.scrollHeight > body.value!.clientHeight + 1))
@@ -113,6 +112,6 @@ function toggle() {
       <Button variant="ghost" size="sm" icon="lucide-share-2" :aria-label="__('Share')" @click="shareThread(thread)" />
     </div>
     <ReplyPreview v-if="expanded" :thread="thread" :replies="replies" @failed="(expanded = false), (repliesAt = -1)" />
-    <FileViewer :file="viewing" @close="viewing = null" />
+    <FileViewer v-if="viewing" :file="viewing" @close="viewing = null" />
   </div>
 </template>

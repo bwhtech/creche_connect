@@ -1,5 +1,5 @@
 import { createApp, h } from 'vue'
-import { FrappeUI, FrappeUIProvider, dayjs, setConfig } from 'frappe-ui'
+import { FrappeUIProvider, dayjs, setConfig } from 'frappe-ui'
 import App from './App.vue'
 import router from './router'
 import 'dayjs/esm/locale/hi'
@@ -15,6 +15,6 @@ document.addEventListener('touchstart', () => {}, { passive: true })
 
 const app = createApp({ render: () => h(FrappeUIProvider, () => h(App)) })
 app.config.globalProperties.__ = __
-app.use(router).use(FrappeUI).mount('#app')
+app.use(router).mount('#app')
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) navigator.serviceWorker.register(`/crecheconnect-sw.js?build=${new URL(import.meta.url).pathname.split('/').pop()}`, { scope: '/c' })

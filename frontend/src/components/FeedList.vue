@@ -27,7 +27,7 @@ const NOTHING = { icon: 'lucide-inbox', title: __('Nothing here'), text: __('No 
   </div>
 
   <div v-else-if="rows.length" class="space-y-4">
-    <ThreadCard v-for="t in rows" :key="t.id" :thread="t" />
+    <ThreadCard v-for="(t, index) in rows" :key="t.id" :thread="t" :first="index === 0" />
   </div>
 
   <div v-else class="rounded-5 border border-dashed border-outline-gray-2 py-20">

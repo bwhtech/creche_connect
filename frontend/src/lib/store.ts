@@ -134,8 +134,10 @@ export async function shareThread(t) {
   toast.success(__('Link copied'))
 }
 export const isBlank = (html: string) => !excerpt(html) && !/<(img|audio|video)/.test(html)
-export const withPreviews = (html: string) =>
-  html.replaceAll('<img ', '<img loading="lazy" ').replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
+export const withPreviews = (html: string, first = false) =>
+  (first ? html.replace('<img ', '<img fetchpriority="high" ') : html)
+    .replace(/<img (?!fetchpriority)/g, '<img loading="lazy" ')
+    .replace(/<video src="([^"#]+)"/g, '<video preload="metadata" src="$1#t=0.1"')
 const feedRow = (id: string) => state.threads.find((x) => x.id === id)
 const copies = (t) => [...new Set([t, feedRow(t.id)])].filter(Boolean)
 
@@ -174,7 +176,16 @@ const latest = <A extends any[], R>(fn: (...args: A) => Promise<R>) => {
   }
 }
 
-const fetchFeed = latest((params) => get('creche_connect.api.get_threads', params))
+const fetchFeed = latest(async (params) => {
+  const initial = window.crecheInitialFeed
+  delete window.crecheInitialFeed
+  const query = new URLSearchParams(Object.entries(params).filter(([, value]) => value != null) as string[][])
+  if (initial?.query === query.toString()) {
+    const page = await initial.result
+    if (page) return page
+  }
+  return get('creche_connect.api.get_threads', params)
+})
 export async function loadThreads(mode: 'reset' | 'more' | 'refresh' = 'reset') {
   if (mode === 'reset') state.cursor = null
   try {

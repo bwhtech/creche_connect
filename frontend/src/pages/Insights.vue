@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { Button, PageHeader, Skeleton, TabButtons, Tooltip, toast, useCall } from 'frappe-ui'
-import { AreaChart, BarChart } from 'frappe-ui/charts'
 import { useMe, tagById, colorOf, errorText, placeById } from '../lib/store'
 import StatusPage from '../components/StatusPage.vue'
+
+const AreaChart = defineAsyncComponent(() => import('frappe-ui/charts').then((charts) => charts.AreaChart))
+const BarChart = defineAsyncComponent(() => import('frappe-ui/charts').then((charts) => charts.BarChart))
 
 const me = useMe()
 const RANGES = [

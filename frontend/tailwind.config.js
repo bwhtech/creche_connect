@@ -2,5 +2,5 @@ import frappeUIPreset, { content as frappeUIContent } from 'frappe-ui/tailwind'
 
 export default {
 	presets: [frappeUIPreset],
-	content: [...frappeUIContent, './index.html', './src/**/*.{vue,js,ts}'],
+	content: [...frappeUIContent.filter((glob) => !/\/(experimental|vitepress)\//.test(glob)), './index.html', './src/**/*.{vue,js,ts}'],
 }
