@@ -28,6 +28,13 @@ Pre-commit is configured to use the following tools for checking and formatting 
 - prettier
 - pyupgrade
 
+### Interface translations
+
+The language switcher uses the Frappe translation catalog in `creche_connect/locale`.
+Add full interface strings there when introducing labels or messages. Thread titles,
+post and reply bodies, and poll options display as written in every language and
+do not require catalog entries.
+
 ### License
 
 mit

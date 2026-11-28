@@ -21,7 +21,7 @@ const ends = computed(() => !poll.value.closed && closes.value && __('Closes {0}
 const result = computed(() => {
   if (!poll.value.closed || !top.value) return ''
   const votes = top.value === 1 ? __('1 vote') : __('{0} votes', top.value)
-  return leaders.value.length === 1 ? __('{0} won with {1}', __(leaders.value[0].label), votes) : __('Tie at {0}: {1}', votes, leaders.value.map((o) => __(o.label)).join(', '))
+  return leaders.value.length === 1 ? __('{0} won with {1}', leaders.value[0].label, votes) : __('Tie at {0}: {1}', votes, leaders.value.map((o) => o.label).join(', '))
 })
 const hint = computed(() => {
   if (poll.value.closed) return ''
@@ -68,7 +68,7 @@ async function remind() {
         type="button"
         :disabled="poll.closed"
         :aria-pressed="o.mine"
-        :title="__(o.label)"
+        :title="o.label"
         class="relative flex h-7 w-full items-center gap-2 overflow-hidden rounded-full px-2.5 text-left transition enabled:active:scale-[0.98] [corner-shape:squircle]"
         :class="o.mine ? 'bg-surface-violet-1' : 'bg-surface-gray-2 enabled:hover:bg-surface-gray-3'"
         @click="pick(o)"
@@ -81,7 +81,7 @@ async function remind() {
         />
         <span v-if="!poll.closed || o.mine" class="relative size-3.5 shrink-0" :class="icon(o)" aria-hidden="true" />
         <span class="relative min-w-0 flex-1 truncate text-sm" :class="o.mine ? 'font-medium text-ink-gray-9' : 'text-ink-gray-7'">
-          {{ __(o.label) }}
+          {{ o.label }}
         </span>
         <template v-if="showResults">
           <span class="relative shrink-0 text-xs font-medium text-ink-gray-6 tabular-nums">
