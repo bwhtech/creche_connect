@@ -13,10 +13,23 @@ const COLORS = {
   red: { dot: 'bg-surface-red-7', soft: 'bg-surface-red-2', ink: 'text-ink-red-6' },
 }
 const MAX_AUDIO_MB = 10
-export const uploadFunction = (file: File, o?: Parameters<typeof upload>[1]) =>
-  file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024
-    ? Promise.reject(new Error(__('Audio can be up to {0} MB', MAX_AUDIO_MB)))
-    : upload(file, { ...o, private: !file.type.startsWith('image/'), optimize: true })
+async function toWebp(file: File) {
+  if (!['image/png', 'image/jpeg'].includes(file.type)) return file
+  try {
+    const bitmap = await createImageBitmap(file)
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
+    bitmap.close()
+    const blob = await canvas.convertToBlob({ type: 'image/webp', quality: 0.82 })
+    return blob.type === 'image/webp' && blob.size < file.size ? new File([blob], file.name.replace(/\.\w+$/, '') + '.webp', { type: blob.type }) : file
+  } catch {
+    return file
+  }
+}
+export const uploadFunction = async (file: File, o?: Parameters<typeof upload>[1]) => {
+  if (file.type.startsWith('audio/') && file.size > MAX_AUDIO_MB * 1024 * 1024) throw new Error(__('Audio can be up to {0} MB', MAX_AUDIO_MB))
+  return upload(await toWebp(file), { ...o, private: !file.type.startsWith('image/'), optimize: true })
+}
 export const colorOf = (c: string) => COLORS[c] ?? COLORS.blue
 const PLACE_COLORS = { Country: 'gray', State: 'green', District: 'blue', Block: 'violet' }
 export const when = (s: string) => dayjsLocal(s)
